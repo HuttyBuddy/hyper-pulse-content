@@ -114,7 +114,7 @@ const AppHeader = () => {
                 <AvatarImage
                   src={profile?.logo_url ?? profile?.headshot_url ?? ''}
                   alt="Logo image"
-                  className="object-contain"
+                  className="object-cover"
                 />
               ) : (
                 <AvatarFallback>{getInitials(profile?.name)}</AvatarFallback>
