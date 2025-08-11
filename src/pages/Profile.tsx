@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
@@ -198,23 +199,25 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               <div>
                 <div className="text-sm mb-1">Headshot</div>
                 <div
-                  className="h-24 rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                  className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
                   onClick={() => headshotInputRef.current?.click()}
                   role="button"
                   aria-label="Upload headshot"
                 >
-                  {headshotUrl ? (
-                    <img
-                      src={headshotUrl}
-                      alt="Realtor headshot branding image"
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
-                      Click to upload headshot
-                    </div>
-                  )}
+                  <AspectRatio ratio={1} className="w-full">
+                    {headshotUrl ? (
+                      <img
+                        src={headshotUrl}
+                        alt="Realtor headshot branding image"
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                        Click to upload headshot
+                      </div>
+                    )}
+                  </AspectRatio>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -236,23 +239,25 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               <div>
                 <div className="text-sm mb-1">Personal Logo</div>
                 <div
-                  className="h-20 rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                  className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
                   onClick={() => logoInputRef.current?.click()}
                   role="button"
                   aria-label="Upload personal logo"
                 >
-                  {logoUrl ? (
-                    <img
-                      src={logoUrl}
-                      alt="Personal logo branding image"
-                      className="h-full w-full object-contain bg-background"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
-                      Click to upload logo
-                    </div>
-                  )}
+                  <AspectRatio ratio={1} className="w-full">
+                    {logoUrl ? (
+                      <img
+                        src={logoUrl}
+                        alt="Personal logo branding image"
+                        className="h-full w-full object-contain bg-background"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                        Click to upload logo
+                      </div>
+                    )}
+                  </AspectRatio>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -273,25 +278,27 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               </div>
             <div>
               <div className="text-sm mb-1">Brokerage Logo</div>
-              <div
-                className="h-20 rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
-                onClick={() => brokerageLogoInputRef.current?.click()}
-                role="button"
-                aria-label="Upload brokerage logo"
-              >
-                {brokerageLogoUrl ? (
-                  <img
-                    src={brokerageLogoUrl}
-                    alt="Brokerage logo branding image"
-                    className="h-full w-full object-contain bg-background"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
-                    Click to upload brokerage logo
-                  </div>
-                )}
-              </div>
+               <div
+                 className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                 onClick={() => brokerageLogoInputRef.current?.click()}
+                 role="button"
+                 aria-label="Upload brokerage logo"
+               >
+                 <AspectRatio ratio={1} className="w-full">
+                   {brokerageLogoUrl ? (
+                     <img
+                       src={brokerageLogoUrl}
+                       alt="Brokerage logo branding image"
+                       className="h-full w-full object-contain bg-background"
+                       loading="lazy"
+                     />
+                   ) : (
+                     <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                       Click to upload brokerage logo
+                     </div>
+                   )}
+                 </AspectRatio>
+               </div>
               <div className="flex gap-2">
                 <Button
                   variant="secondary"
