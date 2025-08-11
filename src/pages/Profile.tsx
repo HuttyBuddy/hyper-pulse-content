@@ -199,7 +199,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               <div>
                 <div className="text-sm mb-1">Headshot</div>
                 <div
-                  className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                  className="w-[3in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
                   onClick={() => headshotInputRef.current?.click()}
                   role="button"
                   aria-label="Upload headshot"
@@ -239,7 +239,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               <div>
                 <div className="text-sm mb-1">Personal Logo</div>
                 <div
-                  className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                  className="w-[3in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
                   onClick={() => logoInputRef.current?.click()}
                   role="button"
                   aria-label="Upload personal logo"
@@ -279,7 +279,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
             <div>
               <div className="text-sm mb-1">Brokerage Logo</div>
                <div
-                 className="rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                 className="w-[3in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
                  onClick={() => brokerageLogoInputRef.current?.click()}
                  role="button"
                  aria-label="Upload brokerage logo"
