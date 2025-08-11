@@ -3,13 +3,82 @@ import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const [name, setName] = useState("Alex Morgan");
   const [email, setEmail] = useState("alex@example.com");
   const [googleKey, setGoogleKey] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      if (!mounted) return;
+      if (userErr) {
+        console.error(userErr);
+        toast("Failed to get user");
+        return;
+      }
+      if (!user) {
+        toast("Please log in");
+        return;
+      }
+      setUserId(user.id);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("name, email, google_api_key")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) {
+        console.error(error);
+        toast("Failed to load profile");
+        return;
+      }
+      if (data) {
+        setName(data.name ?? "");
+        setEmail(data.email ?? "");
+        setGoogleKey(data.google_api_key ?? "");
+      }
+    };
+    init();
+    return () => { mounted = false; };
+  }, []);
+
+  const handleSaveProfile = async () => {
+    if (!userId) {
+      toast("Not signed in");
+      return;
+    }
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ user_id: userId, name, email });
+    if (error) {
+      console.error(error);
+      toast("Failed to save profile");
+    } else {
+      toast("Profile saved");
+    }
+  };
+
+  const handleSaveKeys = async () => {
+    if (!userId) {
+      toast("Not signed in");
+      return;
+    }
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ user_id: userId, google_api_key: googleKey });
+    if (error) {
+      console.error(error);
+      toast("Failed to save keys");
+    } else {
+      toast("Keys saved");
+    }
+  };
 
   return (
     <>
@@ -36,7 +105,7 @@ const Profile = () => {
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => toast("Saved (demo)")}>Save</Button>
+                <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>
                 <Button variant="outline" onClick={() => toast("Manage subscription (demo)")}>Manage Subscription</Button>
               </div>
             </CardContent>
@@ -73,7 +142,7 @@ const Profile = () => {
                 <label htmlFor="googleKey" className="text-sm">Google AI API Key</label>
                 <Input id="googleKey" value={googleKey} onChange={(e) => setGoogleKey(e.target.value)} placeholder="Enter key…" />
               </div>
-              <Button variant="secondary" onClick={() => toast("Saved (demo)")}>Save Keys</Button>
+              <Button variant="secondary" onClick={handleSaveKeys}>Save Keys</Button>
             </CardContent>
           </Card>
         </section>
