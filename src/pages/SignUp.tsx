@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
+import AppUrlHelper from "@/components/auth/AppUrlHelper";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -14,6 +15,21 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+
+  const formatAuthError = (message?: string) => {
+    const msg = message?.toLowerCase() || "";
+    if (msg.includes("requested path is invalid") || msg.includes("redirect")) {
+      return {
+        title: "Redirect URL not allowed",
+        description:
+          "Set Supabase Site URL to your app origin and add it to Additional Redirect URLs.",
+      };
+    }
+    return {
+      title: "Sign up failed",
+      description: message || "Please try again.",
+    };
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -39,7 +55,8 @@ const SignUp = () => {
         description: "We've sent a verification link. After verifying, return to the login page.",
       });
     } catch (err: any) {
-      toast({ title: "Sign up failed", description: err?.message || "Please try again.", variant: "destructive" });
+      const { title, description } = formatAuthError(err?.message);
+      toast({ title, description, variant: "destructive" });
     }
   };
 
@@ -81,6 +98,7 @@ const SignUp = () => {
                 <p className="text-sm text-muted-foreground">
                   Already have an account? <Link to="/" className="underline underline-offset-4">Login</Link>
                 </p>
+                <AppUrlHelper />
               </CardFooter>
             </form>
           </Card>

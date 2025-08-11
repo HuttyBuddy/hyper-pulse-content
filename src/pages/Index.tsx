@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
+import AppUrlHelper from "@/components/auth/AppUrlHelper";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -34,7 +35,22 @@ const Index = () => {
         window.history.replaceState({}, "", url.toString());
       });
     }
-  }, [navigate, toast]);
+}, [navigate, toast]);
+
+  const formatAuthError = (message?: string) => {
+    const msg = message?.toLowerCase() || "";
+    if (msg.includes("requested path is invalid") || msg.includes("redirect")) {
+      return {
+        title: "Redirect URL not allowed",
+        description:
+          "Set Supabase Site URL to your app origin and add it to Additional Redirect URLs.",
+      };
+    }
+    return {
+      title: "Login failed",
+      description: message || "Please check your credentials and try again.",
+    };
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -53,7 +69,8 @@ const Index = () => {
         window.location.href = "/dashboard";
       }
     } catch (err: any) {
-      toast({ title: "Login failed", description: err?.message || "Please check your credentials and try again.", variant: "destructive" });
+      const { title, description } = formatAuthError(err?.message);
+      toast({ title, description, variant: "destructive" });
     }
   };
 
@@ -91,6 +108,7 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">
                   New here? <Link to="/signup" className="underline underline-offset-4">Sign Up</Link>
                 </p>
+                <AppUrlHelper />
               </CardFooter>
             </form>
           </Card>
