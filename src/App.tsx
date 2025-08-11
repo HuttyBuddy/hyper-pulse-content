@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ContentPackage from "./pages/ContentPackage";
 import Editor from "./pages/Editor";
 import Profile from "./pages/Profile";
+import SignUp from "./pages/SignUp";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/content/carmichael-2025-08-10" element={<ContentPackage />} />
             <Route path="/editor" element={<Editor />} />

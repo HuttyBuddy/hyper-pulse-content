@@ -48,7 +48,7 @@ const Index = () => {
               <CardFooter className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" variant="hero">Login</Button>
                 <p className="text-sm text-muted-foreground">
-                  New here? <Link to="/dashboard" className="underline underline-offset-4">Sign Up</Link>
+                  New here? <Link to="/signup" className="underline underline-offset-4">Sign Up</Link>
                 </p>
               </CardFooter>
             </form>
