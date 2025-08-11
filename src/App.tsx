@@ -12,6 +12,7 @@ import Editor from "./pages/Editor";
 import Profile from "./pages/Profile";
 import SignUp from "./pages/SignUp";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ManageSubscription from "./pages/ManageSubscription";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/content/carmichael-2025-08-10" element={<ProtectedRoute><ContentPackage /></ProtectedRoute>} />
             <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/manage-subscription" element={<ProtectedRoute><ManageSubscription /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

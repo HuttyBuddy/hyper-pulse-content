@@ -185,7 +185,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>
-                <Button variant="outline" onClick={() => toast("Manage subscription (demo)")}>Manage Subscription</Button>
+                <Button variant="outline" onClick={() => { window.location.href = '/manage-subscription'; }}>Manage Subscription</Button>
               </div>
             </CardContent>
           </Card>
