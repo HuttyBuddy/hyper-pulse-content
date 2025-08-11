@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          brokerage_logo_url: string | null
           created_at: string
           email: string | null
           google_api_key: string | null
@@ -26,6 +27,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          brokerage_logo_url?: string | null
           created_at?: string
           email?: string | null
           google_api_key?: string | null
@@ -36,6 +38,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          brokerage_logo_url?: string | null
           created_at?: string
           email?: string | null
           google_api_key?: string | null

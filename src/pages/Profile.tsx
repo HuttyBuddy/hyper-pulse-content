@@ -12,12 +12,15 @@ const Profile = () => {
   const [email, setEmail] = useState("alex@example.com");
   const [googleKey, setGoogleKey] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
-  const [headshotUrl, setHeadshotUrl] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const headshotInputRef = useRef<HTMLInputElement>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
+const [headshotUrl, setHeadshotUrl] = useState("");
+const [logoUrl, setLogoUrl] = useState("");
+const [brokerageLogoUrl, setBrokerageLogoUrl] = useState("");
+const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
+const [uploadingLogo, setUploadingLogo] = useState(false);
+const [uploadingBrokerageLogo, setUploadingBrokerageLogo] = useState(false);
+const headshotInputRef = useRef<HTMLInputElement>(null);
+const logoInputRef = useRef<HTMLInputElement>(null);
+const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     let mounted = true;
     const init = async () => {
@@ -35,7 +38,7 @@ const Profile = () => {
       setUserId(user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select("name, email, google_api_key, headshot_url, logo_url")
+        .select("name, email, google_api_key, headshot_url, logo_url, brokerage_logo_url")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) {
@@ -49,6 +52,7 @@ const Profile = () => {
         setGoogleKey(data.google_api_key ?? "");
         setHeadshotUrl((data as any).headshot_url ?? "");
         setLogoUrl((data as any).logo_url ?? "");
+        setBrokerageLogoUrl((data as any).brokerage_logo_url ?? "");
       }
     };
     init();
@@ -87,7 +91,7 @@ const Profile = () => {
     }
   };
 
-  const uploadImage = async (kind: "headshot" | "logo", file: File) => {
+  const uploadImage = async (kind: "headshot" | "logo" | "brokerage_logo", file: File) => {
     if (!userId) {
       toast("Not signed in");
       return;
@@ -105,12 +109,15 @@ const Profile = () => {
       const publicUrl = publicUrlData.publicUrl;
       if (kind === "headshot") {
         setHeadshotUrl(publicUrl);
-      } else {
+      } else if (kind === "logo") {
         setLogoUrl(publicUrl);
+      } else {
+        setBrokerageLogoUrl(publicUrl);
       }
       const payload: any = { user_id: userId };
       if (kind === "headshot") payload.headshot_url = publicUrl;
-      else payload.logo_url = publicUrl;
+      else if (kind === "logo") payload.logo_url = publicUrl;
+      else payload.brokerage_logo_url = publicUrl;
       const { error: upsertError } = await supabase.from("profiles").upsert(payload as any);
       if (upsertError) {
         console.error(upsertError);
@@ -139,6 +146,15 @@ const Profile = () => {
     setUploadingLogo(true);
     await uploadImage("logo", file);
     setUploadingLogo(false);
+    e.target.value = "";
+  };
+
+  const onBrokerageLogoSelected = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBrokerageLogo(true);
+    await uploadImage("brokerage_logo", file);
+    setUploadingBrokerageLogo(false);
     e.target.value = "";
   };
 
@@ -255,6 +271,44 @@ const Profile = () => {
                   onChange={onLogoSelected}
                 />
               </div>
+            <div>
+              <div className="text-sm mb-1">Brokerage Logo</div>
+              <div
+                className="h-20 rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
+                onClick={() => brokerageLogoInputRef.current?.click()}
+                role="button"
+                aria-label="Upload brokerage logo"
+              >
+                {brokerageLogoUrl ? (
+                  <img
+                    src={brokerageLogoUrl}
+                    alt="Brokerage logo branding image"
+                    className="h-full w-full object-contain bg-background"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                    Click to upload brokerage logo
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => brokerageLogoInputRef.current?.click()}
+                  disabled={uploadingBrokerageLogo}
+                >
+                  {uploadingBrokerageLogo ? "Uploading..." : "Upload Brokerage Logo"}
+                </Button>
+              </div>
+              <input
+                ref={brokerageLogoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={onBrokerageLogoSelected}
+              />
+            </div>
             </CardContent>
           </Card>
         </section>
