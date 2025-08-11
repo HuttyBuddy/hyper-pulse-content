@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
+import { useToast } from "@/components/ui/use-toast";
 
 const AppHeader = () => {
   const [profile, setProfile] = useState<{ name?: string | null; headshot_url?: string | null; logo_url?: string | null } | null>(null);
@@ -24,10 +25,56 @@ const AppHeader = () => {
     return () => { ignore = true; };
   }, []);
 
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
   const getInitials = (name?: string | null) => {
     if (!name) return 'U';
     const parts = name.trim().split(/\s+/);
     return parts.slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'U';
+  };
+
+  const onLogoClick = () => {
+    if (isUploadingLogo) return;
+    fileInputRef.current?.click();
+  };
+
+  const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingLogo(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Not signed in", description: "Please sign in to upload a logo." });
+        return;
+      }
+      const path = `${user.id}/logo-${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('branding').upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      });
+      if (uploadError) {
+        toast({ title: "Upload failed", description: uploadError.message });
+        return;
+      }
+      const { data: publicData } = supabase.storage.from('branding').getPublicUrl(path);
+      const publicUrl = publicData.publicUrl;
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ logo_url: publicUrl })
+        .eq('user_id', user.id);
+      if (updateError) {
+        toast({ title: "Save failed", description: updateError.message });
+        return;
+      }
+      setProfile((prev) => ({ ...(prev ?? {}), logo_url: publicUrl }));
+      toast({ title: "Logo updated", description: "Your logo has been saved." });
+    } finally {
+      setIsUploadingLogo(false);
+      e.currentTarget.value = "";
+    }
   };
 
   const handleSignOut = async () => {
@@ -54,15 +101,35 @@ const AppHeader = () => {
             </Button>
           </nav>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>Log out</Button>
-          <Link to="/profile" aria-label="Open profile to update avatar" className="focus:outline-none">
+          <button
+            type="button"
+            onClick={onLogoClick}
+            aria-label="Upload logo image"
+            className="focus:outline-none"
+            disabled={isUploadingLogo}
+            title={isUploadingLogo ? "Uploading..." : "Click to upload a new logo"}
+          >
             <Avatar>
               {(profile?.headshot_url || profile?.logo_url) ? (
-                <AvatarImage src={profile?.headshot_url ?? profile?.logo_url ?? ''} alt="Profile image" />
+                <AvatarImage
+                  src={profile?.logo_url ?? profile?.headshot_url ?? ''}
+                  alt="Logo image"
+                  className="object-contain"
+                />
               ) : (
                 <AvatarFallback>{getInitials(profile?.name)}</AvatarFallback>
               )}
             </Avatar>
-          </Link>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={onFileChange}
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
         </div>
       </div>
     </header>
