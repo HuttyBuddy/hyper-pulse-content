@@ -13,12 +13,19 @@ const ManageSubscription = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("customer-portal", { body: {} });
-      if (error) throw error;
       if (data?.url) {
-        window.open(data.url, "_blank");
-      } else {
-        toast("Could not create portal session");
+        window.open(data.url, "_blank", "noopener,noreferrer");
+        return;
       }
+      if (data?.error) {
+        toast(String(data.error));
+        return;
+      }
+      if (error) {
+        toast(error.message || "Failed to open customer portal");
+        return;
+      }
+      toast("Could not create portal session");
     } catch (e: any) {
       console.error(e);
       toast(e?.message || "Failed to open customer portal");
