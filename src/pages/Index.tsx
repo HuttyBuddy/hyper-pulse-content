@@ -1,19 +1,60 @@
 import { Helmet } from "react-helmet-async";
 import { useNavigate, Link } from "react-router-dom";
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { cleanupAuthState } from "@/lib/auth";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmit = (e: FormEvent) => {
+  useEffect(() => {
+    // If already authenticated, go to dashboard
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        navigate("/dashboard", { replace: true });
+      }
+    });
+
+    // If redirected after email verification
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") === "1") {
+      // Ensure no auto-login session remains; force clean state
+      cleanupAuthState();
+      supabase.auth.signOut({ scope: 'global' }).finally(() => {
+        toast({ title: "Email verified", description: "You can now log in." });
+        const url = new URL(window.location.href);
+        url.searchParams.delete("verified");
+        window.history.replaceState({}, "", url.toString());
+      });
+    }
+  }, [navigate, toast]);
+
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Demo: navigate to dashboard
-    navigate("/dashboard");
+    try {
+      // Clean up potential limbo states before attempting login
+      cleanupAuthState();
+      try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      if (data.user) {
+        // Full refresh ensures a clean state everywhere
+        window.location.href = "/dashboard";
+      }
+    } catch (err: any) {
+      toast({ title: "Login failed", description: err?.message || "Please check your credentials and try again.", variant: "destructive" });
+    }
   };
 
   return (

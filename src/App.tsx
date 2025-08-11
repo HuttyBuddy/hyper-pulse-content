@@ -11,6 +11,7 @@ import ContentPackage from "./pages/ContentPackage";
 import Editor from "./pages/Editor";
 import Profile from "./pages/Profile";
 import SignUp from "./pages/SignUp";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -24,10 +25,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/content/carmichael-2025-08-10" element={<ContentPackage />} />
-            <Route path="/editor" element={<Editor />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/content/carmichael-2025-08-10" element={<ProtectedRoute><ContentPackage /></ProtectedRoute>} />
+            <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

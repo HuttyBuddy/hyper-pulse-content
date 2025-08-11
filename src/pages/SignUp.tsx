@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { cleanupAuthState } from "@/lib/auth";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -13,17 +15,32 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
       toast({ title: "Passwords do not match", description: "Please confirm your password.", variant: "destructive" });
       return;
     }
-    toast({
-      title: "Sign up pending backend",
-      description: "Connect Supabase to enable email verification. You'll then be redirected to Login after verification.",
-    });
-    // Demo: keep user here; real flow will call Supabase and email-verify, then redirect to login
+
+    try {
+      cleanupAuthState();
+      try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
+
+      const redirectUrl = `${window.location.origin}/?verified=1`;
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirectUrl }
+      });
+      if (error) throw error;
+
+      toast({
+        title: "Verify your email",
+        description: "We've sent a verification link. After verifying, return to the login page.",
+      });
+    } catch (err: any) {
+      toast({ title: "Sign up failed", description: err?.message || "Please try again.", variant: "destructive" });
+    }
   };
 
   return (
