@@ -14,15 +14,18 @@ const Profile = () => {
   const [email, setEmail] = useState("alex@example.com");
   const [googleKey, setGoogleKey] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
-const [headshotUrl, setHeadshotUrl] = useState("");
-const [logoUrl, setLogoUrl] = useState("");
-const [brokerageLogoUrl, setBrokerageLogoUrl] = useState("");
-const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
-const [uploadingLogo, setUploadingLogo] = useState(false);
-const [uploadingBrokerageLogo, setUploadingBrokerageLogo] = useState(false);
-const headshotInputRef = useRef<HTMLInputElement>(null);
-const logoInputRef = useRef<HTMLInputElement>(null);
-const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
+  const [neighborhood, setNeighborhood] = useState("");
+  const [county, setCounty] = useState("");
+  const [stateCode, setStateCode] = useState("");
+  const [headshotUrl, setHeadshotUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [brokerageLogoUrl, setBrokerageLogoUrl] = useState("");
+  const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBrokerageLogo, setUploadingBrokerageLogo] = useState(false);
+  const headshotInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     let mounted = true;
     const init = async () => {
@@ -40,7 +43,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
       setUserId(user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select("name, email, google_api_key, headshot_url, logo_url, brokerage_logo_url")
+        .select("name, email, google_api_key, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) {
@@ -51,10 +54,13 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
       if (data) {
         setName(data.name ?? "");
         setEmail(data.email ?? "");
-        setGoogleKey(data.google_api_key ?? "");
+        setGoogleKey((data as any).google_api_key ?? "");
         setHeadshotUrl((data as any).headshot_url ?? "");
         setLogoUrl((data as any).logo_url ?? "");
         setBrokerageLogoUrl((data as any).brokerage_logo_url ?? "");
+        setNeighborhood((data as any).neighborhood ?? "");
+        setCounty((data as any).county ?? "");
+        setStateCode((data as any).state ?? "");
       }
     };
     init();
@@ -68,7 +74,7 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
     }
     const { error } = await supabase
       .from("profiles")
-      .upsert({ user_id: userId, name, email });
+      .upsert({ user_id: userId, name, email, neighborhood, county, state: stateCode });
     if (error) {
       console.error(error);
       toast("Failed to save profile");
@@ -185,6 +191,18 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               <div>
                 <label htmlFor="email" className="text-sm">Email</label>
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor="neighborhood" className="text-sm">Neighborhood</label>
+                <Input id="neighborhood" value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="e.g., Carmichael" />
+              </div>
+              <div>
+                <label htmlFor="county" className="text-sm">County</label>
+                <Input id="county" value={county} onChange={(e) => setCounty(e.target.value)} placeholder="e.g., Sacramento County" />
+              </div>
+              <div>
+                <label htmlFor="state" className="text-sm">State</label>
+                <Input id="state" value={stateCode} onChange={(e) => setStateCode(e.target.value)} placeholder="e.g., CA" />
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>

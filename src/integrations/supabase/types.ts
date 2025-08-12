@@ -17,36 +17,84 @@ export type Database = {
       profiles: {
         Row: {
           brokerage_logo_url: string | null
+          county: string | null
           created_at: string
           email: string | null
           google_api_key: string | null
           headshot_url: string | null
           logo_url: string | null
           name: string | null
+          neighborhood: string | null
+          neighborhood_slug: string | null
+          state: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           brokerage_logo_url?: string | null
+          county?: string | null
           created_at?: string
           email?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
           logo_url?: string | null
           name?: string | null
+          neighborhood?: string | null
+          neighborhood_slug?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           brokerage_logo_url?: string | null
+          county?: string | null
           created_at?: string
           email?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
           logo_url?: string | null
           name?: string | null
+          neighborhood?: string | null
+          neighborhood_slug?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
