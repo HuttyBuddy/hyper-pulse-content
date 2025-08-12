@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { openCustomerPortal } from "@/lib/billing";
 
 const Profile = () => {
   const [name, setName] = useState("Alex Morgan");
@@ -159,6 +160,8 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
     e.target.value = "";
   };
 
+  const [openingPortal, setOpeningPortal] = useState(false);
+
   return (
     <>
       <Helmet>
@@ -185,7 +188,20 @@ const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>
-                <Button variant="outline" onClick={() => { window.location.href = '/manage-subscription'; }}>Manage Subscription</Button>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      setOpeningPortal(true);
+                      await openCustomerPortal();
+                    } finally {
+                      setOpeningPortal(false);
+                    }
+                  }}
+                  disabled={openingPortal}
+                >
+                  {openingPortal ? "Opening…" : "Manage Subscription"}
+                </Button>
               </div>
             </CardContent>
           </Card>
