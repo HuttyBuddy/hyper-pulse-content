@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "@/components/ui/sonner";
-import { useState } from "react";
-import { openCustomerPortal, refreshSubscriptionStatus } from "@/lib/billing";
+import { useEffect, useState } from "react";
+import { openCustomerPortal, refreshSubscriptionStatus, createCheckout } from "@/lib/billing";
 
 const ManageSubscription = () => {
   const [loading, setLoading] = useState(false);
@@ -40,6 +40,32 @@ const ManageSubscription = () => {
       setLoading(false);
     }
   };
+
+  const subscribeNow = async () => {
+    try {
+      setLoading(true);
+      const res = await createCheckout();
+      if (!res.ok) {
+        setLastError(res.error ?? "Could not create checkout session");
+      } else {
+        setLastError(null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (checkout === "success" || checkout === "canceled") {
+      refreshStatus();
+      if (checkout === "success") {
+        toast("Subscription updated");
+      }
+    }
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -58,6 +84,9 @@ const ManageSubscription = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-3">
+                <Button onClick={subscribeNow} disabled={loading}>
+                  {loading ? "Starting Checkout…" : "Subscribe (Test Mode)"}
+                </Button>
                 <Button variant="secondary" onClick={openPortal} disabled={loading}>
                   {loading ? "Opening Portal…" : "Open Subscription Portal"}
                 </Button>
@@ -109,7 +138,7 @@ const ManageSubscription = () => {
               )}
 
               <p className="text-sm text-muted-foreground">
-                You’ll be redirected to our Stripe-powered customer portal in a new tab.
+                Test mode: use card 4242 4242 4242 4242, any future date, any CVC, any ZIP. You’ll be redirected in a new tab.
               </p>
             </CardContent>
           </Card>

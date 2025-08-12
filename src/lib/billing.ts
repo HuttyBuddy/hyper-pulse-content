@@ -50,3 +50,28 @@ export const refreshSubscriptionStatus = async (): Promise<{ ok: boolean; data?:
     return { ok: false, error: msg };
   }
 };
+
+export const createCheckout = async (): Promise<{ ok: boolean; error?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke("create-checkout", { body: {} });
+    if (data?.url) {
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      return { ok: true };
+    }
+    if (data?.error) {
+      toast(String(data.error));
+      return { ok: false, error: String(data.error) };
+    }
+    if (error) {
+      toast(error.message || "Failed to start checkout");
+      return { ok: false, error: error.message || "Failed to start checkout" };
+    }
+    const msg = "Could not create checkout session";
+    toast(msg);
+    return { ok: false, error: msg };
+  } catch (e: any) {
+    const msg = e?.message || "Failed to start checkout";
+    toast(msg);
+    return { ok: false, error: msg };
+  }
+};
