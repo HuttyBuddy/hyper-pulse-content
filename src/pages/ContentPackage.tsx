@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
@@ -25,6 +26,13 @@ const ContentPackage = () => {
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
   const [stateCode, setStateCode] = useState("CA");
+
+  const { slugDate } = useParams();
+  const [reportDate, setReportDate] = useState<Date | null>(null);
+  const [neighborhoodSlug, setNeighborhoodSlug] = useState<string | null>(null);
+  const [localReport, setLocalReport] = useState<any | null>(null);
+  const [countyReport, setCountyReport] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -44,48 +52,98 @@ const ContentPackage = () => {
     load();
   }, []);
 
-  const titleDate = "August 10, 2025";
-  const titleText = `${neighborhood} Pulse: ${titleDate}`;
+  useEffect(() => {
+    const fetchReports = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      let targetDate = new Date();
+      let neighSlug = (neighborhood || '').toLowerCase().replace(/\s+/g, '-');
+      if (slugDate) {
+        const parts = slugDate.split('-');
+        if (parts.length >= 4) {
+          const yyyy = parts[parts.length - 3];
+          const mm = parts[parts.length - 2];
+          const dd = parts[parts.length - 1];
+          const dateStr = `${yyyy}-${mm}-${dd}`;
+          const parsed = new Date(dateStr);
+          if (!isNaN(parsed.getTime())) {
+            targetDate = parsed;
+            neighSlug = parts.slice(0, parts.length - 3).join('-');
+          }
+        }
+      }
+      setNeighborhoodSlug(neighSlug);
+      setReportDate(targetDate);
+      setLoading(true);
+      const dateStr = targetDate.toISOString().slice(0,10);
+      const { data: localRows } = await supabase
+        .from('market_reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('location_type', 'neighborhood')
+        .eq('neighborhood_slug', neighSlug)
+        .lte('report_date', dateStr)
+        .order('report_date', { ascending: false })
+        .limit(1);
+      setLocalReport(localRows?.[0] ?? null);
+      if (county && stateCode) {
+        const { data: countyRows } = await supabase
+          .from('market_reports')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('location_type', 'county')
+          .eq('county', county)
+          .eq('state', stateCode)
+          .lte('report_date', dateStr)
+          .order('report_date', { ascending: false })
+          .limit(1);
+        setCountyReport(countyRows?.[0] ?? null);
+      } else {
+        setCountyReport(null);
+      }
+      setLoading(false);
+    };
+    fetchReports();
+  }, [slugDate, neighborhood, county, stateCode]);
 
-  const blogBody = `**The ${neighborhood} Real Estate Story This Month**
+  const resolvedDate = (localReport?.report_date as any) ?? (reportDate ? reportDate.toISOString().slice(0,10) : undefined);
+  const titleDate = resolvedDate ? format(new Date(resolvedDate), "MMMM d, yyyy") : "Latest";
+  const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
+  const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
 
-${neighborhood} is having a moment. As I walked through the tree-lined streets this past week, talking with neighbors and touring new listings, one thing became crystal clear: this community is attracting serious attention from both buyers and sellers who understand quality when they see it.
+  const generateBlogBody = () => {
+    const local = localReport;
+    const countyR = countyReport;
+    const nName = displayNeighborhood;
+    const cName = county;
 
-**What's Driving Buyer Interest in ${neighborhood}**
+    const domLocal = local?.days_on_market != null ? `${local.days_on_market}` : "—";
+    const domCounty = countyR?.days_on_market != null ? `${countyR.days_on_market}` : "—";
+    const apsfLocal = local?.avg_price_per_sqft != null ? `$${Number(local.avg_price_per_sqft).toFixed(0)}/sf` : "—";
+    const apsfCounty = countyR?.avg_price_per_sqft != null ? `$${Number(countyR.avg_price_per_sqft).toFixed(0)}/sf` : "—";
+    const activeLocal = local?.active_listings ?? "—";
+    const closedLocal = local?.closed_sales ?? "—";
 
-Three factors are converging to make ${neighborhood} particularly attractive right now. First, the lifestyle amenities that locals have enjoyed for years—from the scenic trails along the American River to the weekend farmers market that consistently draws families from across ${county}—are finally getting the recognition they deserve. Second, the housing stock here offers something increasingly rare: character homes with good bones at price points that still make sense. Finally, ${neighborhood}'s location provides the perfect balance of suburban tranquility and urban accessibility.
+    const lead = `${nName} is having a moment. From walkable streets to well-cared-for homes, demand remains solid while quality listings move quickly.`;
 
-**This Week's Market Highlights**
+    return `**The ${nName} Real Estate Story ${titleDate !== 'Latest' ? 'This Period' : 'Now'}**
 
-Let me share what caught my attention this week. On Fair Oaks Boulevard, a completely remodeled 1960s ranch drew eleven showings in its first weekend and closed $25,000 over asking price. The buyers? A young family relocating from San Francisco who told me they fell in love with the "small-town feel with big-city conveniences." 
+${lead}
 
-Meanwhile, a mid-century modern on Kenneth Avenue that had been sitting stagnant for 45 days finally moved after the sellers took my advice to stage the living areas and highlight the home's architectural details. Sometimes it's not about price—it's about helping buyers envision their lives in the space.
+**Key Market Snapshot**
+- Median DOM — ${nName}: ${domLocal}${domCounty !== '—' ? ` vs ${cName}: ${domCounty}` : ""}.
+- Active listings — ${nName}: ${activeLocal}.
+- Closed sales — ${nName}: ${closedLocal}.
+- Average price per sq ft — ${nName}: ${apsfLocal}${apsfCounty !== '—' ? ` vs ${cName}: ${apsfCounty}` : ""}.
 
-**The Broader ${county} Context**
+**Context and What It Means**
+Homes that are well-presented and priced to the market are attracting strong interest${local?.months_of_inventory ? `, with inventory at ${local.months_of_inventory} months` : ""}. Buyers continue to prioritize move‑in readiness, efficient systems, and inviting outdoor spaces.
 
-While ${neighborhood} continues to outperform, it's worth understanding how we fit into the larger ${county} market picture. County-wide, inventory levels have stabilized at around 1.2 months of supply—still technically a seller's market, but with more breathing room than we've seen in two years. 
+**Looking Ahead**
+If you’re considering selling, current conditions favor prepared listings. For buyers, ${nName} offers enduring value within ${cName}${stateCode ? `, ${stateCode}` : ""}.`;
+  };
 
-What's interesting is the migration pattern we're seeing within ${county}. Buyers are increasingly willing to drive an extra 10-15 minutes for neighborhoods like ${neighborhood} that offer genuine community character. This trend is putting upward pressure on our local prices while creating opportunities for sellers who've been waiting for the right moment to make their move.
-
-**Looking Ahead: What Buyers Want Right Now**
-
-Based on the past 30 days of showings and conversations, today's buyers in ${neighborhood} are prioritizing three things: energy efficiency, outdoor living spaces, and move-in readiness. The homes that are moving quickly have updated HVAC systems, solar panels, or at minimum, modern windows and insulation. Buyers want to know their utility bills won't shock them.
-
-Outdoor space has become non-negotiable. Whether it's a deck, patio, or just a well-maintained backyard, buyers want to feel connected to nature—something ${neighborhood} delivers naturally with our mature trees and proximity to parkland.
-
-**The Numbers That Matter**
-
-Here's what the data tells us: median days on market in ${neighborhood} currently sits at 12 days, compared to 18 days across ${county}. Average price per square foot has increased 4.2% year-over-year, while ${county} overall has seen 2.8% growth. We're outpacing the broader market, but not in a way that suggests unsustainable speculation.
-
-**Why Now Might Be Your Moment**
-
-If you've been thinking about selling, current conditions favor motivated sellers. Inventory remains low, buyer interest is high, and mortgage rates have found a stable range that allows qualified buyers to move forward with confidence.
-
-For buyers, ${neighborhood} represents something increasingly rare in ${county}: a community where you can still find character, value, and genuine neighborhood feeling. The homes selling above asking price aren't doing so because of artificial scarcity—they're doing so because buyers recognize authentic value when they see it.
-
-**Final Thoughts**
-
-Real estate markets can feel abstract until you're walking through them daily like I do. What I see in ${neighborhood} right now isn't just market activity—it's families finding homes, neighbors welcoming newcomers, and a community continuing to evolve while maintaining its essential character. That's the kind of market foundation that creates lasting value, not just short-term gains.`;
+  const blogBody = generateBlogBody();
 
   const socialPosts = [
     `Just dropped your ${neighborhood} Pulse with ${county} context: fresh listings, trends, and what buyers want this week.`,
@@ -95,12 +153,18 @@ Real estate markets can feel abstract until you're walking through them daily li
     `Your next home could be closer than you think. ${neighborhood} highlights + ${county} benchmarks inside.`,
   ];
 
+  const domLocal = localReport?.days_on_market != null ? `${localReport.days_on_market}` : "—";
+  const domCounty = countyReport?.days_on_market != null ? `${countyReport.days_on_market}` : "—";
+  const activeLocal = localReport?.active_listings ?? "—";
+  const closedLocal = localReport?.closed_sales ?? "—";
+
   const marketDataPoints = [
-    `New business opening in ${neighborhood}: locally-owned cafe draws weekend lines.`,
-    `Community event in ${neighborhood}: farmers market saw record turnout.`,
-    `Median DOM — ${neighborhood}: 12; ${county}: 18 (trend: improving locally).`,
-    `Active listings — ${neighborhood}: 42; ${county}: 1,350 (stable week over week).`,
-    `Closed sales — ${neighborhood}: 13 (3 above-ask); ${county}: 420 (mixed).`,
+    `Report date: ${titleDate}`,
+    `Median DOM — ${displayNeighborhood}: ${domLocal}${domCounty !== '—' ? ` | ${county}: ${domCounty}` : ''}`,
+    `Active listings — ${displayNeighborhood}: ${activeLocal}`,
+    `Closed sales — ${displayNeighborhood}: ${closedLocal}`,
+    ...(localReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${displayNeighborhood}: $${Number(localReport.avg_price_per_sqft).toFixed(0)}`] : []),
+    ...(countyReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${county}: $${Number(countyReport.avg_price_per_sqft).toFixed(0)}`] : []),
   ];
 
   const copy = async (text: string) => {
@@ -154,7 +218,7 @@ Real estate markets can feel abstract until you're walking through them daily li
             <Card className="shadow-elevated">
               <CardHeader>
                 <CardTitle>{titleText}</CardTitle>
-                <CardDescription>Detailed market insights and storytelling</CardDescription>
+                <CardDescription>Detailed insights. {loading ? "Loading data…" : `Based on latest data as of ${titleDate}.`}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-left">
                 <div 

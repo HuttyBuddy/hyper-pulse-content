@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      market_reports: {
+        Row: {
+          active_listings: number | null
+          avg_price_per_sqft: number | null
+          closed_sales: number | null
+          county: string | null
+          created_at: string
+          days_on_market: number | null
+          id: string
+          location_type: string
+          median_sale_price: number | null
+          mom_change: Json | null
+          months_of_inventory: number | null
+          neighborhood: string | null
+          neighborhood_slug: string | null
+          new_listings: number | null
+          report_date: string
+          retrieved_at: string | null
+          sources: Json | null
+          state: string | null
+          updated_at: string
+          user_id: string
+          yoy_change: Json | null
+        }
+        Insert: {
+          active_listings?: number | null
+          avg_price_per_sqft?: number | null
+          closed_sales?: number | null
+          county?: string | null
+          created_at?: string
+          days_on_market?: number | null
+          id?: string
+          location_type: string
+          median_sale_price?: number | null
+          mom_change?: Json | null
+          months_of_inventory?: number | null
+          neighborhood?: string | null
+          neighborhood_slug?: string | null
+          new_listings?: number | null
+          report_date: string
+          retrieved_at?: string | null
+          sources?: Json | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          yoy_change?: Json | null
+        }
+        Update: {
+          active_listings?: number | null
+          avg_price_per_sqft?: number | null
+          closed_sales?: number | null
+          county?: string | null
+          created_at?: string
+          days_on_market?: number | null
+          id?: string
+          location_type?: string
+          median_sale_price?: number | null
+          mom_change?: Json | null
+          months_of_inventory?: number | null
+          neighborhood?: string | null
+          neighborhood_slug?: string | null
+          new_listings?: number | null
+          report_date?: string
+          retrieved_at?: string | null
+          sources?: Json | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          yoy_change?: Json | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brokerage_logo_url: string | null
