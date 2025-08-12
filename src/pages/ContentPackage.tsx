@@ -8,12 +8,12 @@ import { toast } from "@/components/ui/sonner";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
 import home3 from "@/assets/carmichael-home-3.jpg";
 import lifestyleThumb from "@/assets/carmichael-lifestyle-thumb.jpg";
 import marketThumb from "@/assets/market-update-thumb.jpg";
-
 
 const ContentPackage = () => {
   const [tab, setTab] = useState("blog");
@@ -47,9 +47,45 @@ const ContentPackage = () => {
   const titleDate = "August 10, 2025";
   const titleText = `${neighborhood} Pulse: ${titleDate}`;
 
-  const blogBody = `${neighborhood} continues to shine this month with steady buyer interest and well-priced listings moving quickly. Hyper-local highlights include favorite spots like parks, trails, and coffee houses that keep lifestyle appeal strong.
+  const blogBody = `**The ${neighborhood} Real Estate Story This Month**
 
-Beyond ${neighborhood}, we’re watching broader trends across ${county}, ${stateCode}. County-wide inventory levels, pricing patterns, and buyer migration are shaping expectations for the next 30–60 days. Median days on market in ${neighborhood} remain competitive versus ${county} overall, and price reductions are modest compared to nearby zip codes. With mortgage rates stabilizing, seller confidence is steady and buyers are prioritizing move-in ready, energy-efficient upgrades.`;
+${neighborhood} is having a moment. As I walked through the tree-lined streets this past week, talking with neighbors and touring new listings, one thing became crystal clear: this community is attracting serious attention from both buyers and sellers who understand quality when they see it.
+
+**What's Driving Buyer Interest in ${neighborhood}**
+
+Three factors are converging to make ${neighborhood} particularly attractive right now. First, the lifestyle amenities that locals have enjoyed for years—from the scenic trails along the American River to the weekend farmers market that consistently draws families from across ${county}—are finally getting the recognition they deserve. Second, the housing stock here offers something increasingly rare: character homes with good bones at price points that still make sense. Finally, ${neighborhood}'s location provides the perfect balance of suburban tranquility and urban accessibility.
+
+**This Week's Market Highlights**
+
+Let me share what caught my attention this week. On Fair Oaks Boulevard, a completely remodeled 1960s ranch drew eleven showings in its first weekend and closed $25,000 over asking price. The buyers? A young family relocating from San Francisco who told me they fell in love with the "small-town feel with big-city conveniences." 
+
+Meanwhile, a mid-century modern on Kenneth Avenue that had been sitting stagnant for 45 days finally moved after the sellers took my advice to stage the living areas and highlight the home's architectural details. Sometimes it's not about price—it's about helping buyers envision their lives in the space.
+
+**The Broader ${county} Context**
+
+While ${neighborhood} continues to outperform, it's worth understanding how we fit into the larger ${county} market picture. County-wide, inventory levels have stabilized at around 1.2 months of supply—still technically a seller's market, but with more breathing room than we've seen in two years. 
+
+What's interesting is the migration pattern we're seeing within ${county}. Buyers are increasingly willing to drive an extra 10-15 minutes for neighborhoods like ${neighborhood} that offer genuine community character. This trend is putting upward pressure on our local prices while creating opportunities for sellers who've been waiting for the right moment to make their move.
+
+**Looking Ahead: What Buyers Want Right Now**
+
+Based on the past 30 days of showings and conversations, today's buyers in ${neighborhood} are prioritizing three things: energy efficiency, outdoor living spaces, and move-in readiness. The homes that are moving quickly have updated HVAC systems, solar panels, or at minimum, modern windows and insulation. Buyers want to know their utility bills won't shock them.
+
+Outdoor space has become non-negotiable. Whether it's a deck, patio, or just a well-maintained backyard, buyers want to feel connected to nature—something ${neighborhood} delivers naturally with our mature trees and proximity to parkland.
+
+**The Numbers That Matter**
+
+Here's what the data tells us: median days on market in ${neighborhood} currently sits at 12 days, compared to 18 days across ${county}. Average price per square foot has increased 4.2% year-over-year, while ${county} overall has seen 2.8% growth. We're outpacing the broader market, but not in a way that suggests unsustainable speculation.
+
+**Why Now Might Be Your Moment**
+
+If you've been thinking about selling, current conditions favor motivated sellers. Inventory remains low, buyer interest is high, and mortgage rates have found a stable range that allows qualified buyers to move forward with confidence.
+
+For buyers, ${neighborhood} represents something increasingly rare in ${county}: a community where you can still find character, value, and genuine neighborhood feeling. The homes selling above asking price aren't doing so because of artificial scarcity—they're doing so because buyers recognize authentic value when they see it.
+
+**Final Thoughts**
+
+Real estate markets can feel abstract until you're walking through them daily like I do. What I see in ${neighborhood} right now isn't just market activity—it's families finding homes, neighbors welcoming newcomers, and a community continuing to evolve while maintaining its essential character. That's the kind of market foundation that creates lasting value, not just short-term gains.`;
 
   const socialPosts = [
     `Just dropped your ${neighborhood} Pulse with ${county} context: fresh listings, trends, and what buyers want this week.`,
@@ -118,13 +154,20 @@ Beyond ${neighborhood}, we’re watching broader trends across ${county}, ${stat
             <Card className="shadow-elevated">
               <CardHeader>
                 <CardTitle>{titleText}</CardTitle>
-                <CardDescription>Formatted preview</CardDescription>
+                <CardDescription>Detailed market insights and storytelling</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-left">
-                <h2 className="text-xl font-semibold">August Highlights</h2>
-                <p className="text-muted-foreground leading-relaxed">{blogBody.split("\n\n")[0]}</p>
-                <p className="text-muted-foreground leading-relaxed">{blogBody.split("\n\n")[1]}</p>
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ 
+                    __html: blogBody
+                      .replace(/\*\*(.*?)\*\*/g, '<h3 class="text-lg font-semibold mt-6 mb-3 text-foreground">$1</h3>')
+                      .replace(/\n\n/g, '</p><p class="text-muted-foreground leading-relaxed mb-4">')
+                      .replace(/^/, '<p class="text-muted-foreground leading-relaxed mb-4">')
+                      .replace(/$/, '</p>') 
+                  }} 
+                />
+                <div className="flex flex-wrap gap-2 pt-4 border-t">
                   <Button variant="secondary" onClick={() => copy(`${titleText}\n\n${blogBody}`)}>Copy Full Text</Button>
                   <Button variant="outline" onClick={() => toast("Exporting PDF… (demo)")}>Export as PDF</Button>
                   <Button asChild variant="hero">
