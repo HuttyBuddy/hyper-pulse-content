@@ -4,8 +4,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BarChart3, Home, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!error && isMounted) {
+        setDisplayName(data?.name ?? null);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -16,7 +37,7 @@ const Dashboard = () => {
       <AppHeader />
       <main className="container py-8">
         <section className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Welcome back, Alex Morgan!</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Welcome back{displayName ? `, ${displayName}` : ""}!</h1>
         </section>
 
         <section className="grid gap-6">
