@@ -52,57 +52,64 @@ const ContentPackage = () => {
     load();
   }, []);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      let targetDate = new Date();
-      let neighSlug = (neighborhood || '').toLowerCase().replace(/\s+/g, '-');
-      if (slugDate) {
-        const parts = slugDate.split('-');
-        if (parts.length >= 4) {
-          const yyyy = parts[parts.length - 3];
-          const mm = parts[parts.length - 2];
-          const dd = parts[parts.length - 1];
-          const dateStr = `${yyyy}-${mm}-${dd}`;
-          const parsed = new Date(dateStr);
-          if (!isNaN(parsed.getTime())) {
-            targetDate = parsed;
-            neighSlug = parts.slice(0, parts.length - 3).join('-');
-          }
+  const fetchReports = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    let targetDate = new Date();
+    let neighSlug = (neighborhood || '').toLowerCase().replace(/\s+/g, '-');
+    if (slugDate) {
+      const parts = slugDate.split('-');
+      if (parts.length >= 4) {
+        const yyyy = parts[parts.length - 3];
+        const mm = parts[parts.length - 2];
+        const dd = parts[parts.length - 1];
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed.getTime())) {
+          targetDate = parsed;
+          neighSlug = parts.slice(0, parts.length - 3).join('-');
         }
       }
-      setNeighborhoodSlug(neighSlug);
-      setReportDate(targetDate);
-      setLoading(true);
-      const dateStr = targetDate.toISOString().slice(0,10);
-      const { data: localRows } = await supabase
+    }
+    setNeighborhoodSlug(neighSlug);
+    setReportDate(targetDate);
+    setLoading(true);
+    const dateStr = targetDate.toISOString().slice(0,10);
+    const { data: localRows } = await supabase
+      .from('market_reports')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('location_type', 'neighborhood')
+      .eq('neighborhood_slug', neighSlug)
+      .lte('report_date', dateStr)
+      .order('report_date', { ascending: false })
+      .limit(1);
+    setLocalReport(localRows?.[0] ?? null);
+    if (county && stateCode) {
+      const { data: countyRows } = await supabase
         .from('market_reports')
         .select('*')
         .eq('user_id', user.id)
-        .eq('location_type', 'neighborhood')
-        .eq('neighborhood_slug', neighSlug)
+        .eq('location_type', 'county')
+        .eq('county', county)
+        .eq('state', stateCode)
         .lte('report_date', dateStr)
         .order('report_date', { ascending: false })
         .limit(1);
-      setLocalReport(localRows?.[0] ?? null);
-      if (county && stateCode) {
-        const { data: countyRows } = await supabase
-          .from('market_reports')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('location_type', 'county')
-          .eq('county', county)
-          .eq('state', stateCode)
-          .lte('report_date', dateStr)
-          .order('report_date', { ascending: false })
-          .limit(1);
-        setCountyReport(countyRows?.[0] ?? null);
-      } else {
-        setCountyReport(null);
-      }
-      setLoading(false);
-    };
+      setCountyReport(countyRows?.[0] ?? null);
+    } else {
+      setCountyReport(null);
+    }
+    setLoading(false);
+  };
+
+  const handleRefresh = async () => {
+    toast("Refreshing content…");
+    await fetchReports();
+    toast("Content updated");
+  };
+
+  useEffect(() => {
     fetchReports();
   }, [slugDate, neighborhood, county, stateCode]);
 
@@ -202,8 +209,11 @@ If you’re considering selling, current conditions favor prepared listings. For
       </Helmet>
       <AppHeader />
       <main className="container py-8">
-        <header className="mb-6">
+        <header className="mb-6 flex items-center justify-between gap-3">
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{titleText}</h1>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading} aria-label="Refresh content package">
+            {loading ? 'Refreshing…' : 'Refresh'}
+          </Button>
         </header>
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
