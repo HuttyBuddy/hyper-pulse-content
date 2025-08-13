@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Download, Trash2, Sparkles } from "lucide-react";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
@@ -22,6 +23,8 @@ const ContentPackage = () => {
   const [videoPrompt, setVideoPrompt] = useState("");
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
   const [videoThumbs] = useState<string[]>([lifestyleThumb, marketThumb]);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
@@ -279,14 +282,67 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
     toast("Copied to clipboard");
   };
 
-  const addGeneratedImage = () => {
+  const addGeneratedImage = async () => {
     if (!imagePrompt.trim()) {
       toast("Enter a prompt first");
       return;
     }
-    const next = [home1, home2, home3][Math.floor(Math.random() * 3)];
-    setGallery((g) => [next, ...g]);
-    toast("Generated image added to gallery");
+    setImageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: imagePrompt }
+      });
+      if (error) throw error;
+      const img = (data as any)?.image as string;
+      if (img) {
+        setGallery((g) => [img, ...g]);
+        toast("Generated image added to gallery");
+      } else {
+        toast("Image generation failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast("Image generation failed. Check API keys.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const enhancePrompt = async () => {
+    if (!imagePrompt.trim()) return;
+    setEnhancing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('enhance-prompt', {
+        body: { prompt: imagePrompt, neighborhood, county }
+      });
+      if (error) throw error;
+      const enhanced = (data as any)?.enhancedPrompt as string;
+      if (enhanced) {
+        setImagePrompt(enhanced);
+        toast("Prompt enhanced");
+      } else {
+        toast("Could not enhance prompt");
+      }
+    } catch (err) {
+      console.error(err);
+      toast("Enhance failed. Check API key.");
+    } finally {
+      setEnhancing(false);
+    }
+  };
+
+  const downloadImage = (src: string, idx: number) => {
+    const link = document.createElement('a');
+    const name = `ai-image-${idx + 1}.png`;
+    link.href = src;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const deleteImage = (idx: number) => {
+    setGallery((g) => g.filter((_, i) => i !== idx));
   };
 
   const suggestImgPrompts = [
@@ -388,15 +444,25 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                 </div>
                 <div className="flex gap-2 items-center">
                   <Input placeholder="Describe the image you want…" value={imagePrompt} onChange={(e) => setImagePrompt(e.target.value)} />
-                  <Button variant="hero" onClick={addGeneratedImage}>Generate Image</Button>
+                  <Button variant="secondary" disabled={enhancing || !imagePrompt.trim()} onClick={enhancePrompt} aria-label="AI enhance prompt">
+                    <Sparkles className="h-4 w-4" /> {enhancing ? "Enhancing…" : "AI Enhance"}
+                  </Button>
+                  <Button variant="hero" disabled={imageLoading || !imagePrompt.trim()} onClick={addGeneratedImage} aria-label="Generate image from prompt">
+                    {imageLoading ? "Generating…" : "Generate Image"}
+                  </Button>
                 </div>
                 <div className="grid gap-3 grid-cols-2 md:grid-cols-3 mt-4">
                   {gallery.map((src, idx) => (
                     <Card key={idx}>
                       <CardContent className="p-2">
                         <img src={src} alt={`Generated AI image for ${neighborhood}`} className="w-full h-40 object-cover rounded" loading="lazy" />
-                        <div className="pt-2">
-                          <Button size="sm" variant="secondary" onClick={() => toast("Downloading… (demo)")}>Download</Button>
+                        <div className="pt-2 flex gap-2">
+                          <Button size="sm" variant="secondary" onClick={() => downloadImage(src, idx)} aria-label="Download image">
+                            <Download className="h-4 w-4" /> Download
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => deleteImage(idx)} aria-label="Delete image">
+                            <Trash2 className="h-4 w-4" /> Delete
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
