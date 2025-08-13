@@ -117,37 +117,82 @@ const ContentPackage = () => {
   const titleDate = resolvedDate ? format(new Date(resolvedDate), "MMMM d, yyyy") : "Latest";
   const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
   const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
+  const lastRetrievedISO = (localReport?.retrieved_at as any) || (countyReport?.retrieved_at as any) || null;
+  const freshnessText = loading ? "Loading data…" : (lastRetrievedISO ? `Last updated ${format(new Date(lastRetrievedISO), "MMMM d, yyyy")}` : `Based on latest available data as of ${titleDate}.`);
 
   const generateBlogBody = () => {
-    const local = localReport;
-    const countyR = countyReport;
+    const local = localReport as any;
+    const countyR = countyReport as any;
     const nName = displayNeighborhood;
     const cName = county;
 
-    const domLocal = local?.days_on_market != null ? `${local.days_on_market}` : "—";
-    const domCounty = countyR?.days_on_market != null ? `${countyR.days_on_market}` : "—";
-    const apsfLocal = local?.avg_price_per_sqft != null ? `$${Number(local.avg_price_per_sqft).toFixed(0)}/sf` : "—";
-    const apsfCounty = countyR?.avg_price_per_sqft != null ? `$${Number(countyR.avg_price_per_sqft).toFixed(0)}/sf` : "—";
-    const activeLocal = local?.active_listings ?? "—";
-    const closedLocal = local?.closed_sales ?? "—";
+    const fmtCurrency = (v: any) => (v != null ? `$${Number(v).toLocaleString()}` : "—");
+    const fmtNum = (v: any) => (v != null ? `${Number(v).toLocaleString()}` : "—");
+    const fmtPSF = (v: any) => (v != null ? `$${Number(v).toFixed(0)}/sf` : "—");
+    const fmtChange = (v: any) => {
+      if (v == null || isNaN(Number(v))) return null;
+      const num = Number(v);
+      const isPct = Math.abs(num) <= 1;
+      const display = isPct ? `${(num * 100).toFixed(1)}%` : `${num > 0 ? "+" : ""}${num.toFixed(1)}`;
+      const arrow = num > 0 ? "↑" : num < 0 ? "↓" : "→";
+      return `${arrow} ${display}`;
+    };
 
-    const lead = `${nName} is having a moment. From walkable streets to well-cared-for homes, demand remains solid while quality listings move quickly.`;
+    const domL = fmtNum(local?.days_on_market);
+    const domC = fmtNum(countyR?.days_on_market);
+    const apsfL = fmtPSF(local?.avg_price_per_sqft);
+    const apsfC = fmtPSF(countyR?.avg_price_per_sqft);
+    const mspL = fmtCurrency(local?.median_sale_price);
+    const moiVal = local?.months_of_inventory;
+    const moiTxt = moiVal != null ? `${Number(moiVal).toFixed(1)} months` : "—";
+    const actL = fmtNum(local?.active_listings);
+    const newL = fmtNum(local?.new_listings);
+    const closedL = fmtNum(local?.closed_sales);
+
+    const mom = (local?.mom_change as any) || {};
+    const yoy = (local?.yoy_change as any) || {};
+    const domMom = fmtChange(mom.days_on_market);
+    const priceMom = fmtChange(mom.median_sale_price ?? mom.avg_price_per_sqft);
+    const invMom = fmtChange(mom.months_of_inventory);
+    const domYoy = fmtChange(yoy.days_on_market);
+    const priceYoy = fmtChange(yoy.median_sale_price ?? yoy.avg_price_per_sqft);
+    const invYoy = fmtChange(yoy.months_of_inventory);
+
+    const balance = moiVal != null ? (Number(moiVal) < 2 ? "a strong seller's market" : Number(moiVal) <= 4 ? "a balanced market" : "a buyer-leaning market") : "healthy demand";
+    const lead = `${nName} continues to attract buyers, with ${domL !== "—" ? `median days on market at ${domL}` : "homes moving steadily"} and ${moiTxt !== "—" ? `${moiTxt} of supply suggesting ${balance}` : "inventory remaining constrained in many price points"}.`;
+
+    const trends = [
+      domMom ? `- DOM: ${domMom} MoM` : null,
+      domYoy ? `- DOM: ${domYoy} YoY` : null,
+      priceMom ? `- Prices: ${priceMom} MoM` : null,
+      priceYoy ? `- Prices: ${priceYoy} YoY` : null,
+      invMom ? `- Supply: ${invMom} MoM` : null,
+      invYoy ? `- Supply: ${invYoy} YoY` : null,
+    ].filter(Boolean).join('\n') || '- Trend data not available this period.';
 
     return `**The ${nName} Real Estate Story ${titleDate !== 'Latest' ? 'This Period' : 'Now'}**
 
-${lead}
+${lead} ${mspL !== "—" ? `Median sale price is ${mspL}${priceMom ? ` (${priceMom} MoM` + (priceYoy ? `, ${priceYoy} YoY` : "") + ")" : "."}` : ""} ${apsfL !== "—" ? `Average price per sq ft sits at ${apsfL}${apsfC !== '—' ? ` vs ${cName}: ${apsfC}` : ""}.` : ""}
 
 **Key Market Snapshot**
-- Median DOM — ${nName}: ${domLocal}${domCounty !== '—' ? ` vs ${cName}: ${domCounty}` : ""}.
-- Active listings — ${nName}: ${activeLocal}.
-- Closed sales — ${nName}: ${closedLocal}.
-- Average price per sq ft — ${nName}: ${apsfLocal}${apsfCounty !== '—' ? ` vs ${cName}: ${apsfCounty}` : ""}.
+- Median DOM — ${nName}: ${domL}${domC !== '—' ? ` vs ${cName}: ${domC}` : ""}.
+- Active listings — ${nName}: ${actL}${newL !== '—' ? ` | New listings: ${newL}` : ""}.
+- Closed sales — ${nName}: ${closedL}.
+- Median sale price — ${nName}: ${mspL}.
+- Avg price per sq ft — ${nName}: ${apsfL}${apsfC !== '—' ? ` vs ${cName}: ${apsfC}` : ""}.
+- Months of inventory — ${nName}: ${moiTxt}.
+
+**Trends and Momentum**
+${trends}
 
 **Context and What It Means**
-Homes that are well-presented and priced to the market are attracting strong interest${local?.months_of_inventory ? `, with inventory at ${local.months_of_inventory} months` : ""}. Buyers continue to prioritize move‑in readiness, efficient systems, and inviting outdoor spaces.
+Well-prepared, well-priced listings are generating stronger engagement${moiVal != null ? ` with supply at ${Number(moiVal).toFixed(1)} months` : ""}. Buyers continue to prioritize move‑in readiness, efficient systems, and inviting outdoor spaces. ${county ? `Compared with ${cName}, ${nName} ${domC !== '—' && domL !== '—' ? (Number(local?.days_on_market) <= Number(countyR?.days_on_market) ? 'is moving a touch faster' : 'is taking slightly longer to sell') : 'is showing similar time-to-sale dynamics'}${apsfC !== '—' && apsfL !== '—' ? ` and commands ${Number(local?.avg_price_per_sqft) >= Number(countyR?.avg_price_per_sqft) ? 'a premium' : 'a discount'} on price per square foot.` : '.'}` : ''}
 
 **Looking Ahead**
-If you’re considering selling, current conditions favor prepared listings. For buyers, ${nName} offers enduring value within ${cName}${stateCode ? `, ${stateCode}` : ""}.`;
+Sellers should focus on presentation, pre-list inspections, and launch-week marketing to capture early momentum. Buyers can win with flexible terms and strong pre-approval, especially in well-maintained, updated homes.
+
+**Data Notes**
+${freshnessText}${local?.sources ? `  •  Sources: ${((Array.isArray(local.sources) ? local.sources : []) as any[]).join(', ')}` : ''}`;
   };
 
   const blogBody = generateBlogBody();
@@ -167,11 +212,15 @@ If you’re considering selling, current conditions favor prepared listings. For
 
   const marketDataPoints = [
     `Report date: ${titleDate}`,
+    ...(lastRetrievedISO ? [`Last updated: ${format(new Date(lastRetrievedISO), 'MMMM d, yyyy')}`] : []),
     `Median DOM — ${displayNeighborhood}: ${domLocal}${domCounty !== '—' ? ` | ${county}: ${domCounty}` : ''}`,
     `Active listings — ${displayNeighborhood}: ${activeLocal}`,
+    ...(localReport?.new_listings != null ? [`New listings — ${displayNeighborhood}: ${Number(localReport.new_listings).toLocaleString()}`] : []),
     `Closed sales — ${displayNeighborhood}: ${closedLocal}`,
+    ...(localReport?.median_sale_price != null ? [`Median sale price — ${displayNeighborhood}: $${Number(localReport.median_sale_price).toLocaleString()}`] : []),
     ...(localReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${displayNeighborhood}: $${Number(localReport.avg_price_per_sqft).toFixed(0)}`] : []),
     ...(countyReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${county}: $${Number(countyReport.avg_price_per_sqft).toFixed(0)}`] : []),
+    ...(localReport?.months_of_inventory != null ? [`Months of inventory — ${displayNeighborhood}: ${Number(localReport.months_of_inventory).toFixed(1)}`] : []),
   ];
 
   const copy = async (text: string) => {
@@ -228,7 +277,7 @@ If you’re considering selling, current conditions favor prepared listings. For
             <Card className="shadow-elevated">
               <CardHeader>
                 <CardTitle>{titleText}</CardTitle>
-                <CardDescription>Detailed insights. {loading ? "Loading data…" : `Based on latest data as of ${titleDate}.`}</CardDescription>
+                <CardDescription>Detailed insights. {freshnessText}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-left">
                 <div 
