@@ -116,7 +116,7 @@ const ContentPackage = () => {
     fetchReports();
   }, [slugDate, neighborhood, county, stateCode]);
 
-  const resolvedDate = (localReport?.report_date as any) ?? (reportDate ? reportDate.toISOString().slice(0,10) : undefined);
+  const resolvedDate = (localReport?.report_date as any) ?? (countyReport?.report_date as any) ?? (reportDate ? reportDate.toISOString().slice(0,10) : undefined);
   const titleDate = resolvedDate ? format(new Date(resolvedDate), "MMMM d, yyyy") : "Latest";
   const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
   const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
