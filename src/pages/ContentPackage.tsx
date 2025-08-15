@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { useState, useEffect, useCallback } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Download, Trash2, Sparkles, Copy, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import NeighborhoodSelector from "@/components/NeighborhoodSelector";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
@@ -24,7 +25,7 @@ const ContentPackage = () => {
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
-  
+  const navigate = useNavigate();
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
@@ -110,6 +111,31 @@ const ContentPackage = () => {
     toast("Refreshing content…");
     await fetchReports();
     toast("Content updated");
+  };
+
+  const handleNeighborhoodChange = (newNeighborhood: {
+    neighborhood: string;
+    county: string;
+    state: string;
+    neighborhood_slug: string;
+  }) => {
+    setNeighborhood(newNeighborhood.neighborhood);
+    setCounty(newNeighborhood.county);
+    setStateCode(newNeighborhood.state);
+    setNeighborhoodSlug(newNeighborhood.neighborhood_slug);
+    
+    // Update URL to reflect new neighborhood
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const newSlugDate = `${newNeighborhood.neighborhood_slug}-${today}`;
+    navigate(`/content/${newSlugDate}`, { replace: true });
+    
+    // Fetch new data
+    fetchReports();
+  };
+
+  const handleStartNew = () => {
+    // Reset to dashboard to start fresh
+    navigate('/dashboard');
   };
 
   useEffect(() => {
@@ -361,11 +387,23 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
       </Helmet>
       <AppHeader />
       <main className="container py-8">
-        <header className="mb-6 flex items-center justify-between gap-3">
+        <section className="mb-6">
+          <NeighborhoodSelector
+            currentNeighborhood={{
+              neighborhood,
+              county,
+              state: stateCode,
+              neighborhood_slug: neighborhoodSlug || 'carmichael'
+            }}
+            onNeighborhoodChange={handleNeighborhoodChange}
+            onRefreshCurrent={handleRefresh}
+            onStartNew={handleStartNew}
+          />
+        </section>
+
+        <header className="mb-6">
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{titleText}</h1>
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading} aria-label="Refresh content package">
-            {loading ? 'Refreshing…' : 'Refresh'}
-          </Button>
+          <p className="text-muted-foreground mt-1">{freshnessText}</p>
         </header>
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
