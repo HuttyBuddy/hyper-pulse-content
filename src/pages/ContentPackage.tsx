@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -355,7 +355,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
     `Bright kitchen interior with natural light and clean finishes in ${neighborhood}.`,
   ];
 
-  const generateVeo3Prompts = async () => {
+  const generateVeo3Prompts = useCallback(async () => {
     setVideoLoading(true);
     try {
       const marketData = {
@@ -397,7 +397,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
     } finally {
       setVideoLoading(false);
     }
-  };
+  }, [displayNeighborhood, county, localReport, countyReport, resolvedDate, videoDuration, videoType]);
 
   const copyVideoPlan = async () => {
     if (!generatedVideoPlan) return;
