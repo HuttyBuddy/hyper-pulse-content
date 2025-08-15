@@ -509,7 +509,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
               {/* Video Configuration */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Video Duration</label>
+                  <label className="text-sm font-medium text-foreground">Video Duration</label>
                    <select 
                      value={videoDuration} 
                      onChange={(e) => setVideoDuration(Number(e.target.value))}
@@ -521,7 +521,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Video Type</label>
+                  <label className="text-sm font-medium text-foreground">Video Type</label>
                    <select 
                      value={videoType} 
                      onChange={(e) => setVideoType(e.target.value)}
