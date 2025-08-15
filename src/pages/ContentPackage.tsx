@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Download, Trash2, Sparkles, Upload, X, Copy, Loader2, Play } from "lucide-react";
+import { Download, Trash2, Sparkles, Copy, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
@@ -25,11 +25,6 @@ const ContentPackage = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   
-  // Veo 3 Video Planning State
-  const [videoDuration, setVideoDuration] = useState(45);
-  const [videoType, setVideoType] = useState("market_update");
-  const [generatedVideoPlan, setGeneratedVideoPlan] = useState<any>(null);
-  const [videoLoading, setVideoLoading] = useState(false);
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
@@ -356,86 +351,6 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
     `Bright kitchen interior with natural light and clean finishes in ${neighborhood}.`,
   ];
 
-  const generateVeo3Prompts = useCallback(async () => {
-    setVideoLoading(true);
-    try {
-      // Get property data from form inputs
-      const address = (document.getElementById('address') as HTMLInputElement)?.value || '';
-      const price = (document.getElementById('price') as HTMLInputElement)?.value || '';
-      const bedrooms = (document.getElementById('bedrooms') as HTMLInputElement)?.value || '';
-      const bathrooms = (document.getElementById('bathrooms') as HTMLInputElement)?.value || '';
-      const sqft = (document.getElementById('sqft') as HTMLInputElement)?.value || '';
-      const propertyType = (document.querySelector('select[id="propertyType"]') as HTMLSelectElement)?.value || 'single_family';
-      const description = (document.getElementById('description') as HTMLTextAreaElement)?.value || '';
-
-      if (!address || !price) {
-        toast("Please provide at least the property address and price.", {
-          description: "These are required to generate a virtual tour plan."
-        });
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('generate-veo3-prompts', {
-        body: {
-          propertyData: {
-            address,
-            price: parseFloat(price),
-            bedrooms: parseInt(bedrooms) || 0,
-            bathrooms: parseFloat(bathrooms) || 0,
-            squareFeet: parseInt(sqft) || 0,
-            propertyType,
-            description,
-            features: []
-          },
-          propertyImages: gallery.map((img, idx) => ({
-            url: img,
-            roomType: 'other', // This would come from the room selection dropdowns
-            description: `Property photo ${idx + 1}`
-          })),
-          tourDuration: videoDuration,
-          tourStyle: videoType
-        }
-      });
-
-      if (error) throw error;
-      
-      if (data?.success && data?.videoPlan) {
-        setGeneratedVideoPlan(data.videoPlan);
-        toast("Virtual tour plan generated successfully!", {
-          description: "Your Veo 3 virtual tour prompts are ready to use."
-        });
-      } else {
-        throw new Error(data?.error || 'Failed to generate virtual tour plan');
-      }
-    } catch (error) {
-      console.error('Error generating Veo 3 prompts:', error);
-      toast("Failed to generate virtual tour plan", {
-        description: "Please check your inputs and try again.",
-      });
-    } finally {
-      setVideoLoading(false);
-    }
-  }, [gallery, videoDuration, videoType]);
-
-  const copyVideoPlan = async () => {
-    if (!generatedVideoPlan) return;
-    await navigator.clipboard.writeText(JSON.stringify(generatedVideoPlan, null, 2));
-    toast("Video plan JSON copied to clipboard");
-  };
-
-  const downloadVideoPlan = () => {
-    if (!generatedVideoPlan) return;
-    const dataStr = JSON.stringify(generatedVideoPlan, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `veo3-virtual-tour-plan-${new Date().getTime()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <>
@@ -454,10 +369,9 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
         </header>
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
             <TabsTrigger value="social">Social Media Posts</TabsTrigger>
-            <TabsTrigger value="veo3">Veo 3 Virtual Tour Generator</TabsTrigger>
             <TabsTrigger value="data">Market Data</TabsTrigger>
           </TabsList>
 
@@ -504,7 +418,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                     <p className="text-sm text-foreground">{text}</p>
                     <div className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => copy(text)}>Copy Text</Button>
-                      <Button size="sm" variant="outline" onClick={() => setTab("veo3")}>Create Video</Button>
+                      <Button size="sm" variant="outline" onClick={() => downloadImage([home1, home2, home3][i % 3], i)}>Download Image</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -512,317 +426,6 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
             </div>
           </TabsContent>
 
-        <TabsContent value="veo3" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Veo 3 Virtual Tour Generator</CardTitle>
-              <CardDescription>
-                Generate structured prompts for Veo 3 virtual property tours using uploaded photos and listing details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Property Information Form */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Property Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Property Address</Label>
-                    <Input 
-                      id="address"
-                      placeholder="123 Main St, City, State 12345"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Listing Price</Label>
-                    <Input 
-                      id="price"
-                      type="number"
-                      placeholder="650000"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bedrooms">Bedrooms</Label>
-                    <Input 
-                      id="bedrooms"
-                      type="number"
-                      placeholder="3"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bathrooms">Bathrooms</Label>
-                    <Input 
-                      id="bathrooms"
-                      type="number"
-                      step="0.5"
-                      placeholder="2.5"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sqft">Square Feet</Label>
-                    <Input 
-                      id="sqft"
-                      type="number"
-                      placeholder="2000"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="propertyType">Property Type</Label>
-                    <select id="propertyType" className="w-full p-2 border rounded-md text-foreground bg-background">
-                      <option value="single_family" className="text-foreground bg-background">Single Family Home</option>
-                      <option value="townhouse" className="text-foreground bg-background">Townhouse</option>
-                      <option value="condo" className="text-foreground bg-background">Condominium</option>
-                      <option value="multi_family" className="text-foreground bg-background">Multi-Family</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Property Description</Label>
-                  <textarea 
-                    id="description"
-                    placeholder="Describe the property's key features, upgrades, and selling points..."
-                    className="w-full p-2 border rounded-md text-foreground bg-background min-h-[100px]"
-                  />
-                </div>
-              </div>
-
-              {/* Image Upload Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Property Photos</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <div className="space-y-2">
-                    <div className="text-sm text-gray-600">
-                      Upload property photos and categorize them by room/area
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Photos
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Existing Gallery */}
-                {gallery.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Uploaded Property Photos</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {gallery.map((image, idx) => (
-                        <div key={idx} className="relative group">
-                          <img src={image} alt={`Property photo ${idx + 1}`} className="w-full h-32 object-cover rounded-lg" />
-                          <div className="absolute top-2 right-2 space-x-1">
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              className="h-6 w-6 p-0"
-                              onClick={() => deleteImage(idx)}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="secondary"
-                              className="h-6 w-6 p-0"
-                              onClick={() => downloadImage(image, idx)}
-                            >
-                              <Download className="w-3 h-3" />
-                            </Button>
-                          </div>
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg">
-                            <select className="bg-transparent text-white text-xs border-none outline-none w-full">
-                              <option value="exterior">Exterior</option>
-                              <option value="kitchen">Kitchen</option>
-                              <option value="living_room">Living Room</option>
-                              <option value="bedroom">Bedroom</option>
-                              <option value="bathroom">Bathroom</option>
-                              <option value="dining_room">Dining Room</option>
-                              <option value="other">Other</option>
-                            </select>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Tour Configuration */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tour Configuration</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tourDuration">Tour Duration</Label>
-                    <select 
-                      value={videoDuration} 
-                      onChange={(e) => setVideoDuration(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md text-foreground bg-background"
-                    >
-                      <option value={30} className="text-foreground bg-background">30 seconds (3-4 segments)</option>
-                      <option value={45} className="text-foreground bg-background">45 seconds (5 segments)</option>
-                      <option value={60} className="text-foreground bg-background">60 seconds (6-7 segments)</option>
-                      <option value={90} className="text-foreground bg-background">90 seconds (10-11 segments)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tourStyle">Tour Style</Label>
-                    <select 
-                      value={videoType} 
-                      onChange={(e) => setVideoType(e.target.value)}
-                      className="w-full p-2 border rounded-md text-foreground bg-background"
-                    >
-                      <option value="luxury_showcase" className="text-foreground bg-background">Luxury Showcase</option>
-                      <option value="family_friendly" className="text-foreground bg-background">Family-Friendly</option>
-                      <option value="modern_contemporary" className="text-foreground bg-background">Modern & Contemporary</option>
-                      <option value="cozy_traditional" className="text-foreground bg-background">Cozy & Traditional</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Generate Button */}
-              <Button 
-                onClick={generateVeo3Prompts} 
-                disabled={videoLoading}
-                className="w-full"
-                size="lg"
-              >
-                {videoLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Virtual Tour...
-                  </>
-                ) : (
-                  <>
-                    <Play className="mr-2 h-4 w-4" />
-                    Generate Virtual Tour Plan
-                  </>
-                )}
-              </Button>
-
-              {/* Generated Virtual Tour Plan Display */}
-              {generatedVideoPlan && (
-                <Card className="border-2 border-primary/20">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Generated Virtual Tour Plan</CardTitle>
-                      <div className="flex gap-2">
-                        <Button onClick={copyVideoPlan} variant="outline" size="sm">
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Tour Plan
-                        </Button>
-                        <Button onClick={downloadVideoPlan} variant="outline" size="sm">
-                          <Download className="w-4 h-4 mr-2" />
-                          Download Tour Plan
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      {generatedVideoPlan.segments?.length || 0} segments • {generatedVideoPlan.total_duration}s total duration
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Video Timeline */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium">Video Timeline</h4>
-                      <div className="space-y-2">
-                        {generatedVideoPlan.segments?.map((segment: any, idx: number) => (
-                          <div key={idx} className="border rounded-lg p-3 bg-muted/50">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-sm">
-                                Segment {segment.segment} ({segment.duration}s)
-                              </span>
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                                {segment.scene_type}
-                              </span>
-                            </div>
-                            <div className="space-y-1 text-sm">
-                              <p><strong>Visual:</strong> {segment.prompt}</p>
-                              <p><strong>Text Overlay:</strong> {segment.text_overlay}</p>
-                              <p><strong>Camera:</strong> {segment.camera_movement}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* JSON Output */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium">JSON for Veo 3 API</h4>
-                      <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto max-h-64 border">
-                        {JSON.stringify(generatedVideoPlan, null, 2)}
-                      </pre>
-                    </div>
-
-                    {/* Style Notes */}
-                    {generatedVideoPlan.style_notes && (
-                      <div className="space-y-2">
-                        <h4 className="font-medium">Style Guidelines</h4>
-                        <p className="text-sm text-muted-foreground">{generatedVideoPlan.style_notes}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Usage Instructions */}
-              <Card className="bg-muted/30">
-                <CardHeader>
-                  <CardTitle className="text-base">How to Use with Veo 3</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-2">
-                  <p>1. Fill in property details and upload photos above</p>
-                  <p>2. Generate your virtual tour plan using the button</p>
-                  <p>3. Copy or download the JSON containing all room-by-room prompts</p>
-                  <p>4. Use each segment prompt individually in Veo 3 to generate 8-second clips</p>
-                  <p>5. Stitch the generated clips together following the suggested room sequence</p>
-                  <p>6. Add smooth transitions between rooms as specified in the plan</p>
-                </CardContent>
-              </Card>
-
-              {/* Property Images Gallery */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Property Images</CardTitle>
-                  <CardDescription>
-                    Images that will be referenced in the virtual tour generation
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {gallery.map((src, idx) => (
-                      <div key={idx} className="relative group">
-                        <img
-                          src={src}
-                          alt={`Reference ${idx + 1}`}
-                          className="w-full h-32 object-cover rounded-md"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => downloadImage(src, idx)}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteImage(idx)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
           <TabsContent value="data">
             <Card className="shadow-elevated">
