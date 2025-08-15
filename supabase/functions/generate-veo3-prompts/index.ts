@@ -66,7 +66,7 @@ Each segment should:
 - Connect smoothly to the next segment
 - Use professional real estate video aesthetics
 
-Output format must be valid JSON with this structure:
+IMPORTANT: Return ONLY the JSON object without any markdown formatting, code blocks, or additional text. Output format must be valid JSON with this structure:
 {
   "video_plan": {
     "total_duration": ${actualDuration},
@@ -142,14 +142,32 @@ Make each prompt detailed enough for Veo 3 to generate high-quality, professiona
 
     console.log('Generated content:', generatedContent);
 
-    // Parse the JSON response
+    // Helper function to extract JSON from markdown code blocks
+    function extractJSONFromMarkdown(text: string): string {
+      // Remove markdown code block markers
+      let cleanText = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+      // Also handle cases where it might just be wrapped in ```
+      cleanText = cleanText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      return cleanText.trim();
+    }
+
+    // Parse the JSON response with fallback strategies
     let videoPlan;
     try {
+      // First, try parsing as-is
       videoPlan = JSON.parse(generatedContent);
     } catch (parseError) {
-      console.error('Failed to parse JSON response:', parseError);
-      console.error('Raw response:', generatedContent);
-      throw new Error('Failed to parse AI response as JSON');
+      try {
+        // If that fails, try extracting from markdown
+        const cleanedContent = extractJSONFromMarkdown(generatedContent);
+        console.log('Attempting to parse cleaned content:', cleanedContent.substring(0, 200) + '...');
+        videoPlan = JSON.parse(cleanedContent);
+      } catch (secondParseError) {
+        console.error('Failed to parse JSON response after cleaning:', secondParseError);
+        console.error('Original response:', generatedContent);
+        console.error('Cleaned response:', extractJSONFromMarkdown(generatedContent));
+        throw new Error('Failed to parse AI response as JSON. The response may not be in the expected format.');
+      }
     }
 
     return new Response(JSON.stringify({ 
