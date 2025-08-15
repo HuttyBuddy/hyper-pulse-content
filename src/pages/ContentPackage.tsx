@@ -20,11 +20,15 @@ import marketThumb from "@/assets/market-update-thumb.jpg";
 const ContentPackage = () => {
   const [tab, setTab] = useState("blog");
   const [imagePrompt, setImagePrompt] = useState("");
-  const [videoPrompt, setVideoPrompt] = useState("");
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
-  const [videoThumbs] = useState<string[]>([lifestyleThumb, marketThumb]);
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
+  
+  // Veo 3 Video Planning State
+  const [videoDuration, setVideoDuration] = useState(45);
+  const [videoType, setVideoType] = useState("market_update");
+  const [generatedVideoPlan, setGeneratedVideoPlan] = useState<any>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
@@ -351,10 +355,69 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
     `Bright kitchen interior with natural light and clean finishes in ${neighborhood}.`,
   ];
 
-  const suggestVideoPrompts = [
-    `Create a 15-second video montage of the ${neighborhood} lifestyle with ${county} context: parks, local shops, friendly neighborhoods.`,
-    `Generate a 30-second market update video comparing ${neighborhood} to ${county}.`,
-  ];
+  const generateVeo3Prompts = async () => {
+    setVideoLoading(true);
+    try {
+      const marketData = {
+        neighborhood: displayNeighborhood,
+        county,
+        medianSalePrice: localReport?.median_sale_price,
+        avgPricePSF: localReport?.avg_price_per_sqft,
+        daysOnMarket: localReport?.days_on_market,
+        activeListings: localReport?.active_listings,
+        newListings: localReport?.new_listings,
+        closedSales: localReport?.closed_sales,
+        monthsInventory: localReport?.months_of_inventory,
+        countyAvgPSF: countyReport?.avg_price_per_sqft,
+        countyDOM: countyReport?.days_on_market,
+        reportDate: resolvedDate,
+      };
+
+      const { data, error } = await supabase.functions.invoke('generate-veo3-prompts', {
+        body: { 
+          marketData, 
+          neighborhood: displayNeighborhood, 
+          county,
+          videoDuration,
+          videoType
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setGeneratedVideoPlan(data.videoPlan);
+        toast("Veo 3 video plan generated successfully!");
+      } else {
+        throw new Error(data?.error || 'Failed to generate video plan');
+      }
+    } catch (err) {
+      console.error('Video plan generation error:', err);
+      toast("Failed to generate video plan. Check console for details.");
+    } finally {
+      setVideoLoading(false);
+    }
+  };
+
+  const copyVideoPlan = async () => {
+    if (!generatedVideoPlan) return;
+    await navigator.clipboard.writeText(JSON.stringify(generatedVideoPlan, null, 2));
+    toast("Video plan JSON copied to clipboard");
+  };
+
+  const downloadVideoPlan = () => {
+    if (!generatedVideoPlan) return;
+    const dataStr = JSON.stringify(generatedVideoPlan, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `veo3-video-plan-${displayNeighborhood.toLowerCase().replace(/\s+/g, '-')}-${new Date().getTime()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <>
@@ -373,11 +436,11 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
         </header>
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-          <TabsList>
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
             <TabsTrigger value="social">Social Media Posts</TabsTrigger>
-            <TabsTrigger value="media">AI Media</TabsTrigger>
-            <TabsTrigger value="market">Market Data</TabsTrigger>
+            <TabsTrigger value="veo3">Veo 3 Video Planner</TabsTrigger>
+            <TabsTrigger value="data">Market Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="blog">
@@ -423,7 +486,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                     <p className="text-sm text-foreground">{text}</p>
                     <div className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => copy(text)}>Copy Text</Button>
-                      <Button size="sm" variant="outline" onClick={() => setTab("media")}>Add AI Image</Button>
+                      <Button size="sm" variant="outline" onClick={() => setTab("veo3")}>Create Video</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -431,76 +494,177 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
             </div>
           </TabsContent>
 
-          <TabsContent value="media">
-            <div className="grid gap-6">
-              <section>
-                <h3 className="text-lg font-semibold mb-2">AI Image Studio (powered by Imagen)</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {suggestImgPrompts.map((p) => (
-                    <Button key={p} size="sm" variant="secondary" onClick={() => setImagePrompt(p)}>
-                      {p}
-                    </Button>
-                  ))}
+        <TabsContent value="veo3" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Veo 3 Video Planner
+              </CardTitle>
+              <CardDescription>
+                Generate structured JSON prompts for Veo 3 to create market update videos. Each prompt creates 9-second segments that can be stitched together.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Video Configuration */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Video Duration</label>
+                  <select 
+                    value={videoDuration} 
+                    onChange={(e) => setVideoDuration(Number(e.target.value))}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value={30}>30 seconds (3-4 segments)</option>
+                    <option value={45}>45 seconds (5 segments)</option>
+                    <option value={60}>60 seconds (6-7 segments)</option>
+                  </select>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <Input placeholder="Describe the image you want…" value={imagePrompt} onChange={(e) => setImagePrompt(e.target.value)} />
-                  <Button variant="secondary" disabled={enhancing || !imagePrompt.trim()} onClick={enhancePrompt} aria-label="AI enhance prompt">
-                    <Sparkles className="h-4 w-4" /> {enhancing ? "Enhancing…" : "AI Enhance"}
-                  </Button>
-                  <Button variant="hero" disabled={imageLoading || !imagePrompt.trim()} onClick={addGeneratedImage} aria-label="Generate image from prompt">
-                    {imageLoading ? "Generating…" : "Generate Image"}
-                  </Button>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Video Type</label>
+                  <select 
+                    value={videoType} 
+                    onChange={(e) => setVideoType(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                  >
+                    <option value="market_update">Market Update</option>
+                    <option value="neighborhood_spotlight">Neighborhood Spotlight</option>
+                    <option value="lifestyle_feature">Lifestyle Feature</option>
+                  </select>
                 </div>
-                <div className="grid gap-3 grid-cols-2 md:grid-cols-3 mt-4">
-                  {gallery.map((src, idx) => (
-                    <Card key={idx}>
-                      <CardContent className="p-2">
-                        <img src={src} alt={`Generated AI image for ${neighborhood}`} className="w-full h-40 object-cover rounded" loading="lazy" />
-                        <div className="pt-2 flex gap-2">
-                          <Button size="sm" variant="secondary" onClick={() => downloadImage(src, idx)} aria-label="Download image">
-                            <Download className="h-4 w-4" /> Download
+              </div>
+
+              {/* Generate Button */}
+              <Button 
+                onClick={generateVeo3Prompts} 
+                disabled={videoLoading}
+                className="w-full"
+                size="lg"
+              >
+                {videoLoading ? "Generating Video Plan..." : "Generate Veo 3 Video Plan"}
+              </Button>
+
+              {/* Generated Video Plan Display */}
+              {generatedVideoPlan && (
+                <Card className="border-2 border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Generated Video Plan</CardTitle>
+                      <div className="flex gap-2">
+                        <Button onClick={copyVideoPlan} variant="outline" size="sm">
+                          Copy JSON
+                        </Button>
+                        <Button onClick={downloadVideoPlan} variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    <CardDescription>
+                      {generatedVideoPlan.segments?.length || 0} segments • {generatedVideoPlan.total_duration}s total duration
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Video Timeline */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium">Video Timeline</h4>
+                      <div className="space-y-2">
+                        {generatedVideoPlan.segments?.map((segment: any, idx: number) => (
+                          <div key={idx} className="border rounded-lg p-3 bg-muted/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-sm">
+                                Segment {segment.segment} ({segment.duration}s)
+                              </span>
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                                {segment.scene_type}
+                              </span>
+                            </div>
+                            <div className="space-y-1 text-sm">
+                              <p><strong>Visual:</strong> {segment.prompt}</p>
+                              <p><strong>Text Overlay:</strong> {segment.text_overlay}</p>
+                              <p><strong>Camera:</strong> {segment.camera_movement}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* JSON Output */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium">JSON for Veo 3 API</h4>
+                      <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto max-h-64 border">
+                        {JSON.stringify(generatedVideoPlan, null, 2)}
+                      </pre>
+                    </div>
+
+                    {/* Style Notes */}
+                    {generatedVideoPlan.style_notes && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Style Guidelines</h4>
+                        <p className="text-sm text-muted-foreground">{generatedVideoPlan.style_notes}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Usage Instructions */}
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-base">How to Use with Veo 3</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-2">
+                  <p>1. Generate your video plan using the button above</p>
+                  <p>2. Copy or download the JSON containing all segment prompts</p>
+                  <p>3. Use each segment prompt individually in Veo 3 to generate 9-second clips</p>
+                  <p>4. Stitch the generated clips together using video editing software</p>
+                  <p>5. Add transitions between segments as suggested in the plan</p>
+                </CardContent>
+              </Card>
+
+              {/* Generated Images Gallery for Video */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reference Images</CardTitle>
+                  <CardDescription>
+                    Images that can be used as visual references for video segments
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {gallery.map((src, idx) => (
+                      <div key={idx} className="relative group">
+                        <img
+                          src={src}
+                          alt={`Reference ${idx + 1}`}
+                          className="w-full h-32 object-cover rounded-md"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => downloadImage(src, idx)}
+                          >
+                            <Download className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => deleteImage(idx)} aria-label="Delete image">
-                            <Trash2 className="h-4 w-4" /> Delete
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteImage(idx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <section>
-                <h3 className="text-lg font-semibold mb-2">AI Video Studio (powered by Veo)</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {suggestVideoPrompts.map((p) => (
-                    <Button key={p} size="sm" variant="secondary" onClick={() => setVideoPrompt(p)}>
-                      {p}
-                    </Button>
-                  ))}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <Input placeholder="Describe the video you want…" value={videoPrompt} onChange={(e) => setVideoPrompt(e.target.value)} />
-                  <Button variant="hero" onClick={() => toast("Generating video… (demo)")}>Generate Video</Button>
-                </div>
-                <div className="grid gap-3 grid-cols-2 md:grid-cols-3 mt-4">
-                  {videoThumbs.map((src, idx) => (
-                    <Card key={idx}>
-                      <CardContent className="p-2">
-                        <img src={src} alt={`Generated AI video thumbnail for ${neighborhood}`} className="w-full h-40 object-cover rounded" loading="lazy" />
-                        <div className="pt-2 flex gap-2">
-                          <Button size="sm" variant="secondary" onClick={() => toast("Preview… (demo)")}>Preview</Button>
-                          <Button size="sm" variant="outline" onClick={() => toast("Downloading… (demo)")}>Download</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="market">
+          <TabsContent value="data">
             <Card className="shadow-elevated">
               <CardHeader>
                 <CardTitle>Source Data</CardTitle>
