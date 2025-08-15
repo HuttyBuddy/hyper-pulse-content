@@ -1,7 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,8 +26,31 @@ serve(async (req) => {
       videoType = "market_update"
     } = await req.json();
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    // Resolve Google AI Studio API key: prefer user's profile key, fallback to project secret
+    let effectiveKey = googleApiKey || '';
+    try {
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader && SUPABASE_URL && SUPABASE_ANON_KEY) {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('google_api_key')
+          .maybeSingle();
+        if (profileError) {
+          console.error('generate-veo3-prompts: profile fetch error', profileError);
+        }
+        if (profile?.google_api_key) {
+          effectiveKey = profile.google_api_key as string;
+        }
+      }
+    } catch (e) {
+      console.error('generate-veo3-prompts: resolving key failed', e);
+    }
+
+    if (!effectiveKey) {
+      throw new Error('Missing Google API key. Please add it on your Profile page or configure GOOGLE_API_KEY.');
     }
 
     // Calculate number of segments based on duration (each segment is 9 seconds)
@@ -77,31 +103,42 @@ Create ${segmentCount} segments that tell a compelling story about the local mar
 
 Make each prompt detailed enough for Veo 3 to generate high-quality, professional real estate video content. Focus on warm, inviting visuals that showcase both data and lifestyle appeal.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        max_tokens: 2000,
+    const geminiPayload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              text: `${systemPrompt}\n\n${userPrompt}`,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
         temperature: 0.7,
-      }),
-    });
+        maxOutputTokens: 2000,
+      },
+    };
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${effectiveKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(geminiPayload),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Gemini API error:', errorData);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    const generatedContent = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 
     console.log('Generated content:', generatedContent);
 
