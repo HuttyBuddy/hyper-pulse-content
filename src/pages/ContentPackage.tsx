@@ -513,11 +513,11 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                    <select 
                      value={videoDuration} 
                      onChange={(e) => setVideoDuration(Number(e.target.value))}
-                     className="w-full p-2 border rounded-md text-foreground"
+                     className="w-full p-2 border rounded-md text-foreground bg-background"
                    >
-                    <option value={30}>30 seconds (3-4 segments)</option>
-                    <option value={45}>45 seconds (5 segments)</option>
-                    <option value={60}>60 seconds (6-7 segments)</option>
+                    <option value={30} className="text-foreground bg-background">30 seconds (3-4 segments)</option>
+                    <option value={45} className="text-foreground bg-background">45 seconds (5 segments)</option>
+                    <option value={60} className="text-foreground bg-background">60 seconds (6-7 segments)</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -525,11 +525,11 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                    <select 
                      value={videoType} 
                      onChange={(e) => setVideoType(e.target.value)}
-                     className="w-full p-2 border rounded-md text-foreground"
+                     className="w-full p-2 border rounded-md text-foreground bg-background"
                    >
-                    <option value="market_update">Market Update</option>
-                    <option value="neighborhood_spotlight">Neighborhood Spotlight</option>
-                    <option value="lifestyle_feature">Lifestyle Feature</option>
+                    <option value="market_update" className="text-foreground bg-background">Market Update</option>
+                    <option value="neighborhood_spotlight" className="text-foreground bg-background">Neighborhood Spotlight</option>
+                    <option value="lifestyle_feature" className="text-foreground bg-background">Lifestyle Feature</option>
                   </select>
                 </div>
               </div>
