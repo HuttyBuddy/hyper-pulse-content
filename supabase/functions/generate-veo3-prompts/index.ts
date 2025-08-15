@@ -19,11 +19,10 @@ serve(async (req) => {
 
   try {
     const { 
-      marketData, 
-      neighborhood, 
-      county, 
-      videoDuration = 45,
-      videoType = "market_update"
+      propertyData, 
+      propertyImages = [],
+      tourDuration = 45,
+      tourStyle = "luxury_showcase"
     } = await req.json();
 
     // Resolve Google AI Studio API key: prefer user's profile key, fallback to project secret
@@ -54,54 +53,59 @@ serve(async (req) => {
     }
 
     // Calculate number of segments based on duration (each segment is 8 seconds)
-    const segmentCount = Math.ceil(videoDuration / 8);
+    const segmentCount = Math.ceil(tourDuration / 8);
     const actualDuration = segmentCount * 8;
 
-    const systemPrompt = `You are a video planning expert for real estate market updates. Generate structured JSON prompts for Veo 3 video generation that breaks down ${videoDuration}-second market update videos into ${segmentCount} segments of 8 seconds each.
+    const systemPrompt = `You are a video planning expert for real estate virtual property tours. Generate structured JSON prompts for Veo 3 video generation that creates ${tourDuration}-second virtual property tours broken into ${segmentCount} segments of 8 seconds each.
 
 Each segment should:
 - Be exactly 8 seconds long
-- Have a specific visual focus and camera movement
-- Include text overlay suggestions
-- Connect smoothly to the next segment
-- Use professional real estate video aesthetics
+- Focus on a specific room or area of the property
+- Include smooth camera movements appropriate for virtual tours
+- Have text overlays with property details and room information
+- Connect smoothly to create a logical tour flow
+- Use cinematic real estate video aesthetics
 
 IMPORTANT: Return ONLY the JSON object without any markdown formatting, code blocks, or additional text. Output format must be valid JSON with this structure:
 {
   "video_plan": {
     "total_duration": ${actualDuration},
-    "target_duration": ${videoDuration},
+    "target_duration": ${tourDuration},
     "segments": [
       {
         "segment": 1,
         "duration": 8,
-        "prompt": "Detailed Veo 3 prompt for this segment",
-        "scene_type": "establishing|data|comparison|lifestyle|call_to_action",
-        "text_overlay": "Text to display on screen",
-        "camera_movement": "slow_zoom_in|pan_left|static|dolly_forward|etc",
-        "visual_focus": "What the viewer should focus on"
+        "prompt": "Detailed Veo 3 prompt for this room/area",
+        "scene_type": "exterior|kitchen|living_room|bedroom|bathroom|dining_room|other",
+        "text_overlay": "Property details and room information to display",
+        "camera_movement": "slow_zoom_in|pan_left|dolly_forward|walk_through|etc",
+        "visual_focus": "What features to highlight in this room"
       }
     ],
-    "transitions": ["fade", "slide_left", "dissolve"],
-    "style_notes": "Overall video aesthetic and tone"
+    "transitions": ["fade", "slide_left", "dissolve", "cut"],
+    "style_notes": "Overall tour aesthetic and tone"
   }
 }`;
 
-    const userPrompt = `Create a ${videoDuration}-second real estate market update video plan for ${neighborhood}, ${county}.
+    const userPrompt = `Create a ${tourDuration}-second virtual property tour plan for the following property:
 
-Market Data Available:
-${JSON.stringify(marketData, null, 2)}
+Property Details:
+${JSON.stringify(propertyData, null, 2)}
 
-Video Type: ${videoType}
+Available Property Images:
+${JSON.stringify(propertyImages, null, 2)}
 
-Create ${segmentCount} segments that tell a compelling story about the local market. Include:
-- Opening establishing shot of the neighborhood
-- Key market statistics with visual elements
-- Comparison data with county averages
-- Lifestyle/community highlights
-- Strong call-to-action ending
+Tour Style: ${tourStyle}
 
-Make each prompt detailed enough for Veo 3 to generate high-quality, professional real estate video content. Focus on warm, inviting visuals that showcase both data and lifestyle appeal.`;
+Create ${segmentCount} segments that create a compelling virtual tour of this property. Include:
+- Exterior establishing shot to introduce the property
+- Kitchen showcasing appliances and layout
+- Living areas highlighting space and natural light
+- Bedrooms emphasizing comfort and size
+- Bathrooms showing fixtures and finishes
+- Concluding exterior or lifestyle shot
+
+Make each prompt detailed enough for Veo 3 to generate high-quality, professional virtual tour content. Focus on highlighting the property's best features, creating smooth transitions between rooms, and maintaining viewer engagement throughout the tour. Include specific details about the property's price, features, and room count in text overlays.`;
 
     const geminiPayload = {
       contents: [
@@ -174,11 +178,12 @@ Make each prompt detailed enough for Veo 3 to generate high-quality, professiona
       success: true, 
       videoPlan,
       metadata: {
-        neighborhood,
-        county,
-        targetDuration: videoDuration,
+        propertyAddress: propertyData?.address,
+        propertyPrice: propertyData?.price,
+        targetDuration: tourDuration,
         actualDuration,
         segmentCount,
+        tourStyle,
         generatedAt: new Date().toISOString()
       }
     }), {
