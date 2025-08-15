@@ -513,7 +513,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                   <select 
                     value={videoDuration} 
                     onChange={(e) => setVideoDuration(Number(e.target.value))}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md text-foreground font-bold"
                   >
                     <option value={30}>30 seconds (3-4 segments)</option>
                     <option value={45}>45 seconds (5 segments)</option>
@@ -525,7 +525,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                   <select 
                     value={videoType} 
                     onChange={(e) => setVideoType(e.target.value)}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md text-foreground font-bold"
                   >
                     <option value="market_update">Market Update</option>
                     <option value="neighborhood_spotlight">Neighborhood Spotlight</option>
