@@ -502,7 +502,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                 Veo 3 Video Planner
               </CardTitle>
               <CardDescription>
-                Generate structured JSON prompts for Veo 3 to create market update videos. Each prompt creates 9-second segments that can be stitched together.
+                Generate structured JSON prompts for Veo 3 to create market update videos. Each prompt creates 8-second segments that can be stitched together.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -510,11 +510,11 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Video Duration</label>
-                  <select 
-                    value={videoDuration} 
-                    onChange={(e) => setVideoDuration(Number(e.target.value))}
-                    className="w-full p-2 border rounded-md text-foreground font-bold"
-                  >
+                   <select 
+                     value={videoDuration} 
+                     onChange={(e) => setVideoDuration(Number(e.target.value))}
+                     className="w-full p-2 border rounded-md text-foreground"
+                   >
                     <option value={30}>30 seconds (3-4 segments)</option>
                     <option value={45}>45 seconds (5 segments)</option>
                     <option value={60}>60 seconds (6-7 segments)</option>
@@ -522,11 +522,11 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Video Type</label>
-                  <select 
-                    value={videoType} 
-                    onChange={(e) => setVideoType(e.target.value)}
-                    className="w-full p-2 border rounded-md text-foreground font-bold"
-                  >
+                   <select 
+                     value={videoType} 
+                     onChange={(e) => setVideoType(e.target.value)}
+                     className="w-full p-2 border rounded-md text-foreground"
+                   >
                     <option value="market_update">Market Update</option>
                     <option value="neighborhood_spotlight">Neighborhood Spotlight</option>
                     <option value="lifestyle_feature">Lifestyle Feature</option>
@@ -616,7 +616,7 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
                 <CardContent className="text-sm space-y-2">
                   <p>1. Generate your video plan using the button above</p>
                   <p>2. Copy or download the JSON containing all segment prompts</p>
-                  <p>3. Use each segment prompt individually in Veo 3 to generate 9-second clips</p>
+                  <p>3. Use each segment prompt individually in Veo 3 to generate 8-second clips</p>
                   <p>4. Stitch the generated clips together using video editing software</p>
                   <p>5. Add transitions between segments as suggested in the plan</p>
                 </CardContent>

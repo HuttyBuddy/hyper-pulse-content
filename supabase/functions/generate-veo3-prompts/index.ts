@@ -53,14 +53,14 @@ serve(async (req) => {
       throw new Error('Missing Google API key. Please add it on your Profile page or configure GOOGLE_API_KEY.');
     }
 
-    // Calculate number of segments based on duration (each segment is 9 seconds)
-    const segmentCount = Math.ceil(videoDuration / 9);
-    const actualDuration = segmentCount * 9;
+    // Calculate number of segments based on duration (each segment is 8 seconds)
+    const segmentCount = Math.ceil(videoDuration / 8);
+    const actualDuration = segmentCount * 8;
 
-    const systemPrompt = `You are a video planning expert for real estate market updates. Generate structured JSON prompts for Veo 3 video generation that breaks down ${videoDuration}-second market update videos into ${segmentCount} segments of 9 seconds each.
+    const systemPrompt = `You are a video planning expert for real estate market updates. Generate structured JSON prompts for Veo 3 video generation that breaks down ${videoDuration}-second market update videos into ${segmentCount} segments of 8 seconds each.
 
 Each segment should:
-- Be exactly 9 seconds long
+- Be exactly 8 seconds long
 - Have a specific visual focus and camera movement
 - Include text overlay suggestions
 - Connect smoothly to the next segment
@@ -74,7 +74,7 @@ IMPORTANT: Return ONLY the JSON object without any markdown formatting, code blo
     "segments": [
       {
         "segment": 1,
-        "duration": 9,
+        "duration": 8,
         "prompt": "Detailed Veo 3 prompt for this segment",
         "scene_type": "establishing|data|comparison|lifestyle|call_to_action",
         "text_overlay": "Text to display on screen",
