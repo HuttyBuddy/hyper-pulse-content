@@ -1,1 +1,10 @@
 project_id = "fcayyxezuevsredxzmdj"
+
+[functions.enhance-prompt]
+verify_jwt = true
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.gemini-chat]
+verify_jwt = true

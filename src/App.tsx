@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { ChatProvider } from "@/contexts/ChatContext";
+import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
+import ChatSheet from "@/components/chat/ChatSheet";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -26,13 +29,60 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/content/:slugDate" element={<ProtectedRoute><ContentPackage /></ProtectedRoute>} />
-            <Route path="/content/:neighborhood" element={<ProtectedRoute><ContentPackage /></ProtectedRoute>} />
-            
-            <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/manage-subscription" element={<ProtectedRoute><ManageSubscription /></ProtectedRoute>} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <Dashboard />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/content/:slugDate" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <ContentPackage />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/content/:neighborhood" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <ContentPackage />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/editor" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <Editor />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <Profile />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/manage-subscription" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <ManageSubscription />
+                  <ChatFloatingButton />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

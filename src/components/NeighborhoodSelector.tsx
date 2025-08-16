@@ -20,13 +20,15 @@ interface NeighborhoodSelectorProps {
   onNeighborhoodChange: (neighborhood: NeighborhoodData) => void;
   onRefreshCurrent: () => void;
   onStartNew: () => void;
+  loading?: boolean;
 }
 
 const NeighborhoodSelector = ({
   currentNeighborhood,
   onNeighborhoodChange,
   onRefreshCurrent,
-  onStartNew
+  onStartNew,
+  loading = false
 }: NeighborhoodSelectorProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<NeighborhoodData>(currentNeighborhood);
@@ -178,8 +180,14 @@ const NeighborhoodSelector = ({
             Current Neighborhood
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onRefreshCurrent}>
-              <RotateCcw className="h-4 w-4 mr-1" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onRefreshCurrent}
+              className="flex items-center gap-1 hover:bg-accent/50 transition-colors"
+              disabled={loading}
+            >
+              <RotateCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh Data
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>

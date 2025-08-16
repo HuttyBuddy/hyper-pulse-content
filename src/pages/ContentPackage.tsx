@@ -108,9 +108,22 @@ const ContentPackage = () => {
   };
 
   const handleRefresh = async () => {
-    toast("Refreshing content…");
-    await fetchReports();
-    toast("Content updated");
+    setLoading(true);
+    toast("Refreshing market data...", { 
+      description: "Fetching the latest information for your area" 
+    });
+    try {
+      await fetchReports();
+      toast("Market data updated successfully", {
+        description: "Your content now reflects the most recent data available"
+      });
+    } catch (error) {
+      toast.error("Failed to refresh data", {
+        description: "Please try again in a moment"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNeighborhoodChange = (newNeighborhood: {
@@ -450,17 +463,23 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       const { data, error } = await supabase.functions.invoke('enhance-prompt', {
         body: { prompt: imagePrompt, neighborhood, county }
       });
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       const enhanced = (data as any)?.enhancedPrompt as string;
       if (enhanced) {
         setImagePrompt(enhanced);
-        toast("Prompt enhanced");
+        toast.success("Prompt enhanced!", {
+          description: "Your prompt is now optimized for better results"
+        });
       } else {
-        toast("Could not enhance prompt");
+        throw new Error("No enhanced prompt received");
       }
-    } catch (err) {
-      console.error(err);
-      toast("Enhance failed. Check API key.");
+    } catch (err: any) {
+      console.error('Prompt enhancement error:', err);
+      toast.error("Enhancement failed", {
+        description: err?.message || "Please check your API configuration and try again"
+      });
     } finally {
       setEnhancing(false);
     }
@@ -507,6 +526,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
             onNeighborhoodChange={handleNeighborhoodChange}
             onRefreshCurrent={handleRefresh}
             onStartNew={handleStartNew}
+            loading={loading}
           />
         </section>
 

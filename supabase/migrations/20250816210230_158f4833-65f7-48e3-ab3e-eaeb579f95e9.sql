@@ -1,0 +1,2 @@
+-- Create gemini-chat edge function
+-- This is handled by creating the function file directly
