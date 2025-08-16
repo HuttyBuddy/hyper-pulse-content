@@ -9,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import AppUrlHelper from "@/components/auth/AppUrlHelper";
 
+// Development mode bypass - redirect to dashboard
+const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
+
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -16,6 +19,12 @@ const Index = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    // In development mode, auto-redirect to dashboard
+    if (DEV_MODE) {
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
     // If already authenticated, go to dashboard
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
