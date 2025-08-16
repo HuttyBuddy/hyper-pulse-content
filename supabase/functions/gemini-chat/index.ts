@@ -20,32 +20,34 @@ serve(async (req) => {
       });
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    );
-
-    // Get user's auth token and resolve Google API key
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Try to get user's personal Google API key from their profile
+    // Try to get user's personal Google API key from their profile (dev mode bypass)
     let googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+    let user = null;
     
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('google_api_key')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    // Check if we have authorization header for user lookup
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+      );
 
-    if (profile?.google_api_key) {
-      googleApiKey = profile.google_api_key;
+      const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+      if (authUser) {
+        user = authUser;
+        
+        // Try to get user's personal Google API key
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('google_api_key')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profile?.google_api_key) {
+          googleApiKey = profile.google_api_key;
+        }
+      }
     }
 
     if (!googleApiKey) {
@@ -64,6 +66,10 @@ serve(async (req) => {
     
     if (context?.neighborhood) {
       systemMessage += `\n\nUser's current neighborhood focus: ${context.neighborhood}, ${context.county}, ${context.state}.`;
+    }
+    
+    if (!user) {
+      systemMessage += `\n\n[Development Mode: No user authentication - providing general assistance]`;
     }
 
     if (context?.reportData) {
