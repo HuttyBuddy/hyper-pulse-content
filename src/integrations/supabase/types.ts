@@ -86,6 +86,39 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_drafts: {
+        Row: {
+          branding_preferences: Json | null
+          content: string
+          created_at: string
+          id: string
+          status: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          branding_preferences?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          status?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          branding_preferences?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          status?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brokerage_logo_url: string | null

@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/sonner";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Sparkles, Download, Save } from "lucide-react";
 
 const initialContent = `Carmichael continues to shine this month with steady buyer interest and well-priced listings moving quickly. Local favorites like the Jensen Botanical Garden and the American River Parkway keep lifestyle appeal strong. Median days on market remain competitive, and price reductions are modest compared to nearby zip codes.
 
@@ -14,6 +15,10 @@ In this week’s highlights, three newly remodeled ranch-style homes drew multip
 const Editor = () => {
   const [content, setContent] = useState(initialContent);
   const [appendBranding, setAppendBranding] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const [headshotUrl, setHeadshotUrl] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -32,10 +37,11 @@ const Editor = () => {
       if (!user) return;
       const { data, error } = await supabase
         .from('profiles')
-        .select('headshot_url, logo_url, brokerage_logo_url')
+        .select('headshot_url, logo_url, brokerage_logo_url, name, email, neighborhood, county, state')
         .eq('user_id', user.id)
         .maybeSingle();
       if (!error && mounted) {
+        setUserProfile(data);
         setHeadshotUrl(data?.headshot_url ?? null);
         setLogoUrl(data?.logo_url ?? null);
         setBrokerageLogoUrl(data?.brokerage_logo_url ?? null);
@@ -43,6 +49,93 @@ const Editor = () => {
     })();
     return () => { mounted = false; };
   }, []);
+
+  const generateSmartContent = useCallback(async () => {
+    if (!userProfile) {
+      toast("Please set up your profile with neighborhood information first.");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-newsletter-content', {
+        body: {
+          neighborhood: userProfile.neighborhood,
+          county: userProfile.county,
+          state: userProfile.state
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.content) {
+        setContent(data.content);
+        toast("Smart content generated from your market data!");
+      } else {
+        throw new Error('No content generated');
+      }
+    } catch (error: any) {
+      console.error('Content generation error:', error);
+      toast(`Content generation failed: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [userProfile]);
+
+  const saveChanges = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('save-newsletter-draft', {
+        body: {
+          content,
+          title: null,
+          brandingPreferences: { appendBranding }
+        }
+      });
+
+      if (error) throw error;
+
+      toast("Newsletter draft saved successfully!");
+    } catch (error: any) {
+      console.error('Save error:', error);
+      toast(`Save failed: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [content, appendBranding]);
+
+  const exportBrandedPDF = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('export-branded-pdf', {
+        body: {
+          content,
+          appendBranding
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.downloadUrl) {
+        // Create a temporary download link
+        const link = document.createElement('a');
+        link.href = data.downloadUrl;
+        link.download = 'newsletter.html';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast("Newsletter exported! Check your downloads folder.");
+      } else {
+        throw new Error('No download URL provided');
+      }
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [content, appendBranding]);
 
   const toSquareImageBlob = (file: File, size = 96): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -144,22 +237,50 @@ const Editor = () => {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Customize & Brand</h1>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => toast("Saved (demo)")}>Save Changes</Button>
-            <Button variant="hero" onClick={() => toast("Exporting branded PDF… (demo)")}>Export Branded PDF</Button>
+            <Button 
+              variant="secondary" 
+              onClick={saveChanges}
+              disabled={isSaving}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+            <Button 
+              variant="hero" 
+              onClick={exportBrandedPDF}
+              disabled={isExporting}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export Branded PDF'}
+            </Button>
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-[1fr_360px]">
           <Card className="shadow-elevated">
             <CardHeader>
-              <CardTitle>Newsletter / Blog Content</CardTitle>
-              <CardDescription>Edit the text as needed</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Newsletter / Blog Content</CardTitle>
+                  <CardDescription>Edit the text as needed</CardDescription>
+                </div>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={generateSmartContent}
+                  disabled={isGenerating || !userProfile?.neighborhood}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGenerating ? 'Generating...' : 'Generate Smart Content'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="w-full min-h-[420px] rounded-md border border-input bg-background p-4 leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="Your newsletter content will appear here..."
               />
             </CardContent>
           </Card>

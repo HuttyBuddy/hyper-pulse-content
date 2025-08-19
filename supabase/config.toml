@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.gemini-chat]
 verify_jwt = false
+
+[functions.generate-newsletter-content]
+verify_jwt = true
+
+[functions.save-newsletter-draft]
+verify_jwt = true
+
+[functions.export-branded-pdf]
+verify_jwt = true
