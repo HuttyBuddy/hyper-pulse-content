@@ -115,6 +115,14 @@ const ContentPackage = () => {
       description: "Fetching the latest information for your area" 
     });
     try {
+      // Compute today's edition slug and navigate so URL reflects the latest edition
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const currentSlug = (neighborhoodSlug || (neighborhood || '').toLowerCase().replace(/\s+/g, '-'));
+      const newSlugDate = `${currentSlug}-${today}`;
+      setReportDate(new Date());
+      navigate(`/content/${newSlugDate}`, { replace: true });
+
+      // Re-fetch data after updating the edition
       await fetchReports();
       toast("Market data updated successfully", {
         description: "Your content now reflects the most recent data available"
@@ -157,12 +165,12 @@ const ContentPackage = () => {
     fetchReports();
   }, [slugDate, neighborhood, county, stateCode]);
 
-  const resolvedDate = (localReport?.report_date as any) ?? (countyReport?.report_date as any) ?? (reportDate ? reportDate.toISOString().slice(0,10) : undefined);
-  const titleDate = resolvedDate ? format(new Date(resolvedDate), "MMMM d, yyyy") : "Latest";
+  const editionISO = reportDate ? reportDate.toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+  const titleDate = format(new Date(editionISO), "MMMM d, yyyy");
   const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
   const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
-  const lastRetrievedISO = (localReport?.retrieved_at as any) || (countyReport?.retrieved_at as any) || null;
-  const freshnessText = loading ? "Loading data…" : (lastRetrievedISO ? `Last updated ${format(new Date(lastRetrievedISO), "MMMM d, yyyy")}` : `Based on latest available data as of ${titleDate}.`);
+  const dataDateISO = (localReport?.report_date as any) || (countyReport?.report_date as any) || null;
+  const freshnessText = loading ? "Loading data…" : (dataDateISO ? `Data through ${format(new Date(dataDateISO), "MMMM d, yyyy")}` : `Based on latest available data as of ${titleDate}.`);
 
   const generateBlogBody = () => {
     const local = localReport as any;
@@ -416,7 +424,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
 
   const marketDataPoints = [
     `Report date: ${titleDate}`,
-    ...(lastRetrievedISO ? [`Last updated: ${format(new Date(lastRetrievedISO), 'MMMM d, yyyy')}`] : []),
+    ...(dataDateISO ? [`Data through: ${format(new Date(dataDateISO), 'MMMM d, yyyy')}`] : []),
     `Median DOM — ${displayNeighborhood}: ${domLocalStr}${domCountyStr !== '—' ? ` | ${county}: ${domCountyStr}` : ''}`,
     `Active listings — ${displayNeighborhood}: ${activeLocalStr}`,
     ...(localReport?.new_listings != null ? [`New listings — ${displayNeighborhood}: ${Number(localReport.new_listings).toLocaleString()}`] : []),
