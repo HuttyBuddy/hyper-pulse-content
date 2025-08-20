@@ -17,3 +17,9 @@ verify_jwt = true
 
 [functions.export-branded-pdf]
 verify_jwt = true
+
+[functions.search-real-images]
+verify_jwt = false
+
+[functions.generate-polished-image]
+verify_jwt = false

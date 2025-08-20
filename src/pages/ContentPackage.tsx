@@ -25,6 +25,8 @@ const ContentPackage = () => {
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
+  const [realImages, setRealImages] = useState<{url: string, source: string}[]>([]);
+  const [searchingImages, setSearchingImages] = useState(false);
   const navigate = useNavigate();
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
@@ -499,6 +501,51 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
     setGallery((g) => g.filter((_, i) => i !== idx));
   };
 
+  const searchRealImages = async (query: string) => {
+    setSearchingImages(true);
+    try {
+      const { data } = await supabase.functions.invoke('search-real-images', {
+        body: { query, location: `${neighborhood}, ${county}` }
+      });
+      
+      if (data?.images) {
+        setRealImages(data.images);
+        toast.success(`Found ${data.images.length} real images`);
+      }
+    } catch (error) {
+      console.error('Error searching images:', error);
+      toast.error('Failed to search for images');
+    } finally {
+      setSearchingImages(false);
+    }
+  };
+
+  const generatePolishedVersion = async (realImageUrl: string, description: string) => {
+    setImageLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-polished-image', {
+        body: { 
+          referenceImageUrl: realImageUrl,
+          prompt: `Create a professional, clean, and polished version of this real estate image. ${description}. High-end photography style, perfect lighting, modern aesthetic.`,
+          neighborhood,
+          county
+        }
+      });
+      
+      if (error) throw error;
+      const img = data?.image;
+      if (img) {
+        setGallery((g) => [img, ...g]);
+        toast.success("Generated polished version!");
+      }
+    } catch (error) {
+      console.error('Error generating polished image:', error);
+      toast.error('Failed to generate polished version');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   const suggestImgPrompts = [
     `A beautiful, modern suburban home in ${neighborhood} on a sunny day.`,
     `Twilight exterior shot of a renovated ranch-style home in ${neighborhood}.`,
@@ -571,28 +618,107 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           </TabsContent>
 
           <TabsContent value="social">
-            <div className="grid gap-4 md:grid-cols-2">
-              {socialPosts.map((text, i) => (
-                <Card key={i} className="shadow-elevated">
-                  <CardHeader>
-                    <CardTitle className="text-base">Post {i + 1}</CardTitle>
-                    <CardDescription>Ready to copy</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
-                      <img src={[home1, home2, home3][i % 3]} alt={`${neighborhood} real estate post image`} className="h-full w-full object-cover" loading="lazy" />
+            <div className="space-y-6">
+              <Card className="shadow-elevated">
+                <CardHeader>
+                  <CardTitle className="text-lg">Real Images & AI Polish</CardTitle>
+                  <CardDescription>Find real images online and create polished AI versions</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => searchRealImages(`${neighborhood} homes real estate`)}
+                      disabled={searchingImages}
+                      variant="outline"
+                    >
+                      {searchingImages ? 'Searching...' : 'Find Real Images'}
+                    </Button>
+                    <Button 
+                      onClick={() => searchRealImages(`${neighborhood} neighborhood lifestyle`)}
+                      disabled={searchingImages}
+                      variant="outline"
+                    >
+                      Lifestyle Images
+                    </Button>
+                  </div>
+                  
+                  {realImages.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {realImages.map((img, idx) => (
+                        <div key={idx} className="space-y-2">
+                          <div className="aspect-square overflow-hidden rounded-lg border">
+                            <img src={img.url} alt="Real estate" className="w-full h-full object-cover" />
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="secondary" 
+                            className="w-full"
+                            onClick={() => generatePolishedVersion(img.url, socialPosts[idx % socialPosts.length].title)}
+                            disabled={imageLoading}
+                          >
+                            Create Polished AI Version
+                          </Button>
+                        </div>
+                      ))}
                     </div>
-                     <div className="space-y-2">
-                       <h4 className="font-medium text-foreground">{text.title}</h4>
-                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{text.content}</p>
-                     </div>
-                     <div className="flex gap-2">
-                       <Button size="sm" variant="secondary" onClick={() => copy(text.content)}>Copy Text</Button>
-                      <Button size="sm" variant="outline" onClick={() => downloadImage([home1, home2, home3][i % 3], i)}>Download Image</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {socialPosts.map((text, i) => (
+                  <Card key={i} className="shadow-elevated">
+                    <CardHeader>
+                      <CardTitle className="text-base">{text.title}</CardTitle>
+                      <CardDescription>Ready to copy</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">Real Image</p>
+                          <div className="aspect-video overflow-hidden rounded-md bg-muted border">
+                            {realImages[i] ? (
+                              <img src={realImages[i].url} alt={`Real ${neighborhood} image`} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
+                                Search for real images above
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">AI Polished</p>
+                          <div className="aspect-video overflow-hidden rounded-md bg-muted border">
+                            {gallery[i] ? (
+                              <img src={gallery[i]} alt={`AI polished ${neighborhood} image`} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
+                                Generate polished version
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{text.content}</p>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" variant="secondary" onClick={() => copy(text.content)}>Copy Text</Button>
+                        {realImages[i] && (
+                          <Button size="sm" variant="outline" onClick={() => downloadImage(realImages[i].url, i)}>
+                            Download Real
+                          </Button>
+                        )}
+                        {gallery[i] && (
+                          <Button size="sm" variant="outline" onClick={() => downloadImage(gallery[i], i)}>
+                            Download AI
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
