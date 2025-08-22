@@ -237,15 +237,6 @@ const Profile = () => {
                     )}
                   </AspectRatio>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => headshotInputRef.current?.click()}
-                    disabled={uploadingHeadshot}
-                  >
-                    {uploadingHeadshot ? "Uploading..." : "Upload Headshot"}
-                  </Button>
-                </div>
                 <input
                   ref={headshotInputRef}
                   type="file"
@@ -277,15 +268,6 @@ const Profile = () => {
                     )}
                   </AspectRatio>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => logoInputRef.current?.click()}
-                    disabled={uploadingLogo}
-                  >
-                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
-                  </Button>
-                </div>
                 <input
                   ref={logoInputRef}
                   type="file"
@@ -316,16 +298,7 @@ const Profile = () => {
                      </div>
                    )}
                  </AspectRatio>
-               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => brokerageLogoInputRef.current?.click()}
-                  disabled={uploadingBrokerageLogo}
-                >
-                  {uploadingBrokerageLogo ? "Uploading..." : "Upload Brokerage Logo"}
-                </Button>
-              </div>
+                </div>
               <input
                 ref={brokerageLogoInputRef}
                 type="file"
