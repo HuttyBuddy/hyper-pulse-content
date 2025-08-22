@@ -5,9 +5,16 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
+import { MessageCircle } from "lucide-react";
+import { useChat } from "@/contexts/ChatContext";
+import { cn } from "@/lib/utils";
 
 const AppHeader = () => {
   const [profile, setProfile] = useState<{ name?: string | null; headshot_url?: string | null; logo_url?: string | null } | null>(null);
+  const { toggleChat, isOpen, messages } = useChat();
+  
+  // Count unread messages (assistant messages that came after the chat was closed)
+  const unreadCount = messages.filter(m => !m.isUser).length;
 
   useEffect(() => {
     let ignore = false;
@@ -98,6 +105,23 @@ const AppHeader = () => {
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/profile">Profile</Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleChat}
+              className={cn(
+                "relative",
+                isOpen && "bg-muted text-muted-foreground"
+              )}
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Get AI Input
+              {unreadCount > 0 && !isOpen && (
+                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
             </Button>
           </nav>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>Log out</Button>

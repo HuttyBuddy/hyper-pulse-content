@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ChatProvider } from "@/contexts/ChatContext";
-import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
 import ChatSheet from "@/components/chat/ChatSheet";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -33,7 +32,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <Dashboard />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
@@ -42,7 +40,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <ContentPackage />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
@@ -51,7 +48,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <ContentPackage />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
@@ -60,7 +56,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <Editor />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
@@ -69,7 +64,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <Profile />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
@@ -78,7 +72,6 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <ManageSubscription />
-                  <ChatFloatingButton />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>
