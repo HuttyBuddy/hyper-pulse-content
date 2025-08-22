@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Download, Trash2, Sparkles, Copy, Loader2 } from "lucide-react";
+import { RefreshCw, ArrowLeft, Copy, Download, Trash2, Sparkles, Search, ImageIcon, Wand2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import NeighborhoodSelector from "@/components/NeighborhoodSelector";
 
@@ -21,12 +21,15 @@ import marketThumb from "@/assets/market-update-thumb.jpg";
 
 const ContentPackage = () => {
   const [tab, setTab] = useState("blog");
+  const [selectedTab, setSelectedTab] = useState("blog");
   const [imagePrompt, setImagePrompt] = useState("");
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [realImages, setRealImages] = useState<{url: string, source: string}[]>([]);
   const [searchingImages, setSearchingImages] = useState(false);
+  const [researchData, setResearchData] = useState<any>(null);
+  const [researchLoading, setResearchLoading] = useState(false);
   const navigate = useNavigate();
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
@@ -554,6 +557,35 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
     }
   };
 
+  const generateResearchInsights = async () => {
+    setResearchLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('google-research', {
+        body: {
+          neighborhood,
+          county,
+          state: stateCode,
+          marketData: {
+            localReport,
+            countyReport
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.research) {
+        setResearchData(data.research);
+        toast.success("Research insights generated!");
+      }
+    } catch (error) {
+      console.error('Error generating research:', error);
+      toast.error('Failed to generate research insights');
+    } finally {
+      setResearchLoading(false);
+    }
+  };
+
   const suggestImgPrompts = [
     `A beautiful, modern suburban home in ${neighborhood} on a sunny day.`,
     `Twilight exterior shot of a renovated ranch-style home in ${neighborhood}.`,
@@ -590,10 +622,11 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           <p className="text-muted-foreground mt-1">{freshnessText}</p>
         </header>
 
-        <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-          <TabsList className="grid grid-cols-3 w-full">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
             <TabsTrigger value="social">Social Media Posts</TabsTrigger>
+            <TabsTrigger value="research">Research Insights</TabsTrigger>
             <TabsTrigger value="data">Market Data</TabsTrigger>
           </TabsList>
 
@@ -730,6 +763,94 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
             </div>
           </TabsContent>
 
+
+          <TabsContent value="research">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  AI-Powered Market Research
+                </CardTitle>
+                <CardDescription>
+                  Comprehensive insights and content suggestions for {displayNeighborhood}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {!researchData ? (
+                  <div className="text-center py-8">
+                    <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      Generate AI-powered research insights to enhance your content strategy
+                    </p>
+                    <Button onClick={generateResearchInsights} disabled={researchLoading}>
+                      {researchLoading ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Generating Research...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Start Research
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {researchData.highlights && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Neighborhood Highlights</h4>
+                        <div className="bg-muted p-4 rounded-lg">
+                          <p className="whitespace-pre-wrap">{researchData.highlights}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {researchData.marketTrends && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Market Trends</h4>
+                        <div className="bg-muted p-4 rounded-lg">
+                          <p className="whitespace-pre-wrap">{researchData.marketTrends}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {researchData.contentSuggestions && Array.isArray(researchData.contentSuggestions) && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Content Suggestions</h4>
+                        <div className="space-y-2">
+                          {researchData.contentSuggestions.map((suggestion: string, idx: number) => (
+                            <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                              <span className="text-sm">{suggestion}</span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => copy(suggestion)}
+                                className="ml-2"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <Button 
+                      onClick={generateResearchInsights} 
+                      disabled={researchLoading}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${researchLoading ? 'animate-spin' : ''}`} />
+                      Refresh Research
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="data">
             <Card className="shadow-elevated">
