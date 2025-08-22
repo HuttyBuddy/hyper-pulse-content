@@ -20,11 +20,11 @@ serve(async (req) => {
       });
     }
 
-    // Try to get user's personal Google API key from their profile (dev mode bypass)
-    let googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+    // Use centralized Google API key for all subscribers
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
     let user = null;
     
-    // Check if we have authorization header for user lookup
+    // Check if we have authorization header for user lookup (for context only)
     const authHeader = req.headers.get('Authorization');
     if (authHeader) {
       const supabaseClient = createClient(
@@ -36,17 +36,6 @@ serve(async (req) => {
       const { data: { user: authUser } } = await supabaseClient.auth.getUser();
       if (authUser) {
         user = authUser;
-        
-        // Try to get user's personal Google API key
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('google_api_key')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (profile?.google_api_key) {
-          googleApiKey = profile.google_api_key;
-        }
       }
     }
 

@@ -12,7 +12,7 @@ import { openCustomerPortal } from "@/lib/billing";
 const Profile = () => {
   const [name, setName] = useState("Alex Morgan");
   const [email, setEmail] = useState("alex@example.com");
-  const [googleKey, setGoogleKey] = useState("");
+  
   const [userId, setUserId] = useState<string | null>(null);
   const [neighborhood, setNeighborhood] = useState("");
   const [county, setCounty] = useState("");
@@ -43,7 +43,7 @@ const Profile = () => {
       setUserId(user.id);
       const { data, error } = await supabase
         .from("profiles")
-        .select("name, email, google_api_key, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state")
+        .select("name, email, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) {
@@ -54,7 +54,6 @@ const Profile = () => {
       if (data) {
         setName(data.name ?? "");
         setEmail(data.email ?? "");
-        setGoogleKey((data as any).google_api_key ?? "");
         setHeadshotUrl((data as any).headshot_url ?? "");
         setLogoUrl((data as any).logo_url ?? "");
         setBrokerageLogoUrl((data as any).brokerage_logo_url ?? "");
@@ -83,21 +82,6 @@ const Profile = () => {
     }
   };
 
-  const handleSaveKeys = async () => {
-    if (!userId) {
-      toast("Not signed in");
-      return;
-    }
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({ user_id: userId, google_api_key: googleKey });
-    if (error) {
-      console.error(error);
-      toast("Failed to save keys");
-    } else {
-      toast("Keys saved");
-    }
-  };
 
   const uploadImage = async (kind: "headshot" | "logo" | "brokerage_logo", file: File) => {
     if (!userId) {
@@ -354,21 +338,6 @@ const Profile = () => {
           </Card>
         </section>
 
-        <section>
-          <Card>
-            <CardHeader>
-              <CardTitle>API Keys</CardTitle>
-              <CardDescription>Store your Google AI keys for generation features</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <label htmlFor="googleKey" className="text-sm">Google AI API Key</label>
-                <Input id="googleKey" value={googleKey} onChange={(e) => setGoogleKey(e.target.value)} placeholder="Enter key…" />
-              </div>
-              <Button variant="secondary" onClick={handleSaveKeys}>Save Keys</Button>
-            </CardContent>
-          </Card>
-        </section>
 
         <div className="pt-2">
           <Button variant="outline" onClick={() => toast("Logged out (demo)")}>Log Out</Button>

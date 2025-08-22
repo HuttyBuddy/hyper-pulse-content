@@ -30,18 +30,8 @@ serve(async (req) => {
       });
     }
 
-    // Try to get user's personal Google API key from their profile
-    let googleApiKey = Deno.env.get('GOOGLE_API_KEY');
-    
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('google_api_key')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (profile?.google_api_key) {
-      googleApiKey = profile.google_api_key;
-    }
+    // Use centralized Google API key for all subscribers
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
 
     if (!googleApiKey) {
       return new Response(JSON.stringify({ 
