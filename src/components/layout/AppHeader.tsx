@@ -94,11 +94,33 @@ const AppHeader = () => {
   };
   return (
     <header className="h-14 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container h-full flex items-center justify-between">
-        <Link to="/dashboard" className="text-lg font-semibold tracking-tight">
-          The Hyper‑Local Pulse
+      <div className="container h-full flex items-center justify-between px-4">
+        <Link to="/dashboard" className="text-lg md:text-xl font-semibold tracking-tight">
+          <span className="hidden sm:inline">The Hyper‑Local Pulse</span>
+          <span className="sm:hidden">Hyper‑Local</span>
         </Link>
         <div className="flex items-center gap-2">
+          {/* Mobile: Show only essential buttons */}
+          <div className="flex md:hidden gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleChat}
+              className={cn(
+                "relative",
+                isOpen && "bg-muted text-muted-foreground"
+              )}
+            >
+              <MessageCircle className="h-4 w-4" />
+              {unreadCount > 0 && !isOpen && (
+                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
+            </Button>
+          </div>
+          
+          {/* Desktop: Show full navigation */}
           <nav className="hidden md:flex gap-1">
             <Button asChild variant="ghost" size="sm">
               <Link to="/dashboard">Dashboard</Link>
