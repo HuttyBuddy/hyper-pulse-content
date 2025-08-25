@@ -76,22 +76,45 @@ Year-over-Year Changes: ${JSON.stringify(marketReport.yoy_change || {})}
       marketDataText = `No specific market data available for ${neighborhood || 'the area'}, ${county}, ${state}.`;
     }
 
-    const prompt = `You are a professional real estate content writer creating a compelling newsletter for ${neighborhood || 'this area'}, ${county}, ${state}.
+    const prompt = `You are a professional real estate content writer creating a comprehensive, in-depth newsletter for ${neighborhood || 'this area'}, ${county}, ${state}.
 
 ${marketDataText}
 
-Create an engaging, informative newsletter content (300-500 words) that:
+Create a thorough, engaging newsletter content (800-1200 words) with the following detailed structure:
 
-1. **Opens with a compelling hook** about the current market conditions
-2. **Incorporates specific market statistics** from the data above in a natural, storytelling way
-3. **Provides actionable insights** for both buyers and sellers
-4. **Includes lifestyle elements** that make the neighborhood appealing
-5. **Maintains a professional yet approachable tone**
-6. **Concludes with market outlook** and next steps
+**MARKET SNAPSHOT SECTION (150-200 words):**
+- Open with a compelling hook about current market conditions
+- Incorporate specific statistics naturally in storytelling format
+- Highlight the most significant market trends and changes
 
-The content should be data-driven but readable, avoiding jargon while demonstrating market expertise. Focus on what the numbers mean for real people making housing decisions.
+**DEEP MARKET ANALYSIS (300-400 words):**
+- Detailed breakdown of pricing trends and what drives them
+- Inventory analysis and what it means for the market balance
+- Days on market patterns and seasonal factors
+- Comparison with surrounding areas/counties when relevant
+- Interest rate impact and mortgage market considerations
 
-Do not include any greeting, signature, or boilerplate text - just the newsletter body content.`;
+**BUYER & SELLER INSIGHTS (200-300 words):**
+- Specific actionable advice for buyers in this market
+- Strategic guidance for sellers on timing and pricing
+- Market positioning recommendations
+- Common mistakes to avoid in current conditions
+
+**NEIGHBORHOOD SPOTLIGHT (150-200 words):**
+- Local amenities, schools, and lifestyle attractions
+- Recent community developments or improvements
+- What makes this area unique and desirable
+- Transportation and accessibility benefits
+
+**MARKET FORECAST & OUTLOOK (100-150 words):**
+- Professional predictions for next 3-6 months
+- Seasonal patterns to watch
+- Economic factors that could influence the market
+- Recommended action steps for different buyer/seller profiles
+
+The content should be data-driven yet accessible, demonstrating deep market expertise while remaining engaging for all readers. Use specific numbers and statistics throughout, but explain their practical implications. Write in a confident, professional tone that positions you as the local market authority.
+
+Do not include any greeting, signature, or boilerplate text - just the comprehensive newsletter body content organized with clear section breaks.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${googleApiKey}`, {
       method: 'POST',
