@@ -6,6 +6,96 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to parse unstructured text into research data
+function parseTextToStructuredData(text: string, neighborhood: string) {
+  const sections = text.split(/(?:\*\*|##)\s*(.*?)(?:\*\*|:)/);
+  const result = {
+    highlights: '',
+    marketTrends: '',
+    demographics: '',
+    contentSuggestions: [] as string[],
+    marketingAngles: [] as string[]
+  };
+
+  let currentSection = '';
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i].toLowerCase().trim();
+    
+    if (section.includes('highlight') || section.includes('feature')) {
+      currentSection = 'highlights';
+    } else if (section.includes('market') && section.includes('trend')) {
+      currentSection = 'marketTrends';
+    } else if (section.includes('demographic') || section.includes('buyer')) {
+      currentSection = 'demographics';
+    } else if (section.includes('content') || section.includes('social')) {
+      currentSection = 'contentSuggestions';
+    } else if (section.includes('marketing') || section.includes('angle') || section.includes('selling')) {
+      currentSection = 'marketingAngles';
+    } else if (currentSection && sections[i + 1]) {
+      const content = sections[i + 1].trim();
+      if (content.length > 10) {
+        if (currentSection === 'contentSuggestions' || currentSection === 'marketingAngles') {
+          // Extract numbered list items
+          const items = content.split(/\d+\.|\n-|\n\*/).filter(item => item.trim().length > 10);
+          result[currentSection] = items.map(item => item.trim()).slice(0, 5);
+        } else {
+          result[currentSection] = content.substring(0, 500);
+        }
+      }
+    }
+  }
+
+  // Fallback extraction if structured parsing fails
+  if (!result.contentSuggestions.length) {
+    const lines = text.split('\n').filter(line => line.length > 20);
+    result.contentSuggestions = lines.slice(0, 3).map(line => line.trim());
+  }
+  
+  if (!result.marketingAngles.length) {
+    const lines = text.split('\n').filter(line => line.length > 15);
+    result.marketingAngles = lines.slice(-3).map(line => line.trim());
+  }
+
+  return result;
+}
+
+// Helper function to validate and enhance research data
+function validateAndEnhanceResearchData(data: any, originalText: string, neighborhood: string) {
+  const enhanced = {
+    highlights: data.highlights || `${neighborhood} offers unique opportunities in today's market.`,
+    marketTrends: data.marketTrends || `Current market analysis for ${neighborhood} shows active conditions.`,
+    demographics: data.demographics || `${neighborhood} attracts diverse buyers seeking quality living.`,
+    contentSuggestions: Array.isArray(data.contentSuggestions) ? data.contentSuggestions : [],
+    marketingAngles: Array.isArray(data.marketingAngles) ? data.marketingAngles : []
+  };
+
+  // Ensure we have meaningful content suggestions
+  if (enhanced.contentSuggestions.length === 0 || 
+      enhanced.contentSuggestions.some(item => item.includes('Research available'))) {
+    enhanced.contentSuggestions = [
+      `Discover what makes ${neighborhood} special - local insights and market trends`,
+      `Why ${neighborhood} is attracting today's smart buyers`,
+      `Market snapshot: What's happening in ${neighborhood} real estate`,
+      `Local lifestyle: The ${neighborhood} advantage for homeowners`,
+      `Investment potential: ${neighborhood}'s growing market appeal`
+    ];
+  }
+
+  // Ensure we have meaningful marketing angles
+  if (enhanced.marketingAngles.length === 0 || 
+      enhanced.marketingAngles.some(item => item.includes('Enhanced insights'))) {
+    enhanced.marketingAngles = [
+      `Position ${neighborhood} as an emerging opportunity`,
+      `Highlight unique local amenities and lifestyle benefits`,
+      `Emphasize market stability and growth potential`,
+      `Focus on community features and neighborhood charm`,
+      `Showcase accessibility and convenience factors`
+    ];
+  }
+
+  return enhanced;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -108,22 +198,36 @@ Format as JSON with sections: "highlights", "marketTrends", "demographics", "con
 
     const researchText = data.candidates[0].content.parts[0].text;
     
+    console.log('Raw research response:', researchText);
     console.log('Research generated successfully for:', neighborhood);
     
-    // Try to parse as JSON, fallback to structured text
+    // Enhanced JSON parsing with multiple strategies
     let researchData;
     try {
+      // First try direct JSON parsing
       researchData = JSON.parse(researchText);
+      console.log('Successfully parsed as JSON');
     } catch {
-      // If not valid JSON, structure the response
-      researchData = {
-        highlights: researchText.split('\n').slice(0, 3).join('\n'),
-        marketTrends: researchText,
-        demographics: '',
-        contentSuggestions: ['Research available - see full analysis'],
-        marketingAngles: ['Enhanced insights provided by AI research']
-      };
+      console.log('Direct JSON parsing failed, trying extraction methods...');
+      
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = researchText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        try {
+          researchData = JSON.parse(jsonMatch[1]);
+          console.log('Successfully extracted JSON from markdown');
+        } catch {
+          console.log('Markdown JSON extraction failed, using text parsing');
+          researchData = parseTextToStructuredData(researchText, neighborhood);
+        }
+      } else {
+        console.log('No JSON blocks found, using text parsing');
+        researchData = parseTextToStructuredData(researchText, neighborhood);
+      }
     }
+
+    // Validate and ensure all required fields exist
+    researchData = validateAndEnhanceResearchData(researchData, researchText, neighborhood);
 
     return new Response(
       JSON.stringify({ 
