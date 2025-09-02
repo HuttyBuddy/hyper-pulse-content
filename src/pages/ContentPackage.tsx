@@ -797,56 +797,125 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {researchData.highlights && (
-                      <div>
-                        <h4 className="font-semibold mb-2">Neighborhood Highlights</h4>
-                        <div className="bg-muted p-4 rounded-lg">
-                          <p className="whitespace-pre-wrap">{researchData.highlights}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {researchData.marketTrends && (
-                      <div>
-                        <h4 className="font-semibold mb-2">Market Trends</h4>
-                        <div className="bg-muted p-4 rounded-lg">
-                          <p className="whitespace-pre-wrap">{researchData.marketTrends}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {researchData.contentSuggestions && Array.isArray(researchData.contentSuggestions) && (
-                      <div>
-                        <h4 className="font-semibold mb-2">Content Suggestions</h4>
-                        <div className="space-y-2">
-                          {researchData.contentSuggestions.map((suggestion: string, idx: number) => (
-                            <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
-                              <span className="text-sm">{suggestion}</span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copy(suggestion)}
-                                className="ml-2"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    <Button 
-                      onClick={generateResearchInsights} 
-                      disabled={researchLoading}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <RefreshCw className={`h-4 w-4 mr-2 ${researchLoading ? 'animate-spin' : ''}`} />
-                      Refresh Research
-                    </Button>
-                  </div>
+                   <div className="space-y-6">
+                     {researchData.highlights && (
+                       <div>
+                         <div className="flex items-center gap-2 mb-2">
+                           <h4 className="font-semibold">Neighborhood Highlights</h4>
+                           <Button
+                             size="sm"
+                             variant="ghost"
+                             onClick={() => copy(researchData.highlights)}
+                           >
+                             <Copy className="h-3 w-3" />
+                           </Button>
+                         </div>
+                         <div className="bg-muted p-4 rounded-lg">
+                           <p className="whitespace-pre-wrap">{researchData.highlights}</p>
+                         </div>
+                       </div>
+                     )}
+                     
+                     {researchData.marketTrends && (
+                       <div>
+                         <div className="flex items-center gap-2 mb-2">
+                           <h4 className="font-semibold">Market Trends</h4>
+                           <Button
+                             size="sm"
+                             variant="ghost"
+                             onClick={() => copy(researchData.marketTrends)}
+                           >
+                             <Copy className="h-3 w-3" />
+                           </Button>
+                         </div>
+                         <div className="bg-muted p-4 rounded-lg">
+                           <p className="whitespace-pre-wrap">{researchData.marketTrends}</p>
+                         </div>
+                       </div>
+                     )}
+
+                     {researchData.demographics && (
+                       <div>
+                         <div className="flex items-center gap-2 mb-2">
+                           <h4 className="font-semibold">Demographics & Lifestyle</h4>
+                           <Button
+                             size="sm"
+                             variant="ghost"
+                             onClick={() => copy(researchData.demographics)}
+                           >
+                             <Copy className="h-3 w-3" />
+                           </Button>
+                         </div>
+                         <div className="bg-muted p-4 rounded-lg">
+                           <p className="whitespace-pre-wrap">{researchData.demographics}</p>
+                         </div>
+                       </div>
+                     )}
+                     
+                     {researchData.contentSuggestions && Array.isArray(researchData.contentSuggestions) && researchData.contentSuggestions.length > 0 && (
+                       <div>
+                         <h4 className="font-semibold mb-2">Content Suggestions</h4>
+                         <div className="space-y-2">
+                           {researchData.contentSuggestions.map((suggestion: string, idx: number) => (
+                             <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                               <span className="text-sm">{suggestion}</span>
+                               <Button
+                                 size="sm"
+                                 variant="ghost"
+                                 onClick={() => copy(suggestion)}
+                                 className="ml-2"
+                               >
+                                 <Copy className="h-3 w-3" />
+                               </Button>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+
+                     {researchData.marketingAngles && Array.isArray(researchData.marketingAngles) && researchData.marketingAngles.length > 0 && (
+                       <div>
+                         <h4 className="font-semibold mb-2">Marketing Angles</h4>
+                         <div className="space-y-2">
+                           {researchData.marketingAngles.map((angle: string, idx: number) => (
+                             <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                               <span className="text-sm">{angle}</span>
+                               <Button
+                                 size="sm"
+                                 variant="ghost"
+                                 onClick={() => copy(angle)}
+                                 className="ml-2"
+                               >
+                                 <Copy className="h-3 w-3" />
+                               </Button>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+                     
+                     <div className="flex gap-2">
+                       <Button 
+                         onClick={generateResearchInsights} 
+                         disabled={researchLoading}
+                         variant="outline"
+                         size="sm"
+                       >
+                         <RefreshCw className={`h-4 w-4 mr-2 ${researchLoading ? 'animate-spin' : ''}`} />
+                         Refresh Research
+                       </Button>
+                       {researchData && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => copy(JSON.stringify(researchData, null, 2))}
+                         >
+                           <Copy className="h-4 w-4 mr-2" />
+                           Copy All
+                         </Button>
+                       )}
+                     </div>
+                   </div>
                 )}
               </CardContent>
             </Card>
