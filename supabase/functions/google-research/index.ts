@@ -61,35 +61,81 @@ function parseTextToStructuredData(text: string, neighborhood: string) {
 
 // Helper function to validate and enhance research data
 function validateAndEnhanceResearchData(data: any, originalText: string, neighborhood: string) {
+  // Normalize text fields that may arrive as arrays/objects
+  const highlightsStr = Array.isArray(data?.highlights)
+    ? data.highlights.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.highlights === 'string' ? data.highlights : '');
+
+  let marketTrendsStr = '';
+  if (typeof data?.marketTrends === 'string') {
+    marketTrendsStr = data.marketTrends;
+  } else if (data?.marketTrends && typeof data.marketTrends === 'object') {
+    const mt = data.marketTrends as any;
+    marketTrendsStr = [mt.currentConditions, mt.priceTrends, mt.buyerSellerDynamics]
+      .filter((x) => typeof x === 'string' && x.trim().length > 0)
+      .join(' ');
+    if (!marketTrendsStr) marketTrendsStr = JSON.stringify(mt);
+  }
+
+  const demographicsStr = Array.isArray(data?.demographics)
+    ? data.demographics.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.demographics === 'string' ? data.demographics : '');
+
+  // Normalize arrays that may contain objects (e.g., { platform, caption }) or strings
+  const normalizeToStrings = (arr: any[]): string[] => {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .flatMap((item) => {
+        if (typeof item === 'string') return [item];
+        if (item && typeof item === 'object') {
+          const { caption, text, content, idea, description, title, prompt, angle } = item as any;
+          const candidates = [caption, text, content, idea, description, title, prompt, angle]
+            .filter((v) => typeof v === 'string' && v.trim().length > 0);
+          return candidates.length ? [candidates[0]] : [];
+        }
+        return [];
+      })
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .slice(0, 5);
+  };
+
+  let contentSuggestions = normalizeToStrings(data?.contentSuggestions ?? []);
+  let marketingAngles = normalizeToStrings(data?.marketingAngles ?? []);
+
   const enhanced = {
-    highlights: data.highlights || `${neighborhood} offers unique opportunities in today's market.`,
-    marketTrends: data.marketTrends || `Current market analysis for ${neighborhood} shows active conditions.`,
-    demographics: data.demographics || `${neighborhood} attracts diverse buyers seeking quality living.`,
-    contentSuggestions: Array.isArray(data.contentSuggestions) ? data.contentSuggestions : [],
-    marketingAngles: Array.isArray(data.marketingAngles) ? data.marketingAngles : []
+    highlights: highlightsStr || `${neighborhood} offers unique opportunities in today's market.`,
+    marketTrends: marketTrendsStr || `Current market analysis for ${neighborhood} shows active conditions.`,
+    demographics: demographicsStr || `${neighborhood} attracts diverse buyers seeking quality living.`,
+    contentSuggestions,
+    marketingAngles,
   };
 
   // Ensure we have meaningful content suggestions
-  if (enhanced.contentSuggestions.length === 0 || 
-      enhanced.contentSuggestions.some(item => item.includes('Research available'))) {
+  if (
+    enhanced.contentSuggestions.length === 0 ||
+    enhanced.contentSuggestions.some((item) => typeof item === 'string' && item.toLowerCase().includes('research available'))
+  ) {
     enhanced.contentSuggestions = [
       `Discover what makes ${neighborhood} special - local insights and market trends`,
       `Why ${neighborhood} is attracting today's smart buyers`,
       `Market snapshot: What's happening in ${neighborhood} real estate`,
       `Local lifestyle: The ${neighborhood} advantage for homeowners`,
-      `Investment potential: ${neighborhood}'s growing market appeal`
+      `Investment potential: ${neighborhood}'s growing market appeal`,
     ];
   }
 
   // Ensure we have meaningful marketing angles
-  if (enhanced.marketingAngles.length === 0 || 
-      enhanced.marketingAngles.some(item => item.includes('Enhanced insights'))) {
+  if (
+    enhanced.marketingAngles.length === 0 ||
+    enhanced.marketingAngles.some((item) => typeof item === 'string' && item.toLowerCase().includes('enhanced insights'))
+  ) {
     enhanced.marketingAngles = [
       `Position ${neighborhood} as an emerging opportunity`,
       `Highlight unique local amenities and lifestyle benefits`,
       `Emphasize market stability and growth potential`,
       `Focus on community features and neighborhood charm`,
-      `Showcase accessibility and convenience factors`
+      `Showcase accessibility and convenience factors`,
     ];
   }
 
