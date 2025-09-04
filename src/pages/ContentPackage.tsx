@@ -28,8 +28,8 @@ const ContentPackage = () => {
   const [enhancing, setEnhancing] = useState(false);
   const [realImages, setRealImages] = useState<{url: string, source: string}[]>([]);
   const [searchingImages, setSearchingImages] = useState(false);
-  const [researchData, setResearchData] = useState<any>(null);
-  const [researchLoading, setResearchLoading] = useState(false);
+  const [lifestyleData, setLifestyleData] = useState<any>(null);
+  const [lifestyleLoading, setLifestyleLoading] = useState(false);
   const navigate = useNavigate();
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
@@ -557,8 +557,8 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
     }
   };
 
-  const generateResearchInsights = async () => {
-    setResearchLoading(true);
+  const generateLifestyleInsights = async () => {
+    setLifestyleLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('google-research', {
         body: {
@@ -574,15 +574,15 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       
       if (error) throw error;
       
-      if (data?.research) {
-        setResearchData(data.research);
-        toast.success("Research insights generated!");
+      if (data?.lifestyle) {
+        setLifestyleData(data.lifestyle);
+        toast.success("Lifestyle guide generated!");
       }
     } catch (error) {
-      console.error('Error generating research:', error);
-      toast.error('Failed to generate research insights');
+      console.error('Error generating lifestyle guide:', error);
+      toast.error('Failed to generate lifestyle guide');
     } finally {
-      setResearchLoading(false);
+      setLifestyleLoading(false);
     }
   };
 
@@ -626,7 +626,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
             <TabsTrigger value="social">Social Media Posts</TabsTrigger>
-            <TabsTrigger value="research">Research Insights</TabsTrigger>
+            <TabsTrigger value="lifestyle">Lifestyle Guide</TabsTrigger>
             <TabsTrigger value="data">Market Data</TabsTrigger>
           </TabsList>
 
@@ -764,159 +764,177 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           </TabsContent>
 
 
-          <TabsContent value="research">
+          <TabsContent value="lifestyle">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Search className="h-5 w-5" />
-                  AI-Powered Market Research
+                  <ImageIcon className="h-5 w-5" />
+                  Hyper-Local Lifestyle Guide
                 </CardTitle>
                 <CardDescription>
-                  Comprehensive insights and content suggestions for {displayNeighborhood}
+                  Discover what makes living in {displayNeighborhood} special
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {!researchData ? (
+                {!lifestyleData ? (
                   <div className="text-center py-8">
-                    <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground mb-4">
-                      Generate AI-powered research insights to enhance your content strategy
+                      Generate lifestyle insights to showcase what makes this neighborhood unique
                     </p>
-                    <Button onClick={generateResearchInsights} disabled={researchLoading}>
-                      {researchLoading ? (
+                    <Button onClick={generateLifestyleInsights} disabled={lifestyleLoading}>
+                      {lifestyleLoading ? (
                         <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Generating Research...
+                          Generating Guide...
                         </>
                       ) : (
                         <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Start Research
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          Create Lifestyle Guide
                         </>
                       )}
                     </Button>
                   </div>
                 ) : (
-                   <div className="space-y-6">
-                     {researchData.highlights && (
-                       <div>
-                         <div className="flex items-center gap-2 mb-2">
-                           <h4 className="font-semibold">Neighborhood Highlights</h4>
-                           <Button
-                             size="sm"
-                             variant="ghost"
-                             onClick={() => copy(researchData.highlights)}
-                           >
-                             <Copy className="h-3 w-3" />
-                           </Button>
-                         </div>
-                         <div className="bg-muted p-4 rounded-lg">
-                           <p className="whitespace-pre-wrap">{researchData.highlights}</p>
-                         </div>
-                       </div>
-                     )}
-                     
-                     {researchData.marketTrends && (
-                       <div>
-                         <div className="flex items-center gap-2 mb-2">
-                           <h4 className="font-semibold">Market Trends</h4>
-                           <Button
-                             size="sm"
-                             variant="ghost"
-                             onClick={() => copy(researchData.marketTrends)}
-                           >
-                             <Copy className="h-3 w-3" />
-                           </Button>
-                         </div>
-                         <div className="bg-muted p-4 rounded-lg">
-                           <p className="whitespace-pre-wrap">{researchData.marketTrends}</p>
-                         </div>
-                       </div>
-                     )}
+                    <div className="space-y-6">
+                      {lifestyleData.localFavorites && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">☕ Local Favorites</h4>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copy(lifestyleData.localFavorites)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="bg-muted p-4 rounded-lg">
+                            <p className="whitespace-pre-wrap">{lifestyleData.localFavorites}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {lifestyleData.communityLife && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">🎉 Community Life</h4>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copy(lifestyleData.communityLife)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="bg-muted p-4 rounded-lg">
+                            <p className="whitespace-pre-wrap">{lifestyleData.communityLife}</p>
+                          </div>
+                        </div>
+                      )}
 
-                     {researchData.demographics && (
-                       <div>
-                         <div className="flex items-center gap-2 mb-2">
-                           <h4 className="font-semibold">Demographics & Lifestyle</h4>
-                           <Button
-                             size="sm"
-                             variant="ghost"
-                             onClick={() => copy(researchData.demographics)}
-                           >
-                             <Copy className="h-3 w-3" />
-                           </Button>
-                         </div>
-                         <div className="bg-muted p-4 rounded-lg">
-                           <p className="whitespace-pre-wrap">{researchData.demographics}</p>
-                         </div>
-                       </div>
-                     )}
-                     
-                     {researchData.contentSuggestions && Array.isArray(researchData.contentSuggestions) && researchData.contentSuggestions.length > 0 && (
-                       <div>
-                         <h4 className="font-semibold mb-2">Content Suggestions</h4>
-                         <div className="space-y-2">
-                           {researchData.contentSuggestions.map((suggestion: string, idx: number) => (
-                             <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
-                               <span className="text-sm">{suggestion}</span>
-                               <Button
-                                 size="sm"
-                                 variant="ghost"
-                                 onClick={() => copy(suggestion)}
-                                 className="ml-2"
-                               >
-                                 <Copy className="h-3 w-3" />
-                               </Button>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
+                      {lifestyleData.familyLiving && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">👨‍👩‍👧‍👦 Family Living</h4>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copy(lifestyleData.familyLiving)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="bg-muted p-4 rounded-lg">
+                            <p className="whitespace-pre-wrap">{lifestyleData.familyLiving}</p>
+                          </div>
+                        </div>
+                      )}
 
-                     {researchData.marketingAngles && Array.isArray(researchData.marketingAngles) && researchData.marketingAngles.length > 0 && (
-                       <div>
-                         <h4 className="font-semibold mb-2">Marketing Angles</h4>
-                         <div className="space-y-2">
-                           {researchData.marketingAngles.map((angle: string, idx: number) => (
-                             <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
-                               <span className="text-sm">{angle}</span>
-                               <Button
-                                 size="sm"
-                                 variant="ghost"
-                                 onClick={() => copy(angle)}
-                                 className="ml-2"
-                               >
-                                 <Copy className="h-3 w-3" />
-                               </Button>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
-                     
-                     <div className="flex gap-2">
-                       <Button 
-                         onClick={generateResearchInsights} 
-                         disabled={researchLoading}
-                         variant="outline"
-                         size="sm"
-                       >
-                         <RefreshCw className={`h-4 w-4 mr-2 ${researchLoading ? 'animate-spin' : ''}`} />
-                         Refresh Research
-                       </Button>
-                       {researchData && (
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => copy(JSON.stringify(researchData, null, 2))}
-                         >
-                           <Copy className="h-4 w-4 mr-2" />
-                           Copy All
-                         </Button>
-                       )}
-                     </div>
-                   </div>
-                )}
+                      {lifestyleData.lifestylePerks && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">✨ Lifestyle Perks</h4>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copy(lifestyleData.lifestylePerks)}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="bg-muted p-4 rounded-lg">
+                            <p className="whitespace-pre-wrap">{lifestyleData.lifestylePerks}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {lifestyleData.socialContentIdeas && Array.isArray(lifestyleData.socialContentIdeas) && lifestyleData.socialContentIdeas.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">📸 Social Content Ideas</h4>
+                          <div className="space-y-2">
+                            {lifestyleData.socialContentIdeas.map((idea: string, idx: number) => (
+                              <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                                <span className="text-sm">{idea}</span>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copy(idea)}
+                                  className="ml-2"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {lifestyleData.emotionalHooks && Array.isArray(lifestyleData.emotionalHooks) && lifestyleData.emotionalHooks.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">💝 Emotional Hooks</h4>
+                          <div className="space-y-2">
+                            {lifestyleData.emotionalHooks.map((hook: string, idx: number) => (
+                              <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                                <span className="text-sm">{hook}</span>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copy(hook)}
+                                  className="ml-2"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={generateLifestyleInsights} 
+                          disabled={lifestyleLoading}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <RefreshCw className={`h-4 w-4 mr-2 ${lifestyleLoading ? 'animate-spin' : ''}`} />
+                          Refresh Guide
+                        </Button>
+                        {lifestyleData && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copy(JSON.stringify(lifestyleData, null, 2))}
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy All
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                 )}
               </CardContent>
             </Card>
           </TabsContent>

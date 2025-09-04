@@ -6,80 +6,76 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to parse unstructured text into research data
+// Helper function to parse text into structured lifestyle data
 function parseTextToStructuredData(text: string, neighborhood: string) {
-  const sections = text.split(/(?:\*\*|##)\s*(.*?)(?:\*\*|:)/);
-  const result = {
-    highlights: '',
-    marketTrends: '',
-    demographics: '',
-    contentSuggestions: [] as string[],
-    marketingAngles: [] as string[]
+  const lifestyle = {
+    localFavorites: "",
+    communityLife: "",
+    familyLiving: "",
+    lifestylePerks: "",
+    socialContentIdeas: [],
+    emotionalHooks: []
   };
 
-  let currentSection = '';
-  for (let i = 0; i < sections.length; i++) {
-    const section = sections[i].toLowerCase().trim();
-    
-    if (section.includes('highlight') || section.includes('feature')) {
-      currentSection = 'highlights';
-    } else if (section.includes('market') && section.includes('trend')) {
-      currentSection = 'marketTrends';
-    } else if (section.includes('demographic') || section.includes('buyer')) {
-      currentSection = 'demographics';
-    } else if (section.includes('content') || section.includes('social')) {
-      currentSection = 'contentSuggestions';
-    } else if (section.includes('marketing') || section.includes('angle') || section.includes('selling')) {
-      currentSection = 'marketingAngles';
-    } else if (currentSection && sections[i + 1]) {
-      const content = sections[i + 1].trim();
-      if (content.length > 10) {
-        if (currentSection === 'contentSuggestions' || currentSection === 'marketingAngles') {
-          // Extract numbered list items
-          const items = content.split(/\d+\.|\n-|\n\*/).filter(item => item.trim().length > 10);
-          result[currentSection] = items.map(item => item.trim()).slice(0, 5);
-        } else {
-          result[currentSection] = content.substring(0, 500);
-        }
-      }
-    }
+  // Extract local favorites section
+  const favoritesMatch = text.match(/local\s*favorites?["\s]*:?\s*["\s]*([^"}\n]+)/i);
+  if (favoritesMatch) {
+    lifestyle.localFavorites = favoritesMatch[1].trim();
   }
 
-  // Fallback extraction if structured parsing fails
-  if (!result.contentSuggestions.length) {
-    const lines = text.split('\n').filter(line => line.length > 20);
-    result.contentSuggestions = lines.slice(0, 3).map(line => line.trim());
-  }
-  
-  if (!result.marketingAngles.length) {
-    const lines = text.split('\n').filter(line => line.length > 15);
-    result.marketingAngles = lines.slice(-3).map(line => line.trim());
+  // Extract community life section  
+  const communityMatch = text.match(/community\s*life["\s]*:?\s*["\s]*([^"}\n]+)/i);
+  if (communityMatch) {
+    lifestyle.communityLife = communityMatch[1].trim();
   }
 
-  return result;
+  // Extract family living section
+  const familyMatch = text.match(/family\s*living["\s]*:?\s*["\s]*([^"}\n]+)/i);
+  if (familyMatch) {
+    lifestyle.familyLiving = familyMatch[1].trim();
+  }
+
+  // Extract lifestyle perks section
+  const perksMatch = text.match(/lifestyle\s*perks?["\s]*:?\s*["\s]*([^"}\n]+)/i);
+  if (perksMatch) {
+    lifestyle.lifestylePerks = perksMatch[1].trim();
+  }
+
+  // Extract social content ideas array
+  const socialMatch = text.match(/social\s*content\s*ideas?["\s]*:?\s*\[([^\]]+)\]/i);
+  if (socialMatch) {
+    const ideas = socialMatch[1].split(',').map(s => s.replace(/["\s]/g, '').trim()).filter(s => s);
+    lifestyle.socialContentIdeas = ideas.slice(0, 5);
+  }
+
+  // Extract emotional hooks array
+  const hooksMatch = text.match(/emotional\s*hooks?["\s]*:?\s*\[([^\]]+)\]/i);
+  if (hooksMatch) {
+    const hooks = hooksMatch[1].split(',').map(s => s.replace(/["\s]/g, '').trim()).filter(s => s);
+    lifestyle.emotionalHooks = hooks.slice(0, 5);
+  }
+
+  return lifestyle;
 }
 
-// Helper function to validate and enhance research data
-function validateAndEnhanceResearchData(data: any, originalText: string, neighborhood: string) {
+// Helper function to validate and enhance lifestyle data
+function validateAndEnhanceLifestyleData(data: any, originalText: string, neighborhood: string) {
   // Normalize text fields that may arrive as arrays/objects
-  const highlightsStr = Array.isArray(data?.highlights)
-    ? data.highlights.filter((x: any) => typeof x === 'string').join(' ')
-    : (typeof data?.highlights === 'string' ? data.highlights : '');
+  const localFavoritesStr = Array.isArray(data?.localFavorites)
+    ? data.localFavorites.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.localFavorites === 'string' ? data.localFavorites : '');
 
-  let marketTrendsStr = '';
-  if (typeof data?.marketTrends === 'string') {
-    marketTrendsStr = data.marketTrends;
-  } else if (data?.marketTrends && typeof data.marketTrends === 'object') {
-    const mt = data.marketTrends as any;
-    marketTrendsStr = [mt.currentConditions, mt.priceTrends, mt.buyerSellerDynamics]
-      .filter((x) => typeof x === 'string' && x.trim().length > 0)
-      .join(' ');
-    if (!marketTrendsStr) marketTrendsStr = JSON.stringify(mt);
-  }
+  const communityLifeStr = Array.isArray(data?.communityLife)
+    ? data.communityLife.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.communityLife === 'string' ? data.communityLife : '');
 
-  const demographicsStr = Array.isArray(data?.demographics)
-    ? data.demographics.filter((x: any) => typeof x === 'string').join(' ')
-    : (typeof data?.demographics === 'string' ? data.demographics : '');
+  const familyLivingStr = Array.isArray(data?.familyLiving)
+    ? data.familyLiving.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.familyLiving === 'string' ? data.familyLiving : '');
+
+  const lifestylePerksStr = Array.isArray(data?.lifestylePerks)
+    ? data.lifestylePerks.filter((x: any) => typeof x === 'string').join(' ')
+    : (typeof data?.lifestylePerks === 'string' ? data.lifestylePerks : '');
 
   // Normalize arrays that may contain objects (e.g., { platform, caption }) or strings
   const normalizeToStrings = (arr: any[]): string[] => {
@@ -88,8 +84,8 @@ function validateAndEnhanceResearchData(data: any, originalText: string, neighbo
       .flatMap((item) => {
         if (typeof item === 'string') return [item];
         if (item && typeof item === 'object') {
-          const { caption, text, content, idea, description, title, prompt, angle } = item as any;
-          const candidates = [caption, text, content, idea, description, title, prompt, angle]
+          const { caption, text, content, idea, description, title, prompt, angle, hook } = item as any;
+          const candidates = [caption, text, content, idea, description, title, prompt, angle, hook]
             .filter((v) => typeof v === 'string' && v.trim().length > 0);
           return candidates.length ? [candidates[0]] : [];
         }
@@ -100,42 +96,43 @@ function validateAndEnhanceResearchData(data: any, originalText: string, neighbo
       .slice(0, 5);
   };
 
-  let contentSuggestions = normalizeToStrings(data?.contentSuggestions ?? []);
-  let marketingAngles = normalizeToStrings(data?.marketingAngles ?? []);
+  let socialContentIdeas = normalizeToStrings(data?.socialContentIdeas ?? []);
+  let emotionalHooks = normalizeToStrings(data?.emotionalHooks ?? []);
 
   const enhanced = {
-    highlights: highlightsStr || `${neighborhood} offers unique opportunities in today's market.`,
-    marketTrends: marketTrendsStr || `Current market analysis for ${neighborhood} shows active conditions.`,
-    demographics: demographicsStr || `${neighborhood} attracts diverse buyers seeking quality living.`,
-    contentSuggestions,
-    marketingAngles,
+    localFavorites: localFavoritesStr || `${neighborhood} features beloved local coffee shops, restaurants, and community gathering spots.`,
+    communityLife: communityLifeStr || `${neighborhood} has an active community with regular events and strong neighborhood connections.`,
+    familyLiving: familyLivingStr || `${neighborhood} offers excellent schools, parks, and family-friendly amenities.`,
+    lifestylePerks: lifestylePerksStr || `${neighborhood} provides convenient commutes, walkable streets, and modern amenities.`,
+    socialContentIdeas,
+    emotionalHooks,
   };
 
-  // Ensure we have meaningful content suggestions
+  // Ensure we have meaningful social content ideas
   if (
-    enhanced.contentSuggestions.length === 0 ||
-    enhanced.contentSuggestions.some((item) => typeof item === 'string' && item.toLowerCase().includes('research available'))
+    enhanced.socialContentIdeas.length === 0 ||
+    enhanced.socialContentIdeas.some((item) => typeof item === 'string' && item.toLowerCase().includes('research available'))
   ) {
-    enhanced.contentSuggestions = [
-      `Discover what makes ${neighborhood} special - local insights and market trends`,
-      `Why ${neighborhood} is attracting today's smart buyers`,
-      `Market snapshot: What's happening in ${neighborhood} real estate`,
-      `Local lifestyle: The ${neighborhood} advantage for homeowners`,
-      `Investment potential: ${neighborhood}'s growing market appeal`,
+    enhanced.socialContentIdeas = [
+      `Morning coffee spots that make ${neighborhood} residents smile`,
+      `Weekend family activities in ${neighborhood} parks and trails`,
+      `Local hidden gems only ${neighborhood} residents know about`,
+      `Seasonal community events that bring ${neighborhood} together`,
+      `Why ${neighborhood}'s walkable streets are perfect for evening strolls`,
     ];
   }
 
-  // Ensure we have meaningful marketing angles
+  // Ensure we have meaningful emotional hooks
   if (
-    enhanced.marketingAngles.length === 0 ||
-    enhanced.marketingAngles.some((item) => typeof item === 'string' && item.toLowerCase().includes('enhanced insights'))
+    enhanced.emotionalHooks.length === 0 ||
+    enhanced.emotionalHooks.some((item) => typeof item === 'string' && item.toLowerCase().includes('enhanced insights'))
   ) {
-    enhanced.marketingAngles = [
-      `Position ${neighborhood} as an emerging opportunity`,
-      `Highlight unique local amenities and lifestyle benefits`,
-      `Emphasize market stability and growth potential`,
-      `Focus on community features and neighborhood charm`,
-      `Showcase accessibility and convenience factors`,
+    enhanced.emotionalHooks = [
+      `${neighborhood}: Where neighbors become lifelong friends`,
+      `The community spirit that makes ${neighborhood} feel like home`,
+      `Quality of life that busy families find in ${neighborhood}`,
+      `Local charm meets modern convenience in ${neighborhood}`,
+      `Why families choose to stay and grow in ${neighborhood}`,
     ];
   }
 
@@ -167,23 +164,26 @@ serve(async (req) => {
       });
     }
 
-    // Build comprehensive research prompt
-    const researchPrompt = `As a real estate market research expert, provide comprehensive insights for ${neighborhood}, ${county}, ${state}.
+  const lifestylePrompt = `Generate comprehensive hyper-local lifestyle insights for ${neighborhood} in ${county}, ${state}.
 
+Please provide structured data in the following JSON format:
+{
+  "localFavorites": "Top local coffee shops, restaurants, hidden gems, and neighborhood spots that residents love",
+  "communityLife": "Local events, traditions, community culture, and what makes this neighborhood unique",
+  "familyLiving": "Schools, parks, kid-friendly activities, and family amenities",
+  "lifestylePerks": "Commute options, walkability, convenience factors, and daily life advantages", 
+  "socialContentIdeas": ["5 Instagram-worthy lifestyle content ideas", "specific to this neighborhood's character"],
+  "emotionalHooks": ["5 lifestyle-focused marketing angles", "about why people love living here"]
+}
+
+Context about the neighborhood:
 ${marketData ? `Current market data: ${JSON.stringify(marketData)}` : ''}
 
-Please provide:
-1. **Neighborhood Highlights**: Key features, amenities, and attractions that make this area desirable
-2. **Market Trends**: Current market conditions, price trends, and buyer/seller dynamics
-3. **Demographics**: Target buyer profiles and lifestyle characteristics
-4. **Content Suggestions**: 5 engaging social media post ideas specific to this area
-5. **Marketing Angles**: Unique selling points and positioning strategies for real estate professionals
+Focus on authentic lifestyle experiences, local character, and emotional connections that make people want to live in this neighborhood. Emphasize community feel, daily experiences, and what makes residents proud to call this place home.`;
 
-Format as JSON with sections: "highlights", "marketTrends", "demographics", "contentSuggestions", "marketingAngles".`;
+    console.log('Lifestyle prompt for:', neighborhood, county, state);
 
-    console.log('Research prompt for:', neighborhood, county, state);
-
-    // Call Gemini API for research
+    // Call Gemini API for lifestyle research
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${googleApiKey}`, {
       method: 'POST',
       headers: {
@@ -193,7 +193,7 @@ Format as JSON with sections: "highlights", "marketTrends", "demographics", "con
         contents: [
           {
             parts: [
-              { text: researchPrompt }
+              { text: lifestylePrompt }
             ]
           }
         ],
@@ -242,42 +242,42 @@ Format as JSON with sections: "highlights", "marketTrends", "demographics", "con
       );
     }
 
-    const researchText = data.candidates[0].content.parts[0].text;
+    const lifestyleText = data.candidates[0].content.parts[0].text;
     
-    console.log('Raw research response:', researchText);
-    console.log('Research generated successfully for:', neighborhood);
+    console.log('Raw lifestyle response:', lifestyleText);
+    console.log('Lifestyle guide generated successfully for:', neighborhood);
     
     // Enhanced JSON parsing with multiple strategies
-    let researchData;
+    let lifestyleData;
     try {
       // First try direct JSON parsing
-      researchData = JSON.parse(researchText);
+      lifestyleData = JSON.parse(lifestyleText);
       console.log('Successfully parsed as JSON');
     } catch {
       console.log('Direct JSON parsing failed, trying extraction methods...');
       
       // Try to extract JSON from markdown code blocks
-      const jsonMatch = researchText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      const jsonMatch = lifestyleText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (jsonMatch) {
         try {
-          researchData = JSON.parse(jsonMatch[1]);
+          lifestyleData = JSON.parse(jsonMatch[1]);
           console.log('Successfully extracted JSON from markdown');
         } catch {
           console.log('Markdown JSON extraction failed, using text parsing');
-          researchData = parseTextToStructuredData(researchText, neighborhood);
+          lifestyleData = parseTextToStructuredData(lifestyleText, neighborhood);
         }
       } else {
         console.log('No JSON blocks found, using text parsing');
-        researchData = parseTextToStructuredData(researchText, neighborhood);
+        lifestyleData = parseTextToStructuredData(lifestyleText, neighborhood);
       }
     }
 
     // Validate and ensure all required fields exist
-    researchData = validateAndEnhanceResearchData(researchData, researchText, neighborhood);
+    lifestyleData = validateAndEnhanceLifestyleData(lifestyleData, lifestyleText, neighborhood);
 
     return new Response(
       JSON.stringify({ 
-        research: researchData,
+        lifestyle: lifestyleData,
         location: `${neighborhood}, ${county}, ${state}`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -285,7 +285,7 @@ Format as JSON with sections: "highlights", "marketTrends", "demographics", "con
   } catch (error: any) {
     console.error('Error in google-research function:', error);
     return new Response(
-      JSON.stringify({ error: 'Research failed', details: error?.message }),
+      JSON.stringify({ error: 'Lifestyle generation failed', details: error?.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
