@@ -92,6 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      enhanced_images: {
+        Row: {
+          category: string | null
+          created_at: string
+          dimensions: Json | null
+          enhanced_url: string | null
+          enhancement_preset: string | null
+          enhancement_settings: Json | null
+          file_size: number | null
+          id: string
+          original_filename: string
+          original_url: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          enhanced_url?: string | null
+          enhancement_preset?: string | null
+          enhancement_settings?: Json | null
+          file_size?: number | null
+          id?: string
+          original_filename: string
+          original_url: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          dimensions?: Json | null
+          enhanced_url?: string | null
+          enhancement_preset?: string | null
+          enhancement_settings?: Json | null
+          file_size?: number | null
+          id?: string
+          original_filename?: string
+          original_url?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       market_reports: {
         Row: {
           active_listings: number | null

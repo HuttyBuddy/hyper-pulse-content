@@ -13,6 +13,7 @@ import ContentPackage from "./pages/ContentPackage";
 import Editor from "./pages/Editor";
 import Profile from "./pages/Profile";
 import SignUp from "./pages/SignUp";
+import ImageStudio from "./pages/ImageStudio";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ManageSubscription from "./pages/ManageSubscription";
 
@@ -64,6 +65,14 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <Profile />
+                  <ChatSheet />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/image-studio" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <ImageStudio />
                   <ChatSheet />
                 </ChatProvider>
               </ProtectedRoute>

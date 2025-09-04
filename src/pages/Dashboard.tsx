@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Home, CreditCard } from "lucide-react";
+import { BarChart3, Home, CreditCard, ImagePlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
@@ -180,6 +180,34 @@ const Dashboard = () => {
               </CardHeader>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Access your most-used tools</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                <Link to="/image-studio">
+                  <ImagePlus className="h-5 w-5 mb-2" />
+                  <div className="text-left">
+                    <div className="font-medium">Image Studio</div>
+                    <div className="text-sm text-muted-foreground">Upload & enhance lifestyle photos</div>
+                  </div>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                <Link to="/editor">
+                  <div className="text-left">
+                    <div className="font-medium">Newsletter Editor</div>
+                    <div className="text-sm text-muted-foreground">Create branded newsletters</div>
+                  </div>
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
