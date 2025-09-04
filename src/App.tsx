@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ChatProvider } from "@/contexts/ChatContext";
 import ChatSheet from "@/components/chat/ChatSheet";
+import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -34,6 +35,7 @@ const App = () => (
                 <ChatProvider>
                   <Dashboard />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -42,6 +44,7 @@ const App = () => (
                 <ChatProvider>
                   <ContentPackage />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -50,6 +53,7 @@ const App = () => (
                 <ChatProvider>
                   <ContentPackage />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -58,6 +62,7 @@ const App = () => (
                 <ChatProvider>
                   <Editor />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -66,6 +71,7 @@ const App = () => (
                 <ChatProvider>
                   <Profile />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -74,6 +80,7 @@ const App = () => (
                 <ChatProvider>
                   <ImageStudio />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
@@ -82,6 +89,7 @@ const App = () => (
                 <ChatProvider>
                   <ManageSubscription />
                   <ChatSheet />
+                  <ChatFloatingButton />
                 </ChatProvider>
               </ProtectedRoute>
             } />
