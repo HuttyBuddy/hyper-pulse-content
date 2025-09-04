@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_analytics: {
+        Row: {
+          content_id: string | null
+          content_type: string
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          referrer: string | null
+          user_agent: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       content_history: {
         Row: {
           content: string
@@ -92,6 +140,175 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_tracking: {
+        Row: {
+          attribution_data: Json | null
+          attribution_source: string | null
+          conversion_date: string
+          conversion_type: string
+          conversion_value: number | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attribution_data?: Json | null
+          attribution_source?: string | null
+          conversion_date?: string
+          conversion_type: string
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attribution_data?: Json | null
+          attribution_source?: string | null
+          conversion_date?: string
+          conversion_type?: string
+          conversion_value?: number | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversion_tracking_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "lead_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_campaigns: {
+        Row: {
+          bounce_rate: number | null
+          campaign_name: string
+          campaign_settings: Json | null
+          click_rate: number | null
+          content_id: string | null
+          created_at: string
+          id: string
+          open_rate: number | null
+          preview_text: string | null
+          recipients_count: number
+          scheduled_at: string | null
+          sender_email: string | null
+          sender_name: string | null
+          sent_at: string | null
+          status: string
+          subject_line: string
+          unsubscribe_rate: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bounce_rate?: number | null
+          campaign_name: string
+          campaign_settings?: Json | null
+          click_rate?: number | null
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          open_rate?: number | null
+          preview_text?: string | null
+          recipients_count?: number
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject_line: string
+          unsubscribe_rate?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bounce_rate?: number | null
+          campaign_name?: string
+          campaign_settings?: Json | null
+          click_rate?: number | null
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          open_rate?: number | null
+          preview_text?: string | null
+          recipients_count?: number
+          scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject_line?: string
+          unsubscribe_rate?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_recipients: {
+        Row: {
+          bounce_reason: string | null
+          campaign_id: string
+          clicked_at: string | null
+          created_at: string
+          delivery_status: string
+          id: string
+          opened_at: string | null
+          recipient_email: string
+          recipient_name: string | null
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bounce_reason?: string | null
+          campaign_id: string
+          clicked_at?: string | null
+          created_at?: string
+          delivery_status?: string
+          id?: string
+          opened_at?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bounce_reason?: string | null
+          campaign_id?: string
+          clicked_at?: string | null
+          created_at?: string
+          delivery_status?: string
+          id?: string
+          opened_at?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enhanced_images: {
         Row: {
           category: string | null
@@ -139,6 +356,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      lead_capture_forms: {
+        Row: {
+          created_at: string
+          embed_code: string
+          form_config: Json
+          form_name: string
+          form_type: string
+          id: string
+          is_active: boolean
+          landing_page_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          embed_code: string
+          form_config?: Json
+          form_name: string
+          form_type: string
+          id?: string
+          is_active?: boolean
+          landing_page_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          embed_code?: string
+          form_config?: Json
+          form_name?: string
+          form_type?: string
+          id?: string
+          is_active?: boolean
+          landing_page_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_submissions: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          lead_data: Json
+          lead_score: number | null
+          notes: string | null
+          source_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          lead_data?: Json
+          lead_score?: number | null
+          notes?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          lead_data?: Json
+          lead_score?: number | null
+          notes?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "lead_capture_forms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       market_reports: {
         Row: {
