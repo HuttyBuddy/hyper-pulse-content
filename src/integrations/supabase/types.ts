@@ -296,6 +296,125 @@ export type Database = {
         }
         Relationships: []
       }
+      social_media_analytics: {
+        Row: {
+          id: string
+          metrics: Json
+          platform: string
+          recorded_at: string
+          social_media_post_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          metrics?: Json
+          platform: string
+          recorded_at?: string
+          social_media_post_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          metrics?: Json
+          platform?: string
+          recorded_at?: string
+          social_media_post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_media_analytics_social_media_post_id_fkey"
+            columns: ["social_media_post_id"]
+            isOneToOne: false
+            referencedRelation: "social_media_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_media_posts: {
+        Row: {
+          content_history_id: string | null
+          created_at: string
+          engagement_metrics: Json | null
+          id: string
+          media_urls: string[] | null
+          platform: string
+          platform_post_id: string | null
+          post_content: string
+          posted_at: string | null
+          scheduled_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_history_id?: string | null
+          created_at?: string
+          engagement_metrics?: Json | null
+          id?: string
+          media_urls?: string[] | null
+          platform: string
+          platform_post_id?: string | null
+          post_content: string
+          posted_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_history_id?: string | null
+          created_at?: string
+          engagement_metrics?: Json | null
+          id?: string
+          media_urls?: string[] | null
+          platform?: string
+          platform_post_id?: string | null
+          post_content?: string
+          posted_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_media_templates: {
+        Row: {
+          created_at: string
+          hashtags: string[] | null
+          id: string
+          is_public: boolean
+          name: string
+          platform: string
+          template_content: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          is_public?: boolean
+          name: string
+          platform: string
+          template_content: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          platform?: string
+          template_content?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
