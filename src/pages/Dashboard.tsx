@@ -7,10 +7,14 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
+import { AISuggestions } from "@/components/content/AISuggestions";
 
 const Dashboard = () => {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(true);
   const [stats, setStats] = useState({
     contentCount: 0,
     neighborhoodCount: 0,
@@ -26,12 +30,19 @@ const Dashboard = () => {
       // Fetch profile
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('name, neighborhood, county, state, neighborhood_slug')
+        .select('name, neighborhood, county, state, neighborhood_slug, onboarding_completed')
         .eq('user_id', user.id)
         .maybeSingle();
       
       if (!error && isMounted) {
         setDisplayName(profile?.name ?? null);
+        const isOnboardingCompleted = profile?.onboarding_completed ?? false;
+        setOnboardingCompleted(isOnboardingCompleted);
+        
+        // Show welcome tour for new users
+        if (!isOnboardingCompleted) {
+          setShowWelcomeTour(true);
+        }
         
         // Get user's neighborhoods from market reports
         const { data: reports } = await supabase
@@ -81,6 +92,22 @@ const Dashboard = () => {
   const generateContentUrl = (neighborhood: any) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     return `/content/${neighborhood.neighborhood_slug}-${today}`;
+  };
+
+  const handleCompleteTour = async () => {
+    setShowWelcomeTour(false);
+    setOnboardingCompleted(true);
+    
+    // Update profile to mark onboarding as completed
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from('profiles')
+        .upsert({ 
+          user_id: user.id, 
+          onboarding_completed: true 
+        });
+    }
   };
 
   return (
@@ -189,8 +216,20 @@ const Dashboard = () => {
               </Button>
             </CardContent>
           </Card>
+          
+          {onboardingCompleted && (
+            <AISuggestions 
+              neighborhood={userNeighborhoods[0]?.neighborhood}
+              recentContentTypes={[]}
+            />
+          )}
         </section>
       </main>
+      
+      <WelcomeTour 
+        open={showWelcomeTour} 
+        onComplete={handleCompleteTour} 
+      />
     </>
   );
 };

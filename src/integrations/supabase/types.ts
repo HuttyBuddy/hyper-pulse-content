@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_history: {
+        Row: {
+          content: string
+          content_type: string
+          county: string | null
+          created_at: string
+          id: string
+          neighborhood: string | null
+          report_date: string | null
+          state: string | null
+          template_used: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          content_type: string
+          county?: string | null
+          created_at?: string
+          id?: string
+          neighborhood?: string | null
+          report_date?: string | null
+          state?: string | null
+          template_used?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          content_type?: string
+          county?: string | null
+          created_at?: string
+          id?: string
+          neighborhood?: string | null
+          report_date?: string | null
+          state?: string | null
+          template_used?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_templates: {
+        Row: {
+          content_type: string
+          created_at: string
+          id: string
+          is_public: boolean
+          name: string
+          template_content: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name: string
+          template_content: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          template_content?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       market_reports: {
         Row: {
           active_listings: number | null
@@ -131,6 +209,7 @@ export type Database = {
           name: string | null
           neighborhood: string | null
           neighborhood_slug: string | null
+          onboarding_completed: boolean
           state: string | null
           updated_at: string
           user_id: string
@@ -146,6 +225,7 @@ export type Database = {
           name?: string | null
           neighborhood?: string | null
           neighborhood_slug?: string | null
+          onboarding_completed?: boolean
           state?: string | null
           updated_at?: string
           user_id: string
@@ -161,6 +241,7 @@ export type Database = {
           name?: string | null
           neighborhood?: string | null
           neighborhood_slug?: string | null
+          onboarding_completed?: boolean
           state?: string | null
           updated_at?: string
           user_id?: string

@@ -9,9 +9,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { RefreshCw, ArrowLeft, Copy, Download, Trash2, Sparkles, Search, ImageIcon, Wand2 } from "lucide-react";
+import { RefreshCw, ArrowLeft, Copy, Download, Trash2, Sparkles, Search, ImageIcon, Wand2, History, BookTemplate } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import NeighborhoodSelector from "@/components/NeighborhoodSelector";
+import { ContentTemplates } from "@/components/content/ContentTemplates";
+import { ContentHistory } from "@/components/content/ContentHistory";
+import { AISuggestions } from "@/components/content/AISuggestions";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
@@ -623,10 +626,12 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
         </header>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-6 w-full">
             <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
             <TabsTrigger value="social">Social Media Posts</TabsTrigger>
             <TabsTrigger value="lifestyle">Lifestyle Guide</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
             <TabsTrigger value="data">Market Data</TabsTrigger>
           </TabsList>
 
@@ -937,6 +942,19 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                  )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="templates">
+            <ContentTemplates 
+              onSelectTemplate={(template) => {
+                // Apply template to current content
+                toast.success(`Applied template: ${template.name}`);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <ContentHistory />
           </TabsContent>
 
           <TabsContent value="data">
