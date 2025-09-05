@@ -1,16 +1,19 @@
-import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
+import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
-import { openCustomerPortal, refreshSubscriptionStatus, createCheckout } from "@/lib/billing";
+import { openCustomerPortal, createCheckout } from "@/lib/billing";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Check, Crown, Zap, Star } from "lucide-react";
 
 const ManageSubscription = () => {
   const [loading, setLoading] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
-  const [subscription, setSubscription] = useState<{ subscribed: boolean; subscription_tier?: string | null; subscription_end?: string | null } | null>(null);
+  const { subscription, loading: subscriptionLoading, refreshSubscription } = useSubscription();
 
   const openPortal = async () => {
     try {
@@ -29,13 +32,10 @@ const ManageSubscription = () => {
   const refreshStatus = async () => {
     try {
       setLoading(true);
-      const res = await refreshSubscriptionStatus();
-      if (res.ok) {
-        setSubscription(res.data || null);
-        setLastError(null);
-      } else {
-        setLastError(res.error || "Failed to refresh subscription status");
-      }
+      await refreshSubscription();
+      setLastError(null);
+    } catch (error) {
+      setLastError(error instanceof Error ? error.message : "Failed to refresh subscription status");
     } finally {
       setLoading(false);
     }
@@ -61,90 +61,203 @@ const ManageSubscription = () => {
     if (checkout === "success" || checkout === "canceled") {
       refreshStatus();
       if (checkout === "success") {
-        toast("Subscription updated");
+        toast("Subscription updated successfully!");
       }
     }
   }, []);
 
+  const plans = [
+    {
+      name: "Free",
+      price: "$0",
+      period: "forever",
+      features: [
+        "3 neighborhoods",
+        "10 AI generations/month",
+        "Basic templates",
+        "Email support"
+      ],
+      current: !subscription?.subscribed
+    },
+    {
+      name: "Premium",
+      price: "$9.99",
+      period: "month",
+      features: [
+        "Unlimited neighborhoods",
+        "Unlimited AI generations",
+        "Premium templates",
+        "Advanced analytics",
+        "Priority support",
+        "Social media automation"
+      ],
+      current: subscription?.subscription_tier === "Premium",
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: "$29.99",
+      period: "month",
+      features: [
+        "Everything in Premium",
+        "White-label branding",
+        "Custom integrations",
+        "Dedicated support",
+        "Advanced automation",
+        "Team collaboration"
+      ],
+      current: subscription?.subscription_tier === "Enterprise"
+    }
+  ];
+
   return (
-    <>
-      <Helmet>
-        <title>Manage Subscription — Hyper-Local Pulse</title>
-        <meta name="description" content="Manage your subscription, billing, and payments securely via the customer portal." />
-        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/manage-subscription'} />
-      </Helmet>
+    <AppLayout 
+      title="Manage Subscription — Hyper-Local Pulse"
+      description="Manage your subscription, billing, and payments securely. Choose the perfect plan for your real estate marketing needs."
+    >
       <AppHeader />
-      <main className="container py-8 grid gap-6">
-        <h1 className="sr-only">Manage Subscription</h1>
-        <section>
+      <main className="container py-8 space-y-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">Subscription Plans</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Choose the perfect plan for your real estate marketing needs. Upgrade or downgrade anytime.
+          </p>
+          
+          {subscription?.subscribed && (
+            <Badge variant="secondary" className="text-sm">
+              Currently on {subscription.subscription_tier} plan
+            </Badge>
+          )}
+        </div>
+
+        {/* Pricing Cards */}
+        <section className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {plans.map((plan) => (
+            <Card key={plan.name} className={`relative ${plan.current ? 'border-primary shadow-lg' : ''} ${plan.popular ? 'border-primary' : ''}`}>
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge variant="default" className="bg-primary text-primary-foreground">
+                    <Star className="h-3 w-3 mr-1" />
+                    Most Popular
+                  </Badge>
+                </div>
+              )}
+              
+              {plan.current && (
+                <div className="absolute -top-3 right-4">
+                  <Badge variant="secondary">
+                    <Check className="h-3 w-3 mr-1" />
+                    Current Plan
+                  </Badge>
+                </div>
+              )}
+
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="flex items-center justify-center gap-2">
+                  {plan.name === "Premium" && <Crown className="h-5 w-5 text-primary" />}
+                  {plan.name === "Enterprise" && <Zap className="h-5 w-5 text-primary" />}
+                  {plan.name}
+                </CardTitle>
+                <div className="space-y-1">
+                  <div className="text-3xl font-bold">{plan.price}</div>
+                  <div className="text-sm text-muted-foreground">per {plan.period}</div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <ul className="space-y-2">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2 text-sm">
+                      <Check className="h-4 w-4 text-primary" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <Button 
+                  className="w-full" 
+                  variant={plan.current ? "outline" : plan.popular ? "default" : "secondary"}
+                  onClick={plan.current ? openPortal : subscribeNow}
+                  disabled={loading || subscriptionLoading}
+                >
+                  {loading || subscriptionLoading ? "Loading..." : 
+                   plan.current ? "Manage Plan" : 
+                   plan.name === "Free" ? "Current Plan" : "Upgrade Now"}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+
+        {/* Management Section */}
+        <section className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Manage Subscription</CardTitle>
-              <CardDescription>Open the secure billing portal to update your plan or payment method.</CardDescription>
+              <CardTitle>Subscription Management</CardTitle>
+              <CardDescription>
+                Manage your billing, update payment methods, or view your subscription history.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-3">
-                <Button onClick={subscribeNow} disabled={loading}>
-                  {loading ? "Starting Checkout…" : "Subscribe (Test Mode)"}
+                <Button variant="outline" onClick={openPortal} disabled={loading}>
+                  {loading ? "Opening Portal…" : "Billing Portal"}
                 </Button>
-                <Button variant="secondary" onClick={openPortal} disabled={loading}>
-                  {loading ? "Opening Portal…" : "Open Subscription Portal"}
-                </Button>
-                <Button variant="outline" onClick={refreshStatus} disabled={loading}>
-                  {loading ? "Checking…" : "Refresh Subscription Status"}
+                <Button variant="outline" onClick={refreshStatus} disabled={loading || subscriptionLoading}>
+                  {loading || subscriptionLoading ? "Checking…" : "Refresh Status"}
                 </Button>
               </div>
 
               {lastError && (
                 <Alert variant="destructive">
-                  <AlertTitle>Could not open portal</AlertTitle>
+                  <AlertTitle>Error</AlertTitle>
                   <AlertDescription className="space-y-2">
                     <div className="text-sm break-words">{lastError}</div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(lastError);
-                          toast("Error copied");
-                        }}
-                      >
-                        Copy error
-                      </Button>
-                      <a
-                        className="underline text-sm"
-                        href="https://supabase.com/dashboard/project/fcayyxezuevsredxzmdj/functions/customer-portal/logs"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View logs
-                      </a>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(lastError);
+                        toast("Error copied to clipboard");
+                      }}
+                    >
+                      Copy Error
+                    </Button>
                   </AlertDescription>
                 </Alert>
               )}
 
               {subscription && (
-                <div className="text-sm text-muted-foreground">
-                  <div>
-                    Status: {subscription.subscribed ? "Active" : "Inactive"}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <Badge variant={subscription.subscribed ? "default" : "secondary"}>
+                      {subscription.subscribed ? "Active" : "Inactive"}
+                    </Badge>
                   </div>
                   {subscription.subscription_tier && (
-                    <div>Plan: {subscription.subscription_tier}</div>
+                    <div className="flex justify-between">
+                      <span>Current Plan:</span>
+                      <span className="font-medium">{subscription.subscription_tier}</span>
+                    </div>
                   )}
                   {subscription.subscription_end && (
-                    <div>Renews/ends: {new Date(subscription.subscription_end).toLocaleString()}</div>
+                    <div className="flex justify-between">
+                      <span>Next Billing:</span>
+                      <span>{new Date(subscription.subscription_end).toLocaleDateString()}</span>
+                    </div>
                   )}
                 </div>
               )}
 
-              <p className="text-sm text-muted-foreground">
-                Test mode: use card 4242 4242 4242 4242, any future date, any CVC, any ZIP. You’ll be redirected in a new tab.
+              <p className="text-xs text-muted-foreground">
+                Test mode active: Use card 4242 4242 4242 4242 with any future date and CVC.
               </p>
             </CardContent>
           </Card>
         </section>
       </main>
-    </>
+    </AppLayout>
   );
 };
 
