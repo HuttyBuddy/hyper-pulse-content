@@ -3,8 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Eye, Share2, Download } from "lucide-react";
+import { Calendar, Eye, Share2, Download, Maximize2, Minimize2, ZoomIn, ZoomOut, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ContentMetrics {
   name: string;
@@ -33,6 +36,8 @@ const AnalyticsDashboard = () => {
   const [contentMetrics, setContentMetrics] = useState<ContentMetrics[]>([]);
   const [channelPerformance, setChannelPerformance] = useState<ChannelPerformance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     fetchDashboardData();
@@ -105,6 +110,28 @@ const AnalyticsDashboard = () => {
     }
   };
 
+  const handleDownload = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = 800;
+    canvas.height = 400;
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'black';
+    ctx.font = '16px Arial';
+    ctx.fillText('Content Performance Chart', 20, 30);
+    
+    const link = document.createElement('a');
+    link.download = 'content-performance-chart.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.2, 2));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
+
   if (loading) {
     return <div className="text-center py-8">Loading analytics data...</div>;
   }
@@ -112,11 +139,35 @@ const AnalyticsDashboard = () => {
   return (
     <div className="grid gap-6">
       {/* Content Performance Chart */}
-      <Card>
+      <Card className="cursor-pointer" onClick={() => setIsExpanded(true)}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Content Performance Over Time
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Content Performance Over Time
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload();
+                }}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(true);
+                }}
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
             Track how your content generates views, leads, and revenue
@@ -152,6 +203,70 @@ const AnalyticsDashboard = () => {
           </ChartContainer>
         </CardContent>
       </Card>
+
+      {/* Expanded Chart Dialog */}
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className={`${isMobile ? 'w-full h-full max-w-none m-0 p-0' : 'max-w-6xl'}`}>
+          <DialogHeader className="p-6 pb-4">
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Content Performance Over Time
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleZoomOut}>
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">{Math.round(zoomLevel * 100)}%</span>
+                <Button variant="ghost" size="sm" onClick={handleZoomIn}>
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleDownload}>
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-120px)]' : 'h-[70vh]'} px-6`}>
+            <div style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
+              <ChartContainer
+                config={{
+                  views: { label: "Page Views", color: "hsl(var(--primary))" },
+                  leads: { label: "Leads Generated", color: "hsl(var(--secondary))" },
+                }}
+                className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} w-full`}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={contentMetrics}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="views" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="leads" 
+                      stroke="hsl(var(--secondary))" 
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
         {/* Channel Performance */}
