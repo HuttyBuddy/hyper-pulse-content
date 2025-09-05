@@ -37,6 +37,7 @@ const AnalyticsDashboard = () => {
   const [channelPerformance, setChannelPerformance] = useState<ChannelPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedChart, setExpandedChart] = useState<'performance' | 'sources' | 'conversion' | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ const AnalyticsDashboard = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = (chartType: string) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -121,10 +122,10 @@ const AnalyticsDashboard = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'black';
     ctx.font = '16px Arial';
-    ctx.fillText('Content Performance Chart', 20, 30);
+    ctx.fillText(`${chartType} Chart`, 20, 30);
     
     const link = document.createElement('a');
-    link.download = 'content-performance-chart.png';
+    link.download = `${chartType.toLowerCase().replace(/\s+/g, '-')}-chart.png`;
     link.href = canvas.toDataURL();
     link.click();
   };
@@ -139,7 +140,7 @@ const AnalyticsDashboard = () => {
   return (
     <div className="grid gap-6">
       {/* Content Performance Chart */}
-      <Card className="cursor-pointer" onClick={() => setIsExpanded(true)}>
+      <Card className="cursor-pointer" onClick={() => setExpandedChart('performance')}>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -152,7 +153,7 @@ const AnalyticsDashboard = () => {
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDownload();
+                  handleDownload('Content Performance');
                 }}
               >
                 <Download className="h-4 w-4" />
@@ -162,7 +163,7 @@ const AnalyticsDashboard = () => {
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsExpanded(true);
+                  setExpandedChart('performance');
                 }}
               >
                 <Maximize2 className="h-4 w-4" />
@@ -205,13 +206,17 @@ const AnalyticsDashboard = () => {
       </Card>
 
       {/* Expanded Chart Dialog */}
-      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+      <Dialog open={!!expandedChart} onOpenChange={() => setExpandedChart(null)}>
         <DialogContent className={`${isMobile ? 'w-full h-full max-w-none m-0 p-0' : 'max-w-6xl'}`}>
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Content Performance Over Time
+                {expandedChart === 'performance' && <Eye className="h-5 w-5" />}
+                {expandedChart === 'sources' && <Share2 className="h-5 w-5" />}
+                {expandedChart === 'conversion' && <Calendar className="h-5 w-5" />}
+                {expandedChart === 'performance' && 'Content Performance Over Time'}
+                {expandedChart === 'sources' && 'Lead Sources'}
+                {expandedChart === 'conversion' && 'Conversion Rates'}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={handleZoomOut}>
@@ -221,13 +226,20 @@ const AnalyticsDashboard = () => {
                 <Button variant="ghost" size="sm" onClick={handleZoomIn}>
                   <ZoomIn className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleDownload}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleDownload(
+                    expandedChart === 'performance' ? 'Content Performance' :
+                    expandedChart === 'sources' ? 'Lead Sources' : 'Conversion Rates'
+                  )}
+                >
                   <Download className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsExpanded(false)}
+                  onClick={() => setExpandedChart(null)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -236,33 +248,78 @@ const AnalyticsDashboard = () => {
           </DialogHeader>
           <ScrollArea className={`${isMobile ? 'h-[calc(100vh-120px)]' : 'h-[70vh]'} px-6`}>
             <div style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
-              <ChartContainer
-                config={{
-                  views: { label: "Page Views", color: "hsl(var(--primary))" },
-                  leads: { label: "Leads Generated", color: "hsl(var(--secondary))" },
-                }}
-                className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} w-full`}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={contentMetrics}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="views" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="leads" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {expandedChart === 'performance' && (
+                <ChartContainer
+                  config={{
+                    views: { label: "Page Views", color: "hsl(var(--primary))" },
+                    leads: { label: "Leads Generated", color: "hsl(var(--secondary))" },
+                  }}
+                  className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} w-full`}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={contentMetrics}>
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="views" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="leads" 
+                        stroke="hsl(var(--secondary))" 
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
+              {expandedChart === 'sources' && (
+                <ChartContainer
+                  config={{
+                    leads: { label: "Leads", color: "hsl(var(--primary))" }
+                  }}
+                  className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} w-full`}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={channelPerformance}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        dataKey="leads"
+                        nameKey="channel"
+                      >
+                        {channelPerformance.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
+              {expandedChart === 'conversion' && (
+                <ChartContainer
+                  config={{
+                    conversion: { label: "Conversion %", color: "hsl(var(--primary))" }
+                  }}
+                  className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} w-full`}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={channelPerformance}>
+                      <XAxis dataKey="channel" />
+                      <YAxis />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="conversion" fill="hsl(var(--primary))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
             </div>
           </ScrollArea>
         </DialogContent>
@@ -270,11 +327,35 @@ const AnalyticsDashboard = () => {
 
       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
         {/* Channel Performance */}
-        <Card>
+        <Card className="cursor-pointer" onClick={() => setExpandedChart('sources')}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Share2 className="h-5 w-5" />
-              Lead Sources
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Share2 className="h-5 w-5" />
+                Lead Sources
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload('Lead Sources');
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedChart('sources');
+                  }}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              </div>
             </CardTitle>
             <CardDescription>
               Which channels generate the most leads
@@ -309,11 +390,35 @@ const AnalyticsDashboard = () => {
         </Card>
 
         {/* Conversion Rates by Channel */}
-        <Card>
+        <Card className="cursor-pointer" onClick={() => setExpandedChart('conversion')}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Conversion Rates
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Conversion Rates
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload('Conversion Rates');
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedChart('conversion');
+                  }}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              </div>
             </CardTitle>
             <CardDescription>
               How well each channel converts leads
