@@ -21,33 +21,33 @@ const ImageStudio = () => {
       
       <AppHeader />
       
-      <main className="container py-4 md:py-8">
-        <section className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-2">Real Estate Image Studio</h1>
+      <main className="container px-3 md:px-4 py-4 md:py-8">
+        <section className="mb-4 md:mb-8">
+          <h1 className="text-xl md:text-3xl font-semibold tracking-tight mb-2 truncate">Real Estate Image Studio</h1>
           <p className="text-muted-foreground text-sm md:text-base">Professional image processing for real estate photography. Upload, enhance, and optimize property photos for marketing materials.</p>
         </section>
 
         <Tabs defaultValue="upload" className="space-y-4 md:space-y-6">
-          <TabsList className={isMobile ? "flex w-full overflow-x-auto scrollbar-hide" : "grid w-full grid-cols-4"}>
-            <TabsTrigger value="upload" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
-              <Upload className="h-4 w-4" />
-              <span className={isMobile ? "text-xs" : ""}>Upload</span>
-              {!isMobile && " & Process"}
-            </TabsTrigger>
-            <TabsTrigger value="batch" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
-              <Images className="h-4 w-4" />
-              <span className={isMobile ? "text-xs" : ""}>Batch</span>
-              {!isMobile && " Processing"}
-            </TabsTrigger>
-            <TabsTrigger value="library" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
-              <Images className="h-4 w-4" />
-              <span className={isMobile ? "text-xs" : ""}>Library</span>
-            </TabsTrigger>
-            <TabsTrigger value="presets" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
-              <Palette className="h-4 w-4" />
-              <span className={isMobile ? "text-xs" : ""}>Presets</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
+            <TabsList className="flex w-max min-w-full h-12 p-1">
+              <TabsTrigger value="upload" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
+                <Upload className="h-4 w-4" />
+                Upload
+              </TabsTrigger>
+              <TabsTrigger value="batch" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
+                <Images className="h-4 w-4" />
+                Batch
+              </TabsTrigger>
+              <TabsTrigger value="library" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
+                <Images className="h-4 w-4" />
+                Library
+              </TabsTrigger>
+              <TabsTrigger value="presets" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
+                <Palette className="h-4 w-4" />
+                Presets
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="upload">
             <Card>

@@ -148,12 +148,12 @@ const Dashboard = () => {
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/dashboard'} />
       </Helmet>
       <AppHeader />
-      <main className="container py-8">
-        <section className="mb-6">
+      <main className="container px-3 md:px-4 py-4 md:py-8">
+        <section className="mb-4 md:mb-6">
           {isLoading ? (
             <LoadingText className="w-64 h-8" />
           ) : (
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">
               Welcome back{displayName ? `, ${displayName}` : ""}!
             </h1>
           )}
@@ -199,31 +199,31 @@ const Dashboard = () => {
                 </Card>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 <Card>
-                  <CardHeader className="flex-row items-center gap-3">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    <div>
-                      <CardDescription>Content Generated This Month</CardDescription>
-                      <CardTitle className="text-xl">{stats.contentCount}</CardTitle>
+                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                    <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0">
+                      <CardDescription className="text-xs md:text-sm truncate">Content Generated This Month</CardDescription>
+                      <CardTitle className="text-lg md:text-xl">{stats.contentCount}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
                 <Card>
-                  <CardHeader className="flex-row items-center gap-3">
-                    <Home className="h-5 w-5 text-primary" />
-                    <div>
-                      <CardDescription>Neighborhoods Covered</CardDescription>
-                      <CardTitle className="text-xl">{stats.neighborhoodCount}</CardTitle>
+                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                    <Home className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0">
+                      <CardDescription className="text-xs md:text-sm truncate">Neighborhoods Covered</CardDescription>
+                      <CardTitle className="text-lg md:text-xl">{stats.neighborhoodCount}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
-                <Card>
-                  <CardHeader className="flex-row items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    <div>
-                      <CardDescription>AI Media Credits</CardDescription>
-                      <CardTitle className="text-xl">{stats.creditsRemaining}</CardTitle>
+                <Card className="sm:col-span-2 lg:col-span-1">
+                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                    <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0">
+                      <CardDescription className="text-xs md:text-sm truncate">AI Media Credits</CardDescription>
+                      <CardTitle className="text-lg md:text-xl">{stats.creditsRemaining}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
@@ -236,30 +236,30 @@ const Dashboard = () => {
                     <CardDescription>Access your most-used tools</CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                <CardContent className="grid grid-cols-1 gap-3 px-3 md:px-6">
+                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
                     <Link to="/image-studio">
-                      <ImagePlus className="h-5 w-5 mb-2" />
-                      <div className="text-left">
-                        <div className="font-medium">Image Studio</div>
-                        <div className="text-sm text-muted-foreground">Upload & enhance lifestyle photos</div>
+                      <ImagePlus className="h-5 w-5 sm:mb-2 flex-shrink-0" />
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-medium truncate">Image Studio</div>
+                        <div className="text-sm text-muted-foreground truncate">Upload & enhance lifestyle photos</div>
                       </div>
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
                     <Link to="/social-media">
-                      <div className="text-2xl mb-2">📱</div>
-                      <div className="text-left">
-                        <div className="font-medium">Social Media Manager</div>
-                        <div className="text-sm text-muted-foreground">Schedule posts & track performance</div>
+                      <div className="text-xl sm:text-2xl sm:mb-2 flex-shrink-0">📱</div>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-medium truncate">Social Media Manager</div>
+                        <div className="text-sm text-muted-foreground truncate">Schedule posts & track performance</div>
                       </div>
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
                     <Link to="/editor">
-                      <div className="text-left">
-                        <div className="font-medium">Newsletter Editor</div>
-                        <div className="text-sm text-muted-foreground">Create branded newsletters</div>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-medium truncate">Newsletter Editor</div>
+                        <div className="text-sm text-muted-foreground truncate">Create branded newsletters</div>
                       </div>
                     </Link>
                   </Button>
@@ -273,24 +273,24 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {userNeighborhoods.map((neighborhood, index) => (
-                    <div key={neighborhood.neighborhood_slug} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">
+                    <div key={neighborhood.neighborhood_slug} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium truncate">
                           {neighborhood.neighborhood}, {neighborhood.state}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground truncate">
                           {neighborhood.county}
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button asChild variant="outline" size="sm">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                           <Link to={`/content/${neighborhood.neighborhood_slug}-${neighborhood.report_date}`}>
-                            View Latest
+                            <span className="truncate">View Latest</span>
                           </Link>
                         </Button>
-                        <Button asChild variant="secondary" size="sm">
+                        <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
                           <Link to={generateContentUrl(neighborhood)}>
-                            Generate Fresh
+                            <span className="truncate">Generate Fresh</span>
                           </Link>
                         </Button>
                       </div>

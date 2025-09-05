@@ -118,9 +118,21 @@
   .interactive { transition: var(--transition-smooth); }
   .interactive:hover { transform: translateY(-1px); }
   
-  /* Mobile scroll enhancements */
-  .scroll-smooth {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
+        /* Mobile scroll enhancements */
+        .scroll-smooth {
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mobile responsive containers */
+        .container {
+          @apply px-4 sm:px-6 lg:px-8;
+        }
+        
+        /* Touch target improvements */
+        @media (max-width: 768px) {
+          button, .cursor-pointer {
+            min-height: 44px;
+          }
+        }
 }

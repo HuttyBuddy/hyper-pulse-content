@@ -631,7 +631,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/content'} />
       </Helmet>
       <AppHeader />
-      <main className="container py-8">
+      <main className="container px-3 md:px-4 py-4 md:py-8">
         <section className="mb-6">
           <NeighborhoodSelector
             currentNeighborhood={{
@@ -647,20 +647,34 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           />
         </section>
 
-        <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">{titleText}</h1>
-          <p className="text-muted-foreground mt-1">{freshnessText}</p>
+        <header className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">{titleText}</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 truncate">{freshnessText}</p>
         </header>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
-          <TabsList className="grid grid-cols-6 w-full">
-            <TabsTrigger value="blog">Newsletter / Blog</TabsTrigger>
-            <TabsTrigger value="social">Social Media Posts</TabsTrigger>
-            <TabsTrigger value="lifestyle">Lifestyle Guide</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="data">Market Data</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
+            <TabsList className="flex w-max min-w-full h-12 p-1">
+              <TabsTrigger value="blog" className="flex-shrink-0 px-3 py-2 min-w-[120px] text-xs md:text-sm whitespace-nowrap">
+                Newsletter / Blog
+              </TabsTrigger>
+              <TabsTrigger value="social" className="flex-shrink-0 px-3 py-2 min-w-[110px] text-xs md:text-sm whitespace-nowrap">
+                Social Media Posts
+              </TabsTrigger>
+              <TabsTrigger value="lifestyle" className="flex-shrink-0 px-3 py-2 min-w-[100px] text-xs md:text-sm whitespace-nowrap">
+                Lifestyle Guide
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
+                Templates
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
+                History
+              </TabsTrigger>
+              <TabsTrigger value="data" className="flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
+                Market Data
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="blog">
             <Card className="shadow-elevated">

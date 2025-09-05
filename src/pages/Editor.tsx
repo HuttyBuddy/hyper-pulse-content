@@ -263,14 +263,15 @@ const Editor = () => {
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/editor'} />
       </Helmet>
       <AppHeader />
-      <main className="container py-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Customize & Brand</h1>
-          <div className="flex gap-2">
+      <main className="container px-3 md:px-4 py-4 md:py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
+          <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">Customize & Brand</h1>
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button 
               variant="secondary" 
               onClick={saveChanges}
               disabled={isSaving}
+              className="w-full sm:w-auto"
             >
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? 'Saving...' : 'Save Changes'}
@@ -279,6 +280,7 @@ const Editor = () => {
               variant="hero" 
               onClick={exportBrandedPDF}
               disabled={isExporting}
+              className="w-full sm:w-auto"
             >
               <Download className="w-4 h-4 mr-2" />
               {isExporting ? 'Exporting...' : 'Export Branded PDF'}
@@ -286,7 +288,7 @@ const Editor = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[1fr_360px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_360px]">
           <Card className="shadow-elevated">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -315,13 +317,13 @@ const Editor = () => {
             </CardContent>
           </Card>
 
-          <aside>
-            <Card className="shadow-elevated sticky top-24">
-              <CardHeader>
-                <CardTitle>Your Branding</CardTitle>
-                <CardDescription>Assets and signature details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
+            <aside>
+              <Card className="shadow-elevated lg:sticky lg:top-24">
+                <CardHeader>
+                  <CardTitle className="text-lg md:text-xl">Your Branding</CardTitle>
+                  <CardDescription>Assets and signature details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 md:space-y-5">
                 <div>
                   <div className="text-sm mb-1">Agent Headshot (1×1 in)</div>
                   <div
@@ -403,13 +405,13 @@ const Editor = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between py-2">
-                  <div>
-                    <div className="font-medium">Append my branding to this post</div>
-                    <div className="text-sm text-muted-foreground">Adds your headshot, personal and brokerage logos to the footer</div>
-                  </div>
-                  <Switch checked={appendBranding} onCheckedChange={setAppendBranding} />
-                </div>
+                    <div className="flex items-center justify-between py-2">
+                      <div>
+                        <div className="font-medium text-sm md:text-base">Append my branding to this post</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Adds your headshot, personal and brokerage logos to the footer</div>
+                      </div>
+                      <Switch checked={appendBranding} onCheckedChange={setAppendBranding} />
+                    </div>
 
                 <input ref={headshotInputRef} type="file" accept="image/*" className="hidden" onChange={onSelect('headshot')} />
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onSelect('logo')} />

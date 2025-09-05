@@ -89,12 +89,12 @@ const AppHeader = () => {
   };
   return (
     <header className="h-14 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container h-full flex items-center justify-between px-4">
-        <Link to="/dashboard" className="text-lg md:text-xl font-semibold tracking-tight">
+      <div className="container h-full flex items-center justify-between px-3 md:px-4">
+        <Link to="/dashboard" className="text-base md:text-xl font-semibold tracking-tight truncate">
           <span className="hidden sm:inline">The Hyper‑Local Pulse</span>
           <span className="sm:hidden">Hyper‑Local</span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           {/* Mobile navigation */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
@@ -103,8 +103,8 @@ const AppHeader = () => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80">
-              <nav className="flex flex-col gap-4 mt-6">
+            <SheetContent side="right" className="w-[280px] max-w-[85vw]">
+              <nav className="flex flex-col gap-3 mt-6">
                 <Button asChild variant="ghost" className="justify-start">
                   <Link to="/dashboard">
                     <Home className="h-4 w-4 mr-2" />
@@ -132,28 +132,27 @@ const AppHeader = () => {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex gap-1">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm">
               <Link to="/analytics">Analytics</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm">
               <Link to="/profile">Profile</Link>
             </Button>
           </nav>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex">
+          <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex text-sm">
             Log out
           </Button>
           <button
             type="button"
             onClick={onLogoClick}
             aria-label="Upload logo image"
-            className="focus:outline-none"
+            className="focus:outline-none flex-shrink-0"
             disabled={isUploadingLogo}
-            title={isUploadingLogo ? "Uploading..." : "Click to upload a new logo"}
-          >
-            <Avatar>
+            title={isUploadingLogo ? "Uploading..." : "Click to upload a new logo"}>
+            <Avatar className="h-8 w-8 md:h-10 md:w-10">
               {(profile?.headshot_url || profile?.logo_url) ? (
                 <AvatarImage
                   src={profile?.logo_url ?? profile?.headshot_url ?? ''}

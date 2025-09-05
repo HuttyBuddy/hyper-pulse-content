@@ -121,53 +121,54 @@ const SocialMediaManager = () => {
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/social-media'} />
       </Helmet>
       <AppHeader />
-      <main className="container py-8">
-        <div className="flex items-center justify-between mb-6">
+      <main className="container px-3 md:px-4 py-4 md:py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Social Media Manager</h1>
-            <p className="text-muted-foreground">Create, schedule, and track your social media content</p>
+            <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">Social Media Manager</h1>
+            <p className="text-sm md:text-base text-muted-foreground">Create, schedule, and track your social media content</p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
-            Create Post
+            <span className="sm:hidden">Create Post</span>
+            <span className="hidden sm:inline">Create Post</span>
           </Button>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
           <Card>
-            <CardHeader className="flex-row items-center gap-3 pb-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
+            <CardHeader className="flex-row items-center gap-2 pb-2 px-3 md:px-6 pt-3 md:pt-6">
+              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               <div>
-                <CardDescription>Total Posts</CardDescription>
-                <CardTitle className="text-xl">{stats.totalPosts}</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Total Posts</CardDescription>
+                <CardTitle className="text-lg md:text-xl">{stats.totalPosts}</CardTitle>
               </div>
             </CardHeader>
           </Card>
           <Card>
-            <CardHeader className="flex-row items-center gap-3 pb-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
+            <CardHeader className="flex-row items-center gap-2 pb-2 px-3 md:px-6 pt-3 md:pt-6">
+              <Calendar className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
               <div>
-                <CardDescription>Scheduled</CardDescription>
-                <CardTitle className="text-xl">{stats.scheduledPosts}</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Scheduled</CardDescription>
+                <CardTitle className="text-lg md:text-xl">{stats.scheduledPosts}</CardTitle>
               </div>
             </CardHeader>
           </Card>
           <Card>
-            <CardHeader className="flex-row items-center gap-3 pb-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardHeader className="flex-row items-center gap-2 pb-2 px-3 md:px-6 pt-3 md:pt-6">
+              <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
               <div>
-                <CardDescription>Published Today</CardDescription>
-                <CardTitle className="text-xl">{stats.publishedToday}</CardTitle>
+                <CardDescription className="text-xs md:text-sm truncate">Published Today</CardDescription>
+                <CardTitle className="text-lg md:text-xl">{stats.publishedToday}</CardTitle>
               </div>
             </CardHeader>
           </Card>
           <Card>
-            <CardHeader className="flex-row items-center gap-3 pb-2">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
+            <CardHeader className="flex-row items-center gap-2 pb-2 px-3 md:px-6 pt-3 md:pt-6">
+              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
               <div>
-                <CardDescription>Total Engagement</CardDescription>
-                <CardTitle className="text-xl">{stats.totalEngagement}</CardTitle>
+                <CardDescription className="text-xs md:text-sm truncate">Total Engagement</CardDescription>
+                <CardTitle className="text-lg md:text-xl">{stats.totalEngagement}</CardTitle>
               </div>
             </CardHeader>
           </Card>
@@ -175,12 +176,22 @@ const SocialMediaManager = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="composer" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="composer">Composer</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
+            <TabsList className="flex w-max min-w-full h-12 p-1">
+              <TabsTrigger value="composer" className="flex-shrink-0 px-4 py-2 min-w-[100px] text-sm whitespace-nowrap">
+                Composer
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="flex-shrink-0 px-4 py-2 min-w-[90px] text-sm whitespace-nowrap">
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex-shrink-0 px-4 py-2 min-w-[90px] text-sm whitespace-nowrap">
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="flex-shrink-0 px-4 py-2 min-w-[100px] text-sm whitespace-nowrap">
+                Templates
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="composer">
             <SocialMediaComposer onPostCreated={fetchPosts} />
