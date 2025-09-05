@@ -6,8 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/image/ImageUpload";
 import { ImageLibrary } from "@/components/image/ImageLibrary";
 import { Upload, Palette, Images } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ImageStudio = () => {
+  const isMobile = useIsMobile();
+
   return (
     <>
       <Helmet>
@@ -18,37 +21,39 @@ const ImageStudio = () => {
       
       <AppHeader />
       
-      <main className="container py-8">
-        <section className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Real Estate Image Studio</h1>
-          <p className="text-muted-foreground">Professional image processing for real estate photography. Upload, enhance, and optimize property photos for marketing materials.</p>
+      <main className="container py-4 md:py-8">
+        <section className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-2">Real Estate Image Studio</h1>
+          <p className="text-muted-foreground text-sm md:text-base">Professional image processing for real estate photography. Upload, enhance, and optimize property photos for marketing materials.</p>
         </section>
 
-        <Tabs defaultValue="upload" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="upload" className="flex items-center gap-2">
+        <Tabs defaultValue="upload" className="space-y-4 md:space-y-6">
+          <TabsList className={isMobile ? "flex w-full overflow-x-auto scrollbar-hide" : "grid w-full grid-cols-4"}>
+            <TabsTrigger value="upload" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
               <Upload className="h-4 w-4" />
-              Upload & Process
+              <span className={isMobile ? "text-xs" : ""}>Upload</span>
+              {!isMobile && " & Process"}
             </TabsTrigger>
-            <TabsTrigger value="batch" className="flex items-center gap-2">
+            <TabsTrigger value="batch" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
               <Images className="h-4 w-4" />
-              Batch Processing
+              <span className={isMobile ? "text-xs" : ""}>Batch</span>
+              {!isMobile && " Processing"}
             </TabsTrigger>
-            <TabsTrigger value="library" className="flex items-center gap-2">
+            <TabsTrigger value="library" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
               <Images className="h-4 w-4" />
-              Image Library
+              <span className={isMobile ? "text-xs" : ""}>Library</span>
             </TabsTrigger>
-            <TabsTrigger value="presets" className="flex items-center gap-2">
+            <TabsTrigger value="presets" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-shrink-0 px-3' : ''}`}>
               <Palette className="h-4 w-4" />
-              Real Estate Presets
+              <span className={isMobile ? "text-xs" : ""}>Presets</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload">
             <Card>
               <CardHeader>
-                <CardTitle>Upload & Process Real Estate Images</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg md:text-xl">Upload & Process Real Estate Images</CardTitle>
+                <CardDescription className="text-sm md:text-base">
                   Upload property photos and apply professional real estate enhancements. Supports interior, exterior, aerial, and detail shots.
                 </CardDescription>
               </CardHeader>
@@ -61,16 +66,16 @@ const ImageStudio = () => {
           <TabsContent value="batch">
             <Card>
               <CardHeader>
-                <CardTitle>Batch Processing</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg md:text-xl">Batch Processing</CardTitle>
+                <CardDescription className="text-sm md:text-base">
                   Upload multiple property photos at once and apply consistent enhancements across an entire listing.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Upload className="h-12 w-12 mx-auto mb-4" />
-                  <p>Batch processing feature coming soon!</p>
-                  <p className="text-sm mt-2">Upload multiple images and apply presets to entire property sets.</p>
+                <div className="text-center py-6 md:py-8 text-muted-foreground">
+                  <Upload className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 md:mb-4" />
+                  <p className="text-sm md:text-base">Batch processing feature coming soon!</p>
+                  <p className="text-xs md:text-sm mt-2">Upload multiple images and apply presets to entire property sets.</p>
                 </div>
               </CardContent>
             </Card>
@@ -79,8 +84,8 @@ const ImageStudio = () => {
           <TabsContent value="library">
             <Card>
               <CardHeader>
-                <CardTitle>Your Image Library</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg md:text-xl">Your Image Library</CardTitle>
+                <CardDescription className="text-sm md:text-base">
                   Browse and manage your uploaded and enhanced images.
                 </CardDescription>
               </CardHeader>
@@ -93,13 +98,13 @@ const ImageStudio = () => {
           <TabsContent value="presets">
             <Card>
               <CardHeader>
-                <CardTitle>Real Estate Enhancement Presets</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg md:text-xl">Real Estate Enhancement Presets</CardTitle>
+                <CardDescription className="text-sm md:text-base">
                   Professional presets optimized for different types of real estate photography.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                   {[
                     { name: "HDR Interior", description: "Balanced lighting for indoor spaces with natural window light", category: "Interior" },
                     { name: "Bright & Airy", description: "Modern real estate style with lifted shadows and crisp whites", category: "Interior" },
@@ -115,13 +120,13 @@ const ImageStudio = () => {
                     { name: "Bathroom Clarity", description: "Clean, bright enhancement for bathroom spaces", category: "Interior" },
                   ].map((preset) => (
                     <Card key={preset.name} className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-sm">{preset.name}</CardTitle>
-                            <CardDescription className="text-xs mt-1">{preset.description}</CardDescription>
+                      <CardHeader className="p-3 md:p-6">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm md:text-base truncate">{preset.name}</CardTitle>
+                            <CardDescription className="text-xs md:text-sm mt-1 line-clamp-2">{preset.description}</CardDescription>
                           </div>
-                          <Badge variant="outline" className="text-xs">{preset.category}</Badge>
+                          <Badge variant="outline" className="text-xs flex-shrink-0">{preset.category}</Badge>
                         </div>
                       </CardHeader>
                     </Card>
