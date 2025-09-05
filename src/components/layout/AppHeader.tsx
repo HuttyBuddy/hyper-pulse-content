@@ -99,6 +99,9 @@ const AppHeader = () => {
               <Link to="/dashboard">Dashboard</Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
+              <Link to="/analytics">Analytics</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
               <Link to="/profile">Profile</Link>
             </Button>
           </nav>

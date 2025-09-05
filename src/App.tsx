@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import SignUp from "./pages/SignUp";
 import ImageStudio from "./pages/ImageStudio";
 import SocialMediaManager from "./pages/SocialMediaManager";
+import Analytics from "./pages/Analytics";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ManageSubscription from "./pages/ManageSubscription";
 
@@ -89,6 +90,15 @@ const App = () => (
               <ProtectedRoute>
                 <ChatProvider>
                   <SocialMediaManager />
+                  <ChatSheet />
+                  <ChatFloatingButton />
+                </ChatProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/analytics" element={
+              <ProtectedRoute>
+                <ChatProvider>
+                  <Analytics />
                   <ChatSheet />
                   <ChatFloatingButton />
                 </ChatProvider>

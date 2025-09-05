@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_performance: {
+        Row: {
+          campaign_id: string | null
+          campaign_name: string
+          campaign_type: string
+          clicks: number | null
+          conversions: number | null
+          cost: number | null
+          created_at: string
+          date_range_end: string
+          date_range_start: string
+          id: string
+          impressions: number | null
+          revenue: number | null
+          roi: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_name: string
+          campaign_type: string
+          clicks?: number | null
+          conversions?: number | null
+          cost?: number | null
+          created_at?: string
+          date_range_end: string
+          date_range_start: string
+          id?: string
+          impressions?: number | null
+          revenue?: number | null
+          roi?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_name?: string
+          campaign_type?: string
+          clicks?: number | null
+          conversions?: number | null
+          cost?: number | null
+          created_at?: string
+          date_range_end?: string
+          date_range_start?: string
+          id?: string
+          impressions?: number | null
+          revenue?: number | null
+          roi?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_analytics: {
         Row: {
           content_id: string | null
@@ -106,6 +160,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      content_performance: {
+        Row: {
+          bounce_rate: number | null
+          content_history_id: string | null
+          conversion_rate: number | null
+          created_at: string
+          date_recorded: string
+          downloads: number | null
+          id: string
+          leads_generated: number | null
+          page_views: number | null
+          revenue_attributed: number | null
+          shares: number | null
+          time_on_page: number | null
+          unique_visitors: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bounce_rate?: number | null
+          content_history_id?: string | null
+          conversion_rate?: number | null
+          created_at?: string
+          date_recorded?: string
+          downloads?: number | null
+          id?: string
+          leads_generated?: number | null
+          page_views?: number | null
+          revenue_attributed?: number | null
+          shares?: number | null
+          time_on_page?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bounce_rate?: number | null
+          content_history_id?: string | null
+          conversion_rate?: number | null
+          created_at?: string
+          date_recorded?: string
+          downloads?: number | null
+          id?: string
+          leads_generated?: number | null
+          page_views?: number | null
+          revenue_attributed?: number | null
+          shares?: number | null
+          time_on_page?: number | null
+          unique_visitors?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_performance_content_history_id_fkey"
+            columns: ["content_history_id"]
+            isOneToOne: false
+            referencedRelation: "content_history"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       content_templates: {
         Row: {
@@ -396,6 +512,51 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_generation_tracking: {
+        Row: {
+          content_id: string | null
+          created_at: string
+          follow_up_date: string | null
+          id: string
+          lead_data: Json
+          lead_medium: string | null
+          lead_source: string
+          lead_value: number | null
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id?: string | null
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          lead_data?: Json
+          lead_medium?: string | null
+          lead_source: string
+          lead_value?: number | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string | null
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          lead_data?: Json
+          lead_medium?: string | null
+          lead_source?: string
+          lead_value?: number | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_submissions: {
         Row: {
           created_at: string
@@ -552,6 +713,54 @@ export type Database = {
           id?: string
           status?: string | null
           title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          is_active: boolean
+          last_name: string | null
+          phone: string | null
+          property_interests: string[] | null
+          subscription_preferences: Json | null
+          subscription_source: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean
+          last_name?: string | null
+          phone?: string | null
+          property_interests?: string[] | null
+          subscription_preferences?: Json | null
+          subscription_source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean
+          last_name?: string | null
+          phone?: string | null
+          property_interests?: string[] | null
+          subscription_preferences?: Json | null
+          subscription_source?: string | null
+          tags?: string[] | null
           updated_at?: string
           user_id?: string
         }
