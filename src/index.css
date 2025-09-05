@@ -117,4 +117,10 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .interactive { transition: var(--transition-smooth); }
   .interactive:hover { transform: translateY(-1px); }
+  
+  /* Mobile scroll enhancements */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
 }

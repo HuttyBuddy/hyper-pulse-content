@@ -167,28 +167,45 @@ const Analytics = () => {
 
         {/* Main Analytics Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className={isMobile ? "flex w-full overflow-x-auto scrollbar-hide" : "grid w-full lg:w-[600px] grid-cols-5"}>
-            <TabsTrigger value="overview" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
-              <BarChart3 className="h-4 w-4" />
-              {isMobile ? 'Overview' : 'Overview'}
-            </TabsTrigger>
-            <TabsTrigger value="funnel" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
-              <TrendingUp className="h-4 w-4" />
-              {isMobile ? 'Funnel' : 'Lead Funnel'}
-            </TabsTrigger>
-            <TabsTrigger value="roi" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
-              <DollarSign className="h-4 w-4" />
-              {isMobile ? 'ROI' : 'ROI Tracking'}
-            </TabsTrigger>
-            <TabsTrigger value="leads" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
-              <Users className="h-4 w-4" />
-              {isMobile ? 'Leads' : 'Lead Management'}
-            </TabsTrigger>
-            <TabsTrigger value="email" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
-              <Mail className="h-4 w-4" />
-              {isMobile ? 'Email' : 'Email Marketing'}
-            </TabsTrigger>
-          </TabsList>
+          <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth scrollbar-hide" : ""}>
+            <TabsList className={isMobile ? "flex w-max min-w-full h-12 p-1" : "grid w-full lg:w-[600px] grid-cols-5 h-10"}>
+              <TabsTrigger 
+                value="overview" 
+                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[90px] text-xs whitespace-nowrap' : 'gap-2'}`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger 
+                value="funnel" 
+                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Funnel
+              </TabsTrigger>
+              <TabsTrigger 
+                value="roi" 
+                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[70px] text-xs whitespace-nowrap' : 'gap-2'}`}
+              >
+                <DollarSign className="h-4 w-4" />
+                ROI
+              </TabsTrigger>
+              <TabsTrigger 
+                value="leads" 
+                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
+              >
+                <Users className="h-4 w-4" />
+                Leads
+              </TabsTrigger>
+              <TabsTrigger 
+                value="email" 
+                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
+              >
+                <Mail className="h-4 w-4" />
+                Email
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview">
             <AnalyticsDashboard />
