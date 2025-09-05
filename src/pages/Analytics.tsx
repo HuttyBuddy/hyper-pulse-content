@@ -11,6 +11,7 @@ import LeadFunnelChart from "@/components/analytics/LeadFunnelChart";
 import ROIDashboard from "@/components/analytics/ROIDashboard";
 import LeadManagement from "@/components/analytics/LeadManagement";
 import NewsletterManagement from "@/components/analytics/NewsletterManagement";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AnalyticsData {
   totalLeads: number;
@@ -22,6 +23,7 @@ interface AnalyticsData {
 }
 
 const Analytics = () => {
+  const isMobile = useIsMobile();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     totalLeads: 0,
     totalRevenue: 0,
@@ -89,73 +91,75 @@ const Analytics = () => {
       
       <AppHeader />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="h-8 w-8 text-primary" />
-            Analytics & ROI Dashboard
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8">
+        <div className="mb-6 md:mb-8">
+          <h1 className={`font-bold tracking-tight flex items-center gap-2 ${isMobile ? 'text-2xl flex-col items-start' : 'text-3xl'}`}>
+            <div className="flex items-center gap-2">
+              <BarChart3 className={`text-primary ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              {isMobile ? 'Analytics & ROI' : 'Analytics & ROI Dashboard'}
+            </div>
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
             Track your marketing performance, lead generation, and return on investment
           </p>
         </div>
 
         {/* Key Metrics Overview */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className={`grid gap-3 md:gap-4 mb-6 md:mb-8 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{loading ? "..." : analyticsData.totalLeads}</div>
+            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{loading ? "..." : analyticsData.totalLeads}</div>
               <p className="text-xs text-muted-foreground">
-                Generated this period
+                {isMobile ? 'This period' : 'Generated this period'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Revenue</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? "..." : `$${analyticsData.totalRevenue.toLocaleString()}`}
+            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                {loading ? "..." : `$${isMobile && analyticsData.totalRevenue > 999 ? `${(analyticsData.totalRevenue/1000).toFixed(0)}k` : analyticsData.totalRevenue.toLocaleString()}`}
               </div>
               <p className="text-xs text-muted-foreground">
-                From converted leads
+                {isMobile ? 'Converted' : 'From converted leads'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Conversion</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                 {loading ? "..." : `${analyticsData.conversionRate.toFixed(1)}%`}
               </div>
               <p className="text-xs text-muted-foreground">
-                Lead to customer conversion
+                {isMobile ? 'Rate' : 'Lead to customer conversion'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Lead Value</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Avg Value</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? "..." : `$${analyticsData.avgLeadValue.toFixed(0)}`}
+            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                {loading ? "..." : `$${isMobile && analyticsData.avgLeadValue > 999 ? `${(analyticsData.avgLeadValue/1000).toFixed(0)}k` : analyticsData.avgLeadValue.toFixed(0)}`}
               </div>
               <p className="text-xs text-muted-foreground">
-                Per lead generated
+                {isMobile ? 'Per lead' : 'Per lead generated'}
               </p>
             </CardContent>
           </Card>
@@ -163,12 +167,27 @@ const Analytics = () => {
 
         {/* Main Analytics Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full lg:w-[600px] grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="funnel">Lead Funnel</TabsTrigger>
-            <TabsTrigger value="roi">ROI Tracking</TabsTrigger>
-            <TabsTrigger value="leads">Lead Management</TabsTrigger>
-            <TabsTrigger value="email">Email Marketing</TabsTrigger>
+          <TabsList className={isMobile ? "flex w-full overflow-x-auto scrollbar-hide" : "grid w-full lg:w-[600px] grid-cols-5"}>
+            <TabsTrigger value="overview" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
+              <BarChart3 className="h-4 w-4" />
+              {isMobile ? 'Overview' : 'Overview'}
+            </TabsTrigger>
+            <TabsTrigger value="funnel" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
+              <TrendingUp className="h-4 w-4" />
+              {isMobile ? 'Funnel' : 'Lead Funnel'}
+            </TabsTrigger>
+            <TabsTrigger value="roi" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
+              <DollarSign className="h-4 w-4" />
+              {isMobile ? 'ROI' : 'ROI Tracking'}
+            </TabsTrigger>
+            <TabsTrigger value="leads" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
+              <Users className="h-4 w-4" />
+              {isMobile ? 'Leads' : 'Lead Management'}
+            </TabsTrigger>
+            <TabsTrigger value="email" className={`flex items-center gap-1 ${isMobile ? 'flex-shrink-0 px-3 text-xs' : 'gap-2'}`}>
+              <Mail className="h-4 w-4" />
+              {isMobile ? 'Email' : 'Email Marketing'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
