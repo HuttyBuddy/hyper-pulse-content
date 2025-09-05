@@ -8,11 +8,9 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { openCustomerPortal } from "@/lib/billing";
-
 const Profile = () => {
   const [name, setName] = useState("Alex Morgan");
   const [email, setEmail] = useState("alex@example.com");
-  
   const [userId, setUserId] = useState<string | null>(null);
   const [neighborhood, setNeighborhood] = useState("");
   const [county, setCounty] = useState("");
@@ -29,7 +27,12 @@ const Profile = () => {
   useEffect(() => {
     let mounted = true;
     const init = async () => {
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        },
+        error: userErr
+      } = await supabase.auth.getUser();
       if (!mounted) return;
       if (userErr) {
         console.error(userErr);
@@ -41,11 +44,10 @@ const Profile = () => {
         return;
       }
       setUserId(user.id);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("name, email, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const {
+        data,
+        error
+      } = await supabase.from("profiles").select("name, email, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state").eq("user_id", user.id).maybeSingle();
       if (error) {
         console.error(error);
         toast("Failed to load profile");
@@ -63,17 +65,25 @@ const Profile = () => {
       }
     };
     init();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
-
   const handleSaveProfile = async () => {
     if (!userId) {
       toast("Not signed in");
       return;
     }
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({ user_id: userId, name, email, neighborhood, county, state: stateCode });
+    const {
+      error
+    } = await supabase.from("profiles").upsert({
+      user_id: userId,
+      name,
+      email,
+      neighborhood,
+      county,
+      state: stateCode
+    });
     if (error) {
       console.error(error);
       toast("Failed to save profile");
@@ -81,8 +91,6 @@ const Profile = () => {
       toast("Profile saved");
     }
   };
-
-
   const uploadImage = async (kind: "headshot" | "logo" | "brokerage_logo", file: File) => {
     if (!userId) {
       toast("Not signed in");
@@ -91,13 +99,17 @@ const Profile = () => {
     try {
       const fileExt = file.name.split(".").pop();
       const path = `${userId}/${kind}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("branding").upload(path, file);
+      const {
+        error: uploadError
+      } = await supabase.storage.from("branding").upload(path, file);
       if (uploadError) {
         console.error(uploadError);
         toast("Upload failed");
         return;
       }
-      const { data: publicUrlData } = supabase.storage.from("branding").getPublicUrl(path);
+      const {
+        data: publicUrlData
+      } = supabase.storage.from("branding").getPublicUrl(path);
       const publicUrl = publicUrlData.publicUrl;
       if (kind === "headshot") {
         setHeadshotUrl(publicUrl);
@@ -106,11 +118,13 @@ const Profile = () => {
       } else {
         setBrokerageLogoUrl(publicUrl);
       }
-      const payload: any = { user_id: userId };
-      if (kind === "headshot") payload.headshot_url = publicUrl;
-      else if (kind === "logo") payload.logo_url = publicUrl;
-      else payload.brokerage_logo_url = publicUrl;
-      const { error: upsertError } = await supabase.from("profiles").upsert(payload as any);
+      const payload: any = {
+        user_id: userId
+      };
+      if (kind === "headshot") payload.headshot_url = publicUrl;else if (kind === "logo") payload.logo_url = publicUrl;else payload.brokerage_logo_url = publicUrl;
+      const {
+        error: upsertError
+      } = await supabase.from("profiles").upsert(payload as any);
       if (upsertError) {
         console.error(upsertError);
         toast("Saved upload but failed to update profile");
@@ -122,7 +136,6 @@ const Profile = () => {
       toast("Unexpected error during upload");
     }
   };
-
   const onHeadshotSelected = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,7 +144,6 @@ const Profile = () => {
     setUploadingHeadshot(false);
     e.target.value = "";
   };
-
   const onLogoSelected = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -140,7 +152,6 @@ const Profile = () => {
     setUploadingLogo(false);
     e.target.value = "";
   };
-
   const onBrokerageLogoSelected = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -149,11 +160,8 @@ const Profile = () => {
     setUploadingBrokerageLogo(false);
     e.target.value = "";
   };
-
   const [openingPortal, setOpeningPortal] = useState(false);
-
-  return (
-    <>
+  return <>
       <Helmet>
         <title>Profile & Settings — The Hyper-Local Pulse</title>
         <meta name="description" content="Manage your profile, branding assets, subscription, and API keys." />
@@ -170,38 +178,34 @@ const Profile = () => {
             <CardContent className="space-y-4">
               <div>
                 <label htmlFor="name" className="text-sm">Name</label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input id="name" value={name} onChange={e => setName(e.target.value)} />
               </div>
               <div>
                 <label htmlFor="email" className="text-sm">Email</label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
               <div>
                 <label htmlFor="neighborhood" className="text-sm">Neighborhood</label>
-                <Input id="neighborhood" value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="e.g., Carmichael" />
+                <Input id="neighborhood" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="e.g., Carmichael" />
               </div>
               <div>
                 <label htmlFor="county" className="text-sm">County</label>
-                <Input id="county" value={county} onChange={(e) => setCounty(e.target.value)} placeholder="e.g., Sacramento County" />
+                <Input id="county" value={county} onChange={e => setCounty(e.target.value)} placeholder="e.g., Sacramento County" />
               </div>
               <div>
                 <label htmlFor="state" className="text-sm">State</label>
-                <Input id="state" value={stateCode} onChange={(e) => setStateCode(e.target.value)} placeholder="e.g., CA" />
+                <Input id="state" value={stateCode} onChange={e => setStateCode(e.target.value)} placeholder="e.g., CA" />
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      setOpeningPortal(true);
-                      await openCustomerPortal();
-                    } finally {
-                      setOpeningPortal(false);
-                    }
-                  }}
-                  disabled={openingPortal}
-                >
+                <Button variant="outline" onClick={async () => {
+                try {
+                  setOpeningPortal(true);
+                  await openCustomerPortal();
+                } finally {
+                  setOpeningPortal(false);
+                }
+              }} disabled={openingPortal}>
                   {openingPortal ? "Opening…" : "Manage Subscription"}
                 </Button>
               </div>
@@ -211,101 +215,41 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <CardTitle>My Branding Assets</CardTitle>
-              <CardDescription>Upload your headshot and brokerage logo</CardDescription>
+              <CardDescription>Upload your headshot, personal logo, and brokerage logo</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <div className="text-sm mb-1">Headshot</div>
-                <div
-                  className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
-                  onClick={() => headshotInputRef.current?.click()}
-                  role="button"
-                  aria-label="Upload headshot"
-                >
+                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => headshotInputRef.current?.click()} role="button" aria-label="Upload headshot">
                   <AspectRatio ratio={1} className="w-full">
-                    {headshotUrl ? (
-                      <img
-                        src={headshotUrl}
-                        alt="Realtor headshot branding image"
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                    {headshotUrl ? <img src={headshotUrl} alt="Realtor headshot branding image" className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
                         Click to upload headshot
-                      </div>
-                    )}
+                      </div>}
                   </AspectRatio>
                 </div>
-                <input
-                  ref={headshotInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onHeadshotSelected}
-                />
+                <input ref={headshotInputRef} type="file" accept="image/*" className="hidden" onChange={onHeadshotSelected} />
               </div>
               <div>
                 <div className="text-sm mb-1">Personal Logo</div>
-                <div
-                  className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
-                  onClick={() => logoInputRef.current?.click()}
-                  role="button"
-                  aria-label="Upload personal logo"
-                >
+                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => logoInputRef.current?.click()} role="button" aria-label="Upload personal logo">
                   <AspectRatio ratio={1} className="w-full">
-                    {logoUrl ? (
-                      <img
-                        src={logoUrl}
-                        alt="Personal logo branding image"
-                        className="h-full w-full object-contain bg-background"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                    {logoUrl ? <img src={logoUrl} alt="Personal logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
                         Click to upload logo
-                      </div>
-                    )}
+                      </div>}
                   </AspectRatio>
                 </div>
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onLogoSelected}
-                />
+                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onLogoSelected} />
               </div>
             <div>
               <div className="text-sm mb-1">Brokerage Logo</div>
-               <div
-                 className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer"
-                 onClick={() => brokerageLogoInputRef.current?.click()}
-                 role="button"
-                 aria-label="Upload brokerage logo"
-               >
+               <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => brokerageLogoInputRef.current?.click()} role="button" aria-label="Upload brokerage logo">
                  <AspectRatio ratio={1} className="w-full">
-                   {brokerageLogoUrl ? (
-                     <img
-                       src={brokerageLogoUrl}
-                       alt="Brokerage logo branding image"
-                       className="h-full w-full object-contain bg-background"
-                       loading="lazy"
-                     />
-                   ) : (
-                     <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                   {brokerageLogoUrl ? <img src={brokerageLogoUrl} alt="Brokerage logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
                        Click to upload brokerage logo
-                     </div>
-                   )}
+                     </div>}
                  </AspectRatio>
                 </div>
-              <input
-                ref={brokerageLogoInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={onBrokerageLogoSelected}
-              />
+              <input ref={brokerageLogoInputRef} type="file" accept="image/*" className="hidden" onChange={onBrokerageLogoSelected} />
             </div>
             </CardContent>
           </Card>
@@ -316,8 +260,6 @@ const Profile = () => {
           <Button variant="outline" onClick={() => toast("Logged out (demo)")}>Log Out</Button>
         </div>
       </main>
-    </>
-  );
+    </>;
 };
-
 export default Profile;
