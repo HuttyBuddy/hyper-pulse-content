@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.google-research]
 verify_jwt = false
+
+[functions.fetch-market-data]
+verify_jwt = true

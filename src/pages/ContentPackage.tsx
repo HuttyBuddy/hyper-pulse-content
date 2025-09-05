@@ -118,9 +118,35 @@ const ContentPackage = () => {
   const handleRefresh = async () => {
     setLoading(true);
     toast("Refreshing market data...", { 
-      description: "Fetching the latest information for your area" 
+      description: "Fetching the latest real estate data from RentCast" 
     });
     try {
+      // Get authentication token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Authentication required");
+      }
+
+      // Call RentCast integration function
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: {
+          neighborhood: neighborhood,
+          county: county,
+          state: stateCode,
+          neighborhood_slug: neighborhoodSlug || neighborhood.toLowerCase().replace(/\s+/g, '-')
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) {
+        console.error('Error calling fetch-market-data:', error);
+        throw new Error(error.message || "Failed to fetch market data");
+      }
+
+      console.log('Market data fetched successfully:', data);
+
       // Compute today's edition slug and navigate so URL reflects the latest edition
       const today = format(new Date(), 'yyyy-MM-dd');
       const currentSlug = (neighborhoodSlug || (neighborhood || '').toLowerCase().replace(/\s+/g, '-'));
@@ -128,14 +154,15 @@ const ContentPackage = () => {
       setReportDate(new Date());
       navigate(`/content/${newSlugDate}`, { replace: true });
 
-      // Re-fetch data after updating the edition
+      // Re-fetch data after updating with real data
       await fetchReports();
-      toast("Market data updated successfully", {
-        description: "Your content now reflects the most recent data available"
+      toast("Real market data updated successfully!", {
+        description: "Your content now shows current RentCast market information"
       });
     } catch (error) {
-      toast.error("Failed to refresh data", {
-        description: "Please try again in a moment"
+      console.error("Refresh error:", error);
+      toast.error("Failed to refresh market data", {
+        description: error.message || "Please try again in a moment"
       });
     } finally {
       setLoading(false);
