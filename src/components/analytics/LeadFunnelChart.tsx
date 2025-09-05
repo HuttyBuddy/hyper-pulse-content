@@ -5,6 +5,7 @@ import { FunnelChart, Funnel, ResponsiveContainer, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingDown, Users, UserCheck, DollarSign, Target } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FunnelData {
   name: string;
@@ -21,6 +22,7 @@ interface LeadStats {
 }
 
 const LeadFunnelChart = () => {
+  const isMobile = useIsMobile();
   const [funnelData, setFunnelData] = useState<FunnelData[]>([]);
   const [leadStats, setLeadStats] = useState<LeadStats>({
     visitors: 0,
@@ -131,7 +133,7 @@ const LeadFunnelChart = () => {
               qualified: { label: "Qualified", color: "hsl(var(--secondary))" },
               converted: { label: "Converted", color: "hsl(var(--accent))" },
             }}
-            className="h-[400px]"
+            className={isMobile ? "h-[300px]" : "h-[400px]"}
           >
             <ResponsiveContainer width="100%" height="100%">
               <FunnelChart>
@@ -170,7 +172,7 @@ const LeadFunnelChart = () => {
       </Card>
 
       {/* Conversion Rate Breakdown */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Visitor to Lead</CardTitle>

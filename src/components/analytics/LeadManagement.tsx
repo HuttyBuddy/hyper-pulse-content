@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Lead {
   id: string;
@@ -42,6 +43,7 @@ const statusColors = {
 };
 
 const LeadManagement = () => {
+  const isMobile = useIsMobile();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -227,10 +229,10 @@ const LeadManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
-      <div className="flex justify-between items-center">
+      <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
         <div>
-          <h2 className="text-2xl font-bold">Lead Management</h2>
-          <p className="text-muted-foreground">Manage and track your leads through the sales funnel</p>
+          <h2 className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Lead Management</h2>
+          <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>Manage and track your leads through the sales funnel</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -240,12 +242,12 @@ const LeadManagement = () => {
               Add Lead
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className={isMobile ? "max-w-[95vw] mx-2" : ""}>
             <DialogHeader>
               <DialogTitle>Add New Lead</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <div className="space-y-2">
                   <Label htmlFor="leadSource">Source</Label>
                   <Select value={newLead.source} onValueChange={(value) => setNewLead({...newLead, source: value})}>
@@ -339,7 +341,7 @@ const LeadManagement = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
             <div className="space-y-2">
               <Label>Status Filter</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -384,9 +386,9 @@ const LeadManagement = () => {
           filteredLeads.map((lead) => (
             <Card key={lead.id}>
               <CardContent className="py-4">
-                <div className="flex justify-between items-start">
+                <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-start'}`}>
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className={`flex items-center gap-3 mb-2 ${isMobile ? 'flex-wrap' : ''}`}>
                       <h3 className="font-semibold">
                         {lead.lead_data?.name || 'Unknown Lead'}
                       </h3>
@@ -425,12 +427,12 @@ const LeadManagement = () => {
                     )}
                   </div>
 
-                  <div className="flex gap-2 ml-4">
+                  <div className={`flex gap-2 ${isMobile ? 'w-full justify-between' : 'ml-4'}`}>
                     <Select 
                       value={lead.status}
                       onValueChange={(value) => handleUpdateLeadStatus(lead.id, value)}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className={isMobile ? "flex-1" : "w-32"}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

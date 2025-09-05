@@ -4,6 +4,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Eye, Share2, Download } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ContentMetrics {
   name: string;
@@ -28,6 +29,7 @@ const CHANNEL_COLORS = {
 };
 
 const AnalyticsDashboard = () => {
+  const isMobile = useIsMobile();
   const [contentMetrics, setContentMetrics] = useState<ContentMetrics[]>([]);
   const [channelPerformance, setChannelPerformance] = useState<ChannelPerformance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,7 +153,7 @@ const AnalyticsDashboard = () => {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
         {/* Channel Performance */}
         <Card>
           <CardHeader>
@@ -204,10 +206,10 @@ const AnalyticsDashboard = () => {
           </CardHeader>
           <CardContent>
             <ChartContainer
-              config={{
-                conversion: { label: "Conversion %", color: "hsl(var(--primary))" }
-              }}
-              className="h-[250px]"
+            config={{
+              conversion: { label: "Conversion %", color: "hsl(var(--primary))" }
+            }}
+            className={isMobile ? "h-[200px]" : "h-[250px]"}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={channelPerformance}>

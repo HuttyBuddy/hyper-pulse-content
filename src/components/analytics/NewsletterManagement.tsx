@@ -21,6 +21,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Subscriber {
   id: string;
@@ -47,6 +48,7 @@ interface EmailCampaign {
 }
 
 const NewsletterManagement = () => {
+  const isMobile = useIsMobile();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,14 +253,14 @@ const NewsletterManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-4'}`}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Subscribers</CardTitle>
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Total Subscribers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSubscribers}</div>
+          <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{totalSubscribers}</div>
             <p className="text-xs text-muted-foreground">
               {activeSubscribers.length} active
             </p>
@@ -266,12 +268,12 @@ const NewsletterManagement = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Campaigns Sent</CardTitle>
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Campaigns Sent</CardTitle>
             <Send className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{campaigns.length}</div>
+          <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{campaigns.length}</div>
             <p className="text-xs text-muted-foreground">
               Total campaigns created
             </p>
@@ -279,12 +281,12 @@ const NewsletterManagement = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Open Rate</CardTitle>
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Avg Open Rate</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgOpenRate.toFixed(1)}%</div>
+          <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{avgOpenRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Email engagement
             </p>
@@ -292,12 +294,12 @@ const NewsletterManagement = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Click Rate</CardTitle>
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Avg Click Rate</CardTitle>
             <MousePointer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
               {campaigns.length > 0 
                 ? (campaigns.reduce((sum, camp) => sum + camp.click_rate, 0) / campaigns.length).toFixed(1)
                 : '0.0'
@@ -312,18 +314,30 @@ const NewsletterManagement = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="subscribers" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
-          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-        </TabsList>
+        <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth scrollbar-hide" : ""}>
+          <TabsList className={isMobile ? "flex w-max min-w-full h-12 p-1" : ""}>
+            <TabsTrigger 
+              value="subscribers" 
+              className={isMobile ? "flex-shrink-0 px-4 py-2 min-w-[120px] text-xs whitespace-nowrap" : ""}
+            >
+              Subscribers
+            </TabsTrigger>
+            <TabsTrigger 
+              value="campaigns" 
+              className={isMobile ? "flex-shrink-0 px-4 py-2 min-w-[120px] text-xs whitespace-nowrap" : ""}
+            >
+              Campaigns
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="subscribers">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
                 <div>
-                  <CardTitle>Newsletter Subscribers</CardTitle>
-                  <CardDescription>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Newsletter Subscribers</CardTitle>
+                  <CardDescription className={isMobile ? 'text-sm' : ''}>
                     Manage your email subscriber list
                   </CardDescription>
                 </div>
@@ -335,7 +349,7 @@ const NewsletterManagement = () => {
                       Add Subscriber
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className={isMobile ? "max-w-[95vw] mx-2" : ""}>
                     <DialogHeader>
                       <DialogTitle>Add New Subscriber</DialogTitle>
                     </DialogHeader>
@@ -350,7 +364,7 @@ const NewsletterManagement = () => {
                           placeholder="subscriber@example.com"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
                           <Input
@@ -435,10 +449,10 @@ const NewsletterManagement = () => {
         <TabsContent value="campaigns">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
                 <div>
-                  <CardTitle>Email Campaigns</CardTitle>
-                  <CardDescription>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Email Campaigns</CardTitle>
+                  <CardDescription className={isMobile ? 'text-sm' : ''}>
                     Create and manage your email marketing campaigns
                   </CardDescription>
                 </div>
@@ -450,7 +464,7 @@ const NewsletterManagement = () => {
                       Create Campaign
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className={isMobile ? "max-w-[95vw] mx-2" : "max-w-2xl"}>
                     <DialogHeader>
                       <DialogTitle>Create Email Campaign</DialogTitle>
                     </DialogHeader>

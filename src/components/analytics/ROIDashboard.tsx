@@ -7,6 +7,7 @@ import { DollarSign, TrendingUp, Calculator, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ROIData {
   campaign: string;
@@ -26,6 +27,7 @@ interface ROIMetrics {
 }
 
 const ROIDashboard = () => {
+  const isMobile = useIsMobile();
   const [roiData, setRoiData] = useState<ROIData[]>([]);
   const [metrics, setMetrics] = useState<ROIMetrics>({
     totalCost: 0,
@@ -126,7 +128,7 @@ const ROIDashboard = () => {
   return (
     <div className="grid gap-6">
       {/* ROI Metrics Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Investment</CardTitle>
@@ -172,7 +174,7 @@ const ROIDashboard = () => {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
         {/* ROI by Campaign */}
         <Card>
           <CardHeader>
@@ -251,7 +253,7 @@ const ROIDashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-4'}`}>
             <div className="space-y-2">
               <Label htmlFor="campaignName">Campaign Name</Label>
               <Input
