@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart3, TrendingUp, Users, DollarSign, Target, Mail, Phone, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ interface AnalyticsData {
 
 const Analytics = () => {
   const isMobile = useIsMobile();
+  const [selectedTab, setSelectedTab] = useState("overview");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     totalLeads: 0,
     totalRevenue: 0,
@@ -166,46 +168,100 @@ const Analytics = () => {
         </div>
 
         {/* Main Analytics Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth" : ""}>
-            <TabsList className={isMobile ? "flex w-max h-12 p-1" : "grid w-full lg:w-[600px] grid-cols-5 h-10"}>
-              <TabsTrigger 
-                value="overview" 
-                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[90px] text-xs whitespace-nowrap' : 'gap-2'}`}
-              >
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+          {isMobile ? (
+            <Select value={selectedTab} onValueChange={setSelectedTab}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {selectedTab === "overview" && (
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Overview
+                    </div>
+                  )}
+                  {selectedTab === "funnel" && (
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Funnel
+                    </div>
+                  )}
+                  {selectedTab === "roi" && (
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      ROI
+                    </div>
+                  )}
+                  {selectedTab === "leads" && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Leads
+                    </div>
+                  )}
+                  {selectedTab === "email" && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </div>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="overview">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Overview
+                  </div>
+                </SelectItem>
+                <SelectItem value="funnel">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Funnel
+                  </div>
+                </SelectItem>
+                <SelectItem value="roi">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    ROI
+                  </div>
+                </SelectItem>
+                <SelectItem value="leads">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Leads
+                  </div>
+                </SelectItem>
+                <SelectItem value="email">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <TabsList className="grid w-full lg:w-[600px] grid-cols-5 h-10">
+              <TabsTrigger value="overview" className="flex items-center justify-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger 
-                value="funnel" 
-                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
-              >
+              <TabsTrigger value="funnel" className="flex items-center justify-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Funnel
               </TabsTrigger>
-              <TabsTrigger 
-                value="roi" 
-                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[70px] text-xs whitespace-nowrap' : 'gap-2'}`}
-              >
+              <TabsTrigger value="roi" className="flex items-center justify-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 ROI
               </TabsTrigger>
-              <TabsTrigger 
-                value="leads" 
-                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
-              >
+              <TabsTrigger value="leads" className="flex items-center justify-center gap-2">
                 <Users className="h-4 w-4" />
                 Leads
               </TabsTrigger>
-              <TabsTrigger 
-                value="email" 
-                className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[80px] text-xs whitespace-nowrap' : 'gap-2'}`}
-              >
+              <TabsTrigger value="email" className="flex items-center justify-center gap-2">
                 <Mail className="h-4 w-4" />
                 Email
               </TabsTrigger>
             </TabsList>
-          </div>
+          )}
 
           <TabsContent value="overview">
             <AnalyticsDashboard />
