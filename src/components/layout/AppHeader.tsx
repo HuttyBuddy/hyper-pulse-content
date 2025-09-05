@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, BarChart3, User, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
@@ -93,6 +95,41 @@ const AppHeader = () => {
           <span className="sm:hidden">Hyper‑Local</span>
         </Link>
         <div className="flex items-center gap-2">
+          {/* Mobile navigation */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="sm">
+                <Menu className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <nav className="flex flex-col gap-4 mt-6">
+                <Button asChild variant="ghost" className="justify-start">
+                  <Link to="/dashboard">
+                    <Home className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" className="justify-start">
+                  <Link to="/analytics">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Analytics
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" className="justify-start">
+                  <Link to="/profile">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Link>
+                </Button>
+                <Button variant="ghost" className="justify-start mt-4" onClick={handleSignOut}>
+                  Log out
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+
           {/* Desktop navigation */}
           <nav className="hidden md:flex gap-1">
             <Button asChild variant="ghost" size="sm">
@@ -105,7 +142,9 @@ const AppHeader = () => {
               <Link to="/profile">Profile</Link>
             </Button>
           </nav>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>Log out</Button>
+          <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex">
+            Log out
+          </Button>
           <button
             type="button"
             onClick={onLogoClick}

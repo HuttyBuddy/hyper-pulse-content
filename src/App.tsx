@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -27,96 +28,110 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <Dashboard />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/content/:slugDate" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <ContentPackage />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/content/:neighborhood" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <ContentPackage />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/editor" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <Editor />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <Profile />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/image-studio" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <ImageStudio />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/social-media" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <SocialMediaManager />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/analytics" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <Analytics />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="/manage-subscription" element={
-              <ProtectedRoute>
-                <ChatProvider>
-                  <ManageSubscription />
-                  <ChatSheet />
-                  <ChatFloatingButton />
-                </ChatProvider>
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <ErrorBoundary>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <Dashboard />
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/content/:slugDate" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <ContentPackage />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/content/:neighborhood" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <ContentPackage />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/editor" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <Editor />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <Profile />
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/image-studio" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <ImageStudio />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/social-media" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <SocialMediaManager />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/analytics" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ErrorBoundary>
+                      <Analytics />
+                    </ErrorBoundary>
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="/manage-subscription" element={
+                <ProtectedRoute>
+                  <ChatProvider>
+                    <ManageSubscription />
+                    <ChatSheet />
+                    <ChatFloatingButton />
+                  </ChatProvider>
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </ErrorBoundary>
       </TooltipProvider>
     </HelmetProvider>
   </QueryClientProvider>

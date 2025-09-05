@@ -9,32 +9,48 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
 import { AISuggestions } from "@/components/content/AISuggestions";
+import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loading-spinner";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     contentCount: 0,
     neighborhoodCount: 0,
     creditsRemaining: 45
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      // Fetch profile
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('name, neighborhood, county, state, neighborhood_slug, onboarding_completed')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (!error && isMounted) {
+    const loadDashboard = async () => {
+      try {
+        setIsLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        // Fetch profile
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('name, neighborhood, county, state, neighborhood_slug, onboarding_completed')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (error) {
+          toast({
+            title: "Error loading profile",
+            description: error.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (!isMounted) return;
+        
         setDisplayName(profile?.name ?? null);
         const isOnboardingCompleted = profile?.onboarding_completed ?? false;
         setOnboardingCompleted(isOnboardingCompleted);
@@ -84,10 +100,24 @@ const Dashboard = () => {
           }]);
           setStats(prev => ({ ...prev, neighborhoodCount: 1 }));
         }
+      } catch (error) {
+        if (isMounted) {
+          toast({
+            title: "Error loading dashboard",
+            description: "Please refresh the page to try again.",
+            variant: "destructive"
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    })();
+    };
+    
+    loadDashboard();
     return () => { isMounted = false; };
-  }, []);
+  }, [toast]);
 
   const generateContentUrl = (neighborhood: any) => {
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -120,145 +150,165 @@ const Dashboard = () => {
       <AppHeader />
       <main className="container py-8">
         <section className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Welcome back{displayName ? `, ${displayName}` : ""}!</h1>
+          {isLoading ? (
+            <LoadingText className="w-64 h-8" />
+          ) : (
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+              Welcome back{displayName ? `, ${displayName}` : ""}!
+            </h1>
+          )}
         </section>
 
         <section className="grid gap-6">
-          {userNeighborhoods.length > 0 && (
-            <Card className="shadow-elevated">
-              <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                  <CardTitle>
-                    Latest Content: {userNeighborhoods[0].neighborhood}, {userNeighborhoods[0].state} - {format(new Date(), 'MMMM d, yyyy')}
-                  </CardTitle>
-                  <CardDescription className="mt-1">
-                    Generate fresh content for your primary market area
-                  </CardDescription>
-                </div>
-                <div className="mt-4 md:mt-0 flex gap-2">
-                  <Button asChild variant="outline">
-                    <Link to={`/content/${userNeighborhoods[0].neighborhood_slug}-${userNeighborhoods[0].report_date}`}>
-                      View Package
-                    </Link>
-                  </Button>
-                  <Button asChild variant="hero">
-                    <Link to={generateContentUrl(userNeighborhoods[0])}>
-                      Generate Fresh
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-            </Card>
-          )}
+          {isLoading ? (
+            <>
+              <LoadingCard className="h-32" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+              </div>
+              <LoadingCard className="h-48" />
+            </>
+          ) : (
+            <>
+              {userNeighborhoods.length > 0 && (
+                <Card className="shadow-elevated">
+                  <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <CardTitle>
+                        Latest Content: {userNeighborhoods[0].neighborhood}, {userNeighborhoods[0].state} - {format(new Date(), 'MMMM d, yyyy')}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        Generate fresh content for your primary market area
+                      </CardDescription>
+                    </div>
+                    <div className="mt-4 md:mt-0 flex gap-2">
+                      <Button asChild variant="outline">
+                        <Link to={`/content/${userNeighborhoods[0].neighborhood_slug}-${userNeighborhoods[0].report_date}`}>
+                          View Package
+                        </Link>
+                      </Button>
+                      <Button asChild variant="hero">
+                        <Link to={generateContentUrl(userNeighborhoods[0])}>
+                          Generate Fresh
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
+              )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex-row items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <div>
-                  <CardDescription>Content Generated This Month</CardDescription>
-                  <CardTitle className="text-xl">{stats.contentCount}</CardTitle>
-                </div>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="flex-row items-center gap-3">
-                <Home className="h-5 w-5 text-primary" />
-                <div>
-                  <CardDescription>Neighborhoods Covered</CardDescription>
-                  <CardTitle className="text-xl">{stats.neighborhoodCount}</CardTitle>
-                </div>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="flex-row items-center gap-3">
-                <CreditCard className="h-5 w-5 text-primary" />
-                <div>
-                  <CardDescription>AI Media Credits</CardDescription>
-                  <CardTitle className="text-xl">{stats.creditsRemaining}</CardTitle>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="flex-row items-center gap-3">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardDescription>Content Generated This Month</CardDescription>
+                      <CardTitle className="text-xl">{stats.contentCount}</CardTitle>
+                    </div>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader className="flex-row items-center gap-3">
+                    <Home className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardDescription>Neighborhoods Covered</CardDescription>
+                      <CardTitle className="text-xl">{stats.neighborhoodCount}</CardTitle>
+                    </div>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader className="flex-row items-center gap-3">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardDescription>AI Media Credits</CardDescription>
+                      <CardTitle className="text-xl">{stats.creditsRemaining}</CardTitle>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Access your most-used tools</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
-            <Link to="/image-studio">
-              <ImagePlus className="h-5 w-5 mb-2" />
-              <div className="text-left">
-                <div className="font-medium">Image Studio</div>
-                <div className="text-sm text-muted-foreground">Upload & enhance lifestyle photos</div>
-              </div>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
-            <Link to="/social-media">
-              <div className="text-2xl mb-2">📱</div>
-              <div className="text-left">
-                <div className="font-medium">Social Media Manager</div>
-                <div className="text-sm text-muted-foreground">Schedule posts & track performance</div>
-              </div>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
-            <Link to="/editor">
-              <div className="text-left">
-                <div className="font-medium">Newsletter Editor</div>
-                <div className="text-sm text-muted-foreground">Create branded newsletters</div>
-              </div>
-            </Link>
-          </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Neighborhoods</CardTitle>
-              <CardDescription>Your market areas and quick content generation</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {userNeighborhoods.map((neighborhood, index) => (
-                <div key={neighborhood.neighborhood_slug} className="flex items-center justify-between p-3 border rounded-lg">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <div className="font-medium">
-                      {neighborhood.neighborhood}, {neighborhood.state}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {neighborhood.county}
-                    </div>
+                    <CardTitle>Quick Actions</CardTitle>
+                    <CardDescription>Access your most-used tools</CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/content/${neighborhood.neighborhood_slug}-${neighborhood.report_date}`}>
-                        View Latest
-                      </Link>
-                    </Button>
-                    <Button asChild variant="secondary" size="sm">
-                      <Link to={generateContentUrl(neighborhood)}>
-                        Generate Fresh
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/profile">+ Add New Neighborhood</Link>
-              </Button>
-            </CardContent>
-          </Card>
-          
-          {onboardingCompleted && (
-            <AISuggestions 
-              neighborhood={userNeighborhoods[0]?.neighborhood}
-              recentContentTypes={[]}
-            />
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                    <Link to="/image-studio">
+                      <ImagePlus className="h-5 w-5 mb-2" />
+                      <div className="text-left">
+                        <div className="font-medium">Image Studio</div>
+                        <div className="text-sm text-muted-foreground">Upload & enhance lifestyle photos</div>
+                      </div>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                    <Link to="/social-media">
+                      <div className="text-2xl mb-2">📱</div>
+                      <div className="text-left">
+                        <div className="font-medium">Social Media Manager</div>
+                        <div className="text-sm text-muted-foreground">Schedule posts & track performance</div>
+                      </div>
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-start">
+                    <Link to="/editor">
+                      <div className="text-left">
+                        <div className="font-medium">Newsletter Editor</div>
+                        <div className="text-sm text-muted-foreground">Create branded newsletters</div>
+                      </div>
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Neighborhoods</CardTitle>
+                  <CardDescription>Your market areas and quick content generation</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {userNeighborhoods.map((neighborhood, index) => (
+                    <div key={neighborhood.neighborhood_slug} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">
+                          {neighborhood.neighborhood}, {neighborhood.state}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {neighborhood.county}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link to={`/content/${neighborhood.neighborhood_slug}-${neighborhood.report_date}`}>
+                            View Latest
+                          </Link>
+                        </Button>
+                        <Button asChild variant="secondary" size="sm">
+                          <Link to={generateContentUrl(neighborhood)}>
+                            Generate Fresh
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Button asChild variant="outline" className="w-full">
+                    <Link to="/profile">+ Add New Neighborhood</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+              
+              {onboardingCompleted && (
+                <AISuggestions 
+                  neighborhood={userNeighborhoods[0]?.neighborhood}
+                  recentContentTypes={[]}
+                />
+              )}
+            </>
           )}
         </section>
       </main>

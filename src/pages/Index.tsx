@@ -63,13 +63,42 @@ const Index = () => {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
+    if (!email.trim()) {
+      toast({ 
+        title: "Email required", 
+        description: "Please enter your email address.",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (!password.trim()) {
+      toast({ 
+        title: "Password required", 
+        description: "Please enter your password.",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (password.length < 6) {
+      toast({ 
+        title: "Password too short", 
+        description: "Password must be at least 6 characters.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
     try {
       // Clean up potential limbo states before attempting login
       cleanupAuthState();
       try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
       if (error) throw error;
