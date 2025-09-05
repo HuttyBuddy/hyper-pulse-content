@@ -18,7 +18,7 @@ interface EnhancedImage {
 export const useImageEnhancement = () => {
   const [loading, setLoading] = useState(false);
 
-  const uploadImage = useCallback(async (file: File): Promise<EnhancedImage | null> => {
+  const uploadImage = useCallback(async (file: File, category: string = 'interior'): Promise<EnhancedImage | null> => {
     try {
       setLoading(true);
       
@@ -60,7 +60,7 @@ export const useImageEnhancement = () => {
           original_url: publicUrl,
           file_size: file.size,
           dimensions: dimensions as any,
-          category: 'lifestyle' // Default category
+          category: category
         })
         .select()
         .single();

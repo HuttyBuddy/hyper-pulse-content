@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { X, Save, RotateCcw, Download, Zap } from "lucide-react";
 import { useImageEnhancement } from "@/hooks/use-image-enhancement";
+import { REAL_ESTATE_PRESETS, type RealEstatePresetKey } from "./RealEstateCategories";
 import { toast } from "sonner";
 
 interface ImageEnhancementProps {
@@ -26,14 +27,7 @@ interface EnhancementSettings {
   crop: { x: number; y: number; width: number; height: number } | null;
 }
 
-const PRESETS = {
-  "Coffee Shop Cozy": { brightness: 10, contrast: 15, saturation: 20, temperature: 15 },
-  "Family Friendly": { brightness: 20, contrast: 10, saturation: 10, temperature: 5 },
-  "Community Event": { brightness: 5, contrast: 20, saturation: 30, temperature: -5 },
-  "Local Business": { brightness: 15, contrast: 20, saturation: 5, temperature: 0 },
-  "Outdoor Living": { brightness: 10, contrast: 15, saturation: 25, temperature: 10 },
-  "Neighborhood Charm": { brightness: 5, contrast: 10, saturation: 15, temperature: 20 },
-};
+// Using real estate presets from the imported constant
 
 export const ImageEnhancement = ({ image, onClose, onComplete }: ImageEnhancementProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,11 +137,14 @@ export const ImageEnhancement = ({ image, onClose, onComplete }: ImageEnhancemen
     ctx.putImageData(imageData, 0, 0);
   };
 
-  const applyPreset = (presetName: keyof typeof PRESETS) => {
-    const preset = PRESETS[presetName];
+  const applyPreset = (presetName: RealEstatePresetKey) => {
+    const preset = REAL_ESTATE_PRESETS[presetName];
     setSettings(prev => ({
       ...prev,
-      ...preset
+      brightness: preset.brightness,
+      contrast: preset.contrast,
+      saturation: preset.saturation,
+      temperature: preset.temperature
     }));
     toast.success(`Applied ${presetName} preset`);
   };
@@ -230,18 +227,23 @@ export const ImageEnhancement = ({ image, onClose, onComplete }: ImageEnhancemen
 
         {/* Presets */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium">Enhancement Presets</h4>
-          <div className="flex flex-wrap gap-2">
-            {Object.keys(PRESETS).map((preset) => (
+          <h4 className="text-sm font-medium">Real Estate Enhancement Presets</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {Object.entries(REAL_ESTATE_PRESETS).map(([presetKey, preset]) => (
               <Button
-                key={preset}
+                key={presetKey}
                 variant="outline"
                 size="sm"
-                onClick={() => applyPreset(preset as keyof typeof PRESETS)}
-                className="text-xs"
+                onClick={() => applyPreset(presetKey as RealEstatePresetKey)}
+                className="text-xs flex-col h-auto py-2 px-3"
               >
-                <Zap className="h-3 w-3 mr-1" />
-                {preset}
+                <div className="flex items-center gap-1 mb-1">
+                  <Zap className="h-3 w-3" />
+                  <span className="font-medium">{presetKey}</span>
+                </div>
+                <Badge variant="secondary" className="text-xs capitalize">
+                  {preset.category}
+                </Badge>
               </Button>
             ))}
           </div>
