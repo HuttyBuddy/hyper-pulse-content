@@ -167,8 +167,8 @@ const Analytics = () => {
 
         {/* Main Analytics Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth scrollbar-hide" : ""}>
-            <TabsList className={isMobile ? "flex w-max min-w-full h-12 p-1" : "grid w-full lg:w-[600px] grid-cols-5 h-10"}>
+          <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth" : ""}>
+            <TabsList className={isMobile ? "flex w-max h-12 p-1" : "grid w-full lg:w-[600px] grid-cols-5 h-10"}>
               <TabsTrigger 
                 value="overview" 
                 className={`flex items-center justify-center gap-1 ${isMobile ? 'flex-shrink-0 px-4 py-2 min-w-[90px] text-xs whitespace-nowrap' : 'gap-2'}`}
