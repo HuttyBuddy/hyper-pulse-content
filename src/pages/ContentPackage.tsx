@@ -16,13 +16,11 @@ import { ContentTemplates } from "@/components/content/ContentTemplates";
 import { ContentHistory } from "@/components/content/ContentHistory";
 import { AISuggestions } from "@/components/content/AISuggestions";
 import { FirstContentCelebration } from "@/components/content/FirstContentCelebration";
-
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
 import home3 from "@/assets/carmichael-home-3.jpg";
 import lifestyleThumb from "@/assets/carmichael-lifestyle-thumb.jpg";
 import marketThumb from "@/assets/market-update-thumb.jpg";
-
 const ContentPackage = () => {
   const [tab, setTab] = useState("blog");
   const [selectedTab, setSelectedTab] = useState("blog");
@@ -30,33 +28,37 @@ const ContentPackage = () => {
   const [gallery, setGallery] = useState<string[]>([home1, home2, home3]);
   const [imageLoading, setImageLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
-  const [realImages, setRealImages] = useState<{url: string, source: string}[]>([]);
+  const [realImages, setRealImages] = useState<{
+    url: string;
+    source: string;
+  }[]>([]);
   const [searchingImages, setSearchingImages] = useState(false);
   const [lifestyleData, setLifestyleData] = useState<any>(null);
   const [lifestyleLoading, setLifestyleLoading] = useState(false);
   const [showFirstContentCelebration, setShowFirstContentCelebration] = useState(false);
   const navigate = useNavigate();
-
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
   const [stateCode, setStateCode] = useState("CA");
-
-  const { slugDate } = useParams();
+  const {
+    slugDate
+  } = useParams();
   const [reportDate, setReportDate] = useState<Date | null>(null);
   const [neighborhoodSlug, setNeighborhoodSlug] = useState<string | null>(null);
   const [localReport, setLocalReport] = useState<any | null>(null);
   const [countyReport, setCountyReport] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("neighborhood, county, state")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const {
+        data
+      } = await supabase.from("profiles").select("neighborhood, county, state").eq("user_id", user.id).maybeSingle();
       if (data) {
         if ((data as any).neighborhood) setNeighborhood((data as any).neighborhood);
         if ((data as any).county) setCounty((data as any).county);
@@ -65,9 +67,12 @@ const ContentPackage = () => {
     };
     load();
   }, []);
-
   const fetchReports = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: {
+        user
+      }
+    } = await supabase.auth.getUser();
     if (!user) return;
     let targetDate = new Date();
     let neighSlug = (neighborhood || '').toLowerCase().replace(/\s+/g, '-');
@@ -88,49 +93,46 @@ const ContentPackage = () => {
     setNeighborhoodSlug(neighSlug);
     setReportDate(targetDate);
     setLoading(true);
-    const dateStr = targetDate.toISOString().slice(0,10);
-    const { data: localRows } = await supabase
-      .from('market_reports')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('location_type', 'neighborhood')
-      .eq('neighborhood_slug', neighSlug)
-      .lte('report_date', dateStr)
-      .order('report_date', { ascending: false })
-      .limit(1);
+    const dateStr = targetDate.toISOString().slice(0, 10);
+    const {
+      data: localRows
+    } = await supabase.from('market_reports').select('*').eq('user_id', user.id).eq('location_type', 'neighborhood').eq('neighborhood_slug', neighSlug).lte('report_date', dateStr).order('report_date', {
+      ascending: false
+    }).limit(1);
     setLocalReport(localRows?.[0] ?? null);
     if (county && stateCode) {
-      const { data: countyRows } = await supabase
-        .from('market_reports')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('location_type', 'county')
-        .eq('county', county)
-        .eq('state', stateCode)
-        .lte('report_date', dateStr)
-        .order('report_date', { ascending: false })
-        .limit(1);
+      const {
+        data: countyRows
+      } = await supabase.from('market_reports').select('*').eq('user_id', user.id).eq('location_type', 'county').eq('county', county).eq('state', stateCode).lte('report_date', dateStr).order('report_date', {
+        ascending: false
+      }).limit(1);
       setCountyReport(countyRows?.[0] ?? null);
     } else {
       setCountyReport(null);
     }
     setLoading(false);
   };
-
   const handleRefresh = async () => {
     setLoading(true);
-    toast("Refreshing market data...", { 
-      description: "Fetching the latest real estate data from RentCast" 
+    toast("Refreshing market data...", {
+      description: "Fetching the latest real estate data from RentCast"
     });
     try {
       // Get authentication token
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Authentication required");
       }
 
       // Call RentCast integration function
-      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('fetch-market-data', {
         body: {
           neighborhood: neighborhood,
           county: county,
@@ -141,20 +143,20 @@ const ContentPackage = () => {
           Authorization: `Bearer ${session.access_token}`
         }
       });
-
       if (error) {
         console.error('Error calling fetch-market-data:', error);
         throw new Error(error.message || "Failed to fetch market data");
       }
-
       console.log('Market data fetched successfully:', data);
 
       // Compute today's edition slug and navigate so URL reflects the latest edition
       const today = format(new Date(), 'yyyy-MM-dd');
-      const currentSlug = (neighborhoodSlug || (neighborhood || '').toLowerCase().replace(/\s+/g, '-'));
+      const currentSlug = neighborhoodSlug || (neighborhood || '').toLowerCase().replace(/\s+/g, '-');
       const newSlugDate = `${currentSlug}-${today}`;
       setReportDate(new Date());
-      navigate(`/content/${newSlugDate}`, { replace: true });
+      navigate(`/content/${newSlugDate}`, {
+        replace: true
+      });
 
       // Re-fetch data after updating with real data
       await fetchReports();
@@ -170,7 +172,6 @@ const ContentPackage = () => {
       setLoading(false);
     }
   };
-
   const handleNeighborhoodChange = (newNeighborhood: {
     neighborhood: string;
     county: string;
@@ -181,49 +182,50 @@ const ContentPackage = () => {
     setCounty(newNeighborhood.county);
     setStateCode(newNeighborhood.state);
     setNeighborhoodSlug(newNeighborhood.neighborhood_slug);
-    
+
     // Update URL to reflect new neighborhood
     const today = format(new Date(), 'yyyy-MM-dd');
     const newSlugDate = `${newNeighborhood.neighborhood_slug}-${today}`;
-    navigate(`/content/${newSlugDate}`, { replace: true });
-    
+    navigate(`/content/${newSlugDate}`, {
+      replace: true
+    });
+
     // Fetch new data
     fetchReports();
   };
-
   const handleStartNew = () => {
     // Reset to dashboard to start fresh
     navigate('/dashboard');
   };
-
   useEffect(() => {
     fetchReports();
-    
+
     // Check if we should show first content celebration
     const checkFirstContent = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-      
-      const { count } = await supabase
-        .from('content_history')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
+      const {
+        count
+      } = await supabase.from('content_history').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('user_id', user.id);
       if (count && count <= 1) {
         setShowFirstContentCelebration(true);
       }
     };
-    
     checkFirstContent();
   }, [slugDate, neighborhood, county, stateCode]);
-
-  const editionISO = reportDate ? reportDate.toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+  const editionISO = reportDate ? reportDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
   const titleDate = format(new Date(editionISO), "MMMM d, yyyy");
   const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
   const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
-  const dataDateISO = (localReport?.report_date as any) || (countyReport?.report_date as any) || null;
-  const freshnessText = loading ? "Loading data…" : (dataDateISO ? `Data through ${format(new Date(dataDateISO), "MMMM d, yyyy")}` : `Based on latest available data as of ${titleDate}.`);
-
+  const dataDateISO = localReport?.report_date as any || countyReport?.report_date as any || null;
+  const freshnessText = loading ? "Loading data…" : dataDateISO ? `Data through ${format(new Date(dataDateISO), "MMMM d, yyyy")}` : `Based on latest available data as of ${titleDate}.`;
   const generateBlogBody = () => {
     const local = localReport as any;
     const countyR = countyReport as any;
@@ -239,18 +241,24 @@ const ContentPackage = () => {
       newListings: 23,
       closedSales: 31,
       monthsInventory: 1.8,
-      momChanges: { price: 0.032, dom: -0.15, inventory: -0.12 },
-      yoyChanges: { price: 0.087, dom: -0.28, inventory: -0.31 }
+      momChanges: {
+        price: 0.032,
+        dom: -0.15,
+        inventory: -0.12
+      },
+      yoyChanges: {
+        price: 0.087,
+        dom: -0.28,
+        inventory: -0.31
+      }
     };
-
     const countyData = {
       avgPricePSF: 398,
       daysOnMarket: 22
     };
-
-    const fmtCurrency = (v: any) => (v != null ? `$${Number(v).toLocaleString()}` : "—");
-    const fmtNum = (v: any) => (v != null ? `${Number(v).toLocaleString()}` : "—");
-    const fmtPSF = (v: any) => (v != null ? `$${Number(v).toFixed(0)}/sf` : "—");
+    const fmtCurrency = (v: any) => v != null ? `$${Number(v).toLocaleString()}` : "—";
+    const fmtNum = (v: any) => v != null ? `${Number(v).toLocaleString()}` : "—";
+    const fmtPSF = (v: any) => v != null ? `$${Number(v).toFixed(0)}/sf` : "—";
     const fmtChange = (v: any) => {
       if (v == null || isNaN(Number(v))) return null;
       const num = Number(v);
@@ -270,10 +278,8 @@ const ContentPackage = () => {
     const newListings = local?.new_listings ?? sampleData.newListings;
     const closed = local?.closed_sales ?? sampleData.closedSales;
     const inventory = local?.months_of_inventory ?? sampleData.monthsInventory;
-
     const mom = local?.mom_change || sampleData.momChanges;
     const yoy = local?.yoy_change || sampleData.yoyChanges;
-
     const mspTxt = fmtCurrency(msp);
     const apsfLTxt = fmtPSF(apsfLocal);
     const apsfCTxt = fmtPSF(apsfCounty);
@@ -283,20 +289,15 @@ const ContentPackage = () => {
     const newTxt = fmtNum(newListings);
     const closedTxt = fmtNum(closed);
     const invTxt = `${Number(inventory).toFixed(1)} months`;
-
     const priceMom = fmtChange(mom.price);
     const domMom = fmtChange(mom.dom);
     const invMom = fmtChange(mom.inventory);
     const priceYoy = fmtChange(yoy.price);
     const domYoy = fmtChange(yoy.dom);
     const invYoy = fmtChange(yoy.inventory);
-
-    const marketBalance = Number(inventory) < 2 ? "a strong seller's market" : 
-                         Number(inventory) <= 4 ? "a balanced market" : "a buyer-leaning market";
-
+    const marketBalance = Number(inventory) < 2 ? "a strong seller's market" : Number(inventory) <= 4 ? "a balanced market" : "a buyer-leaning market";
     const speedComparison = Number(dom) <= Number(domCounty) ? "moving faster than" : "taking longer than";
     const priceComparison = Number(apsfLocal) >= Number(apsfCounty) ? "commanding a premium over" : "priced below";
-
     return `**The ${nName} Real Estate Pulse: ${titleDate}**
 
 ${nName} continues to demonstrate remarkable resilience in today's dynamic market. With a median days on market of just ${domTxt} days, properties are moving at an impressive pace, significantly outperforming many comparable markets. At ${invTxt} of inventory, we're experiencing ${marketBalance}, creating compelling opportunities for both buyers and sellers.
@@ -349,18 +350,14 @@ ${freshnessText} Our analysis incorporates Multiple Listing Service data, public
 
 *This analysis is provided for informational purposes and should not be considered as individual investment or real estate advice. Consult with qualified professionals for guidance specific to your situation.*`;
   };
-
   const blogBody = generateBlogBody();
-
   const domLocal = localReport?.days_on_market != null ? localReport.days_on_market : 18;
   const domCounty = countyReport?.days_on_market != null ? countyReport.days_on_market : 22;
   const activeLocal = localReport?.active_listings ?? 47;
   const closedLocal = localReport?.closed_sales ?? 31;
-
-  const socialPosts = [
-    {
-      title: "📊 Weekly Market Pulse",
-      content: `🏠 ${neighborhood} Market Update | ${titleDate}
+  const socialPosts = [{
+    title: "📊 Weekly Market Pulse",
+    content: `🏠 ${neighborhood} Market Update | ${titleDate}
 
 The numbers are telling a story in ${neighborhood}! With ${domLocal} average days on market compared to ${county}'s ${domCounty}, we're seeing ${activeLocal} active listings and ${closedLocal} recent closings.
 
@@ -374,11 +371,10 @@ Living in ${neighborhood} means you're not just buying a house—you're investin
 Ready to make your move? Let's talk strategy. 📱
 
 #${neighborhood.replace(/\s+/g, '')}RealEstate #${county.replace(/\s+/g, '')}Homes #${stateCode}Properties #MarketUpdate #RealEstateData #HomeBuyers #PropertyInvestment #LocalMarket #${neighborhood.replace(/\s+/g, '')}Living #RealEstateExpert #MarketAnalysis #PropertyValues`,
-      hashtags: `#${neighborhood.replace(/\s+/g, '')}RealEstate #${county.replace(/\s+/g, '')}Homes #MarketUpdate`
-    },
-    {
-      title: "🌟 Neighborhood Lifestyle Feature", 
-      content: `Why ${neighborhood} Residents Never Want to Leave 💝
+    hashtags: `#${neighborhood.replace(/\s+/g, '')}RealEstate #${county.replace(/\s+/g, '')}Homes #MarketUpdate`
+  }, {
+    title: "🌟 Neighborhood Lifestyle Feature",
+    content: `Why ${neighborhood} Residents Never Want to Leave 💝
 
 Just spent the morning exploring what makes ${neighborhood} special, and here's what I discovered:
 
@@ -395,11 +391,10 @@ The secret? ${neighborhood} isn't just a place to live—it's a place to thrive.
 Curious about current opportunities? Send me a DM—I've got insider knowledge on what's coming to market! 🔥
 
 #${neighborhood.replace(/\s+/g, '')}Lifestyle #${county.replace(/\s+/g, '')}Living #CommunityFirst #NeighborhoodSpotlight #LocalExpert #${neighborhood.replace(/\s+/g, '')}Homes #RealEstate${stateCode} #PropertySearch #HomeSweetHome #InvestInCommunity #LocalMarketExpert #RealEstateLifestyle`,
-      hashtags: `#${neighborhood.replace(/\s+/g, '')}Lifestyle #CommunityFirst #LocalExpert`
-    },
-    {
-      title: "🎯 Buyer/Seller Educational",
-      content: `📚 ${neighborhood} Buying Strategy: What Every Smart Buyer Knows
+    hashtags: `#${neighborhood.replace(/\s+/g, '')}Lifestyle #CommunityFirst #LocalExpert`
+  }, {
+    title: "🎯 Buyer/Seller Educational",
+    content: `📚 ${neighborhood} Buying Strategy: What Every Smart Buyer Knows
 
 Thinking about ${neighborhood}? Here's your insider playbook:
 
@@ -414,11 +409,10 @@ Thinking about ${neighborhood}? Here's your insider playbook:
 Ready to compete like a pro? I've helped ${Math.floor(Math.random() * 20) + 10}+ families secure their dream homes here. Let's craft your winning strategy! 💪
 
 #${neighborhood.replace(/\s+/g, '')}BuyingTips #FirstTimeBuyer #RealEstate${stateCode} #HomeBuyingStrategy #${county.replace(/\s+/g, '')}RealEstate #PropertySearch #RealEstateEducation #SmartBuying #LocalMarketExpert #HomeBuyingProcess #RealEstateAdvice #PropertyInvestment`,
-      hashtags: `#${neighborhood.replace(/\s+/g, '')}BuyingTips #HomeBuyingStrategy #RealEstateEducation`
-    },
-    {
-      title: "📈 Market Trend Analysis",
-      content: `🔮 ${neighborhood} Market Forecast: What the Data Reveals
+    hashtags: `#${neighborhood.replace(/\s+/g, '')}BuyingTips #HomeBuyingStrategy #RealEstateEducation`
+  }, {
+    title: "📈 Market Trend Analysis",
+    content: `🔮 ${neighborhood} Market Forecast: What the Data Reveals
 
 Looking at the ${neighborhood} market through my expert lens, and here's what I'm seeing for the next 6 months:
 
@@ -438,11 +432,10 @@ SELLERS: ${Number(localReport?.months_of_inventory || 3) < 3 ? 'Strong seller\'s
 Want my detailed market analysis for your specific situation? Drop a comment or send a DM—I love talking market strategy! 📲
 
 #${neighborhood.replace(/\s+/g, '')}MarketTrends #RealEstateAnalysis #PropertyInvestment #MarketForecast #${county.replace(/\s+/g, '')}RealEstate #RealEstate${stateCode} #InvestmentProperty #MarketData #PropertyValues #RealEstateExpert #LocalMarketAnalysis #MarketPredictions`,
-      hashtags: `#${neighborhood.replace(/\s+/g, '')}MarketTrends #MarketForecast #RealEstateAnalysis`
-    },
-    {
-      title: "🏆 Community Success Story",
-      content: `🎉 Another ${neighborhood} Success Story!
+    hashtags: `#${neighborhood.replace(/\s+/g, '')}MarketTrends #MarketForecast #RealEstateAnalysis`
+  }, {
+    title: "🏆 Community Success Story",
+    content: `🎉 Another ${neighborhood} Success Story!
 
 Just helped the Johnson family (name changed for privacy) find their dream home in ${neighborhood}, and I'm still smiling! 😊
 
@@ -465,33 +458,17 @@ Six months later? Their home has already appreciated an estimated ${Math.floor(M
 Ready to write your own success story? Let's talk about what's possible for YOU in ${neighborhood}. Your dream home is closer than you think! 🔑
 
 #${neighborhood.replace(/\s+/g, '')}Success #RealEstateSuccess #HappyClients #${county.replace(/\s+/g, '')}Homes #DreamHome #HomeownershipGoals #RealEstate${stateCode} #${neighborhood.replace(/\s+/g, '')}Homes #LocalRealtor #PropertySuccess #NewHomeowners #RealEstateExperience`,
-      hashtags: `#${neighborhood.replace(/\s+/g, '')}Success #RealEstateSuccess #DreamHome`
-    }
-  ];
-
+    hashtags: `#${neighborhood.replace(/\s+/g, '')}Success #RealEstateSuccess #DreamHome`
+  }];
   const domLocalStr = domLocal != null ? `${domLocal}` : "—";
   const domCountyStr = domCounty != null ? `${domCounty}` : "—";
   const activeLocalStr = activeLocal != null ? `${activeLocal}` : "—";
   const closedLocalStr = closedLocal != null ? `${closedLocal}` : "—";
-
-  const marketDataPoints = [
-    `Report date: ${titleDate}`,
-    ...(dataDateISO ? [`Data through: ${format(new Date(dataDateISO), 'MMMM d, yyyy')}`] : []),
-    `Median DOM — ${displayNeighborhood}: ${domLocalStr}${domCountyStr !== '—' ? ` | ${county}: ${domCountyStr}` : ''}`,
-    `Active listings — ${displayNeighborhood}: ${activeLocalStr}`,
-    ...(localReport?.new_listings != null ? [`New listings — ${displayNeighborhood}: ${Number(localReport.new_listings).toLocaleString()}`] : []),
-    `Closed sales — ${displayNeighborhood}: ${closedLocalStr}`,
-    ...(localReport?.median_sale_price != null ? [`Median sale price — ${displayNeighborhood}: $${Number(localReport.median_sale_price).toLocaleString()}`] : []),
-    ...(localReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${displayNeighborhood}: $${Number(localReport.avg_price_per_sqft).toFixed(0)}`] : []),
-    ...(countyReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${county}: $${Number(countyReport.avg_price_per_sqft).toFixed(0)}`] : []),
-    ...(localReport?.months_of_inventory != null ? [`Months of inventory — ${displayNeighborhood}: ${Number(localReport.months_of_inventory).toFixed(1)}`] : []),
-  ];
-
+  const marketDataPoints = [`Report date: ${titleDate}`, ...(dataDateISO ? [`Data through: ${format(new Date(dataDateISO), 'MMMM d, yyyy')}`] : []), `Median DOM — ${displayNeighborhood}: ${domLocalStr}${domCountyStr !== '—' ? ` | ${county}: ${domCountyStr}` : ''}`, `Active listings — ${displayNeighborhood}: ${activeLocalStr}`, ...(localReport?.new_listings != null ? [`New listings — ${displayNeighborhood}: ${Number(localReport.new_listings).toLocaleString()}`] : []), `Closed sales — ${displayNeighborhood}: ${closedLocalStr}`, ...(localReport?.median_sale_price != null ? [`Median sale price — ${displayNeighborhood}: $${Number(localReport.median_sale_price).toLocaleString()}`] : []), ...(localReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${displayNeighborhood}: $${Number(localReport.avg_price_per_sqft).toFixed(0)}`] : []), ...(countyReport?.avg_price_per_sqft != null ? [`Avg price/sf — ${county}: $${Number(countyReport.avg_price_per_sqft).toFixed(0)}`] : []), ...(localReport?.months_of_inventory != null ? [`Months of inventory — ${displayNeighborhood}: ${Number(localReport.months_of_inventory).toFixed(1)}`] : [])];
   const copy = async (text: string) => {
     await navigator.clipboard.writeText(text);
     toast("Copied to clipboard");
   };
-
   const addGeneratedImage = async () => {
     if (!imagePrompt.trim()) {
       toast("Enter a prompt first");
@@ -499,13 +476,18 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
     }
     setImageLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: imagePrompt }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('generate-image', {
+        body: {
+          prompt: imagePrompt
+        }
       });
       if (error) throw error;
       const img = (data as any)?.image as string;
       if (img) {
-        setGallery((g) => [img, ...g]);
+        setGallery(g => [img, ...g]);
         toast("Generated image added to gallery");
       } else {
         toast("Image generation failed");
@@ -517,13 +499,19 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       setImageLoading(false);
     }
   };
-
   const enhancePrompt = async () => {
     if (!imagePrompt.trim()) return;
     setEnhancing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('enhance-prompt', {
-        body: { prompt: imagePrompt, neighborhood, county }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('enhance-prompt', {
+        body: {
+          prompt: imagePrompt,
+          neighborhood,
+          county
+        }
       });
       if (error) {
         throw error;
@@ -546,7 +534,6 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       setEnhancing(false);
     }
   };
-
   const downloadImage = (src: string, idx: number) => {
     const link = document.createElement('a');
     const name = `ai-image-${idx + 1}.png`;
@@ -556,18 +543,20 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
     link.click();
     document.body.removeChild(link);
   };
-
   const deleteImage = (idx: number) => {
-    setGallery((g) => g.filter((_, i) => i !== idx));
+    setGallery(g => g.filter((_, i) => i !== idx));
   };
-
   const searchRealImages = async (query: string) => {
     setSearchingImages(true);
     try {
-      const { data } = await supabase.functions.invoke('search-real-images', {
-        body: { query, location: `${neighborhood}, ${county}` }
+      const {
+        data
+      } = await supabase.functions.invoke('search-real-images', {
+        body: {
+          query,
+          location: `${neighborhood}, ${county}`
+        }
       });
-      
       if (data?.images) {
         setRealImages(data.images);
         toast.success(`Found ${data.images.length} real images`);
@@ -579,23 +568,24 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       setSearchingImages(false);
     }
   };
-
   const generatePolishedVersion = async (realImageUrl: string, description: string) => {
     setImageLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-polished-image', {
-        body: { 
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('generate-polished-image', {
+        body: {
           referenceImageUrl: realImageUrl,
           prompt: `Create a professional, clean, and polished version of this real estate image. ${description}. High-end photography style, perfect lighting, modern aesthetic.`,
           neighborhood,
           county
         }
       });
-      
       if (error) throw error;
       const img = data?.image;
       if (img) {
-        setGallery((g) => [img, ...g]);
+        setGallery(g => [img, ...g]);
         toast.success("Generated polished version!");
       }
     } catch (error) {
@@ -605,11 +595,13 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       setImageLoading(false);
     }
   };
-
   const generateLifestyleInsights = async () => {
     setLifestyleLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('google-research', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('google-research', {
         body: {
           neighborhood,
           county,
@@ -620,9 +612,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           }
         }
       });
-      
       if (error) throw error;
-      
       if (data?.lifestyle) {
         setLifestyleData(data.lifestyle);
         toast.success("Lifestyle guide generated!");
@@ -634,16 +624,8 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       setLifestyleLoading(false);
     }
   };
-
-  const suggestImgPrompts = [
-    `A beautiful, modern suburban home in ${neighborhood} on a sunny day.`,
-    `Twilight exterior shot of a renovated ranch-style home in ${neighborhood}.`,
-    `Bright kitchen interior with natural light and clean finishes in ${neighborhood}.`,
-  ];
-
-
-  return (
-    <>
+  const suggestImgPrompts = [`A beautiful, modern suburban home in ${neighborhood} on a sunny day.`, `Twilight exterior shot of a renovated ranch-style home in ${neighborhood}.`, `Bright kitchen interior with natural light and clean finishes in ${neighborhood}.`];
+  return <>
       <Helmet>
         <title>Content Package — {titleText}</title>
         <meta name="description" content={`In-depth ${neighborhood} and ${county} market insights, content, and media.`} />
@@ -652,18 +634,12 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
       <AppHeader />
       <main className="container px-3 md:px-4 py-4 md:py-8">
         <section className="mb-6">
-          <NeighborhoodSelector
-            currentNeighborhood={{
-              neighborhood,
-              county,
-              state: stateCode,
-              neighborhood_slug: neighborhoodSlug || 'carmichael'
-            }}
-            onNeighborhoodChange={handleNeighborhoodChange}
-            onRefreshCurrent={handleRefresh}
-            onStartNew={handleStartNew}
-            loading={loading}
-          />
+          <NeighborhoodSelector currentNeighborhood={{
+          neighborhood,
+          county,
+          state: stateCode,
+          neighborhood_slug: neighborhoodSlug || 'carmichael'
+        }} onNeighborhoodChange={handleNeighborhoodChange} onRefreshCurrent={handleRefresh} onStartNew={handleStartNew} loading={loading} />
         </section>
 
         <header className="mb-4 md:mb-6">
@@ -671,14 +647,9 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           <p className="text-sm md:text-base text-muted-foreground mt-1 truncate">{freshnessText}</p>
         </header>
 
-        {showFirstContentCelebration && (
-          <div className="mb-6">
-            <FirstContentCelebration
-              neighborhood={displayNeighborhood}
-              onDismiss={() => setShowFirstContentCelebration(false)}
-            />
-          </div>
-        )}
+        {showFirstContentCelebration && <div className="mb-6">
+            <FirstContentCelebration neighborhood={displayNeighborhood} onDismiss={() => setShowFirstContentCelebration(false)} />
+          </div>}
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
           <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
@@ -695,9 +666,7 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
               <TabsTrigger value="templates" className="flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
                 Templates
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
-                History
-              </TabsTrigger>
+              <TabsTrigger value="history" className="flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">Gallery</TabsTrigger>
               <TabsTrigger value="data" className="flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
                 Market Data
               </TabsTrigger>
@@ -711,16 +680,9 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                 <CardDescription>Detailed insights. {freshnessText}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-left">
-                <div 
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: blogBody
-                      .replace(/\*\*(.*?)\*\*/g, '<h3 class="text-lg font-semibold mt-6 mb-3 text-foreground">$1</h3>')
-                      .replace(/\n\n/g, '</p><p class="text-muted-foreground leading-relaxed mb-4">')
-                      .replace(/^/, '<p class="text-muted-foreground leading-relaxed mb-4">')
-                      .replace(/$/, '</p>') 
-                  }} 
-                />
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{
+                __html: blogBody.replace(/\*\*(.*?)\*\*/g, '<h3 class="text-lg font-semibold mt-6 mb-3 text-foreground">$1</h3>').replace(/\n\n/g, '</p><p class="text-muted-foreground leading-relaxed mb-4">').replace(/^/, '<p class="text-muted-foreground leading-relaxed mb-4">').replace(/$/, '</p>')
+              }} />
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
                   <Button variant="secondary" onClick={() => copy(`${titleText}\n\n${blogBody}`)}>Copy Full Text</Button>
                   <Button variant="outline" onClick={() => toast("Exporting PDF… (demo)")}>Export as PDF</Button>
@@ -741,48 +703,29 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
-                    <Button 
-                      onClick={() => searchRealImages(`${neighborhood} homes real estate`)}
-                      disabled={searchingImages}
-                      variant="outline"
-                    >
+                    <Button onClick={() => searchRealImages(`${neighborhood} homes real estate`)} disabled={searchingImages} variant="outline">
                       {searchingImages ? 'Searching...' : 'Find Real Images'}
                     </Button>
-                    <Button 
-                      onClick={() => searchRealImages(`${neighborhood} neighborhood lifestyle`)}
-                      disabled={searchingImages}
-                      variant="outline"
-                    >
+                    <Button onClick={() => searchRealImages(`${neighborhood} neighborhood lifestyle`)} disabled={searchingImages} variant="outline">
                       Lifestyle Images
                     </Button>
                   </div>
                   
-                  {realImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {realImages.map((img, idx) => (
-                        <div key={idx} className="space-y-2">
+                  {realImages.length > 0 && <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {realImages.map((img, idx) => <div key={idx} className="space-y-2">
                           <div className="aspect-square overflow-hidden rounded-lg border">
                             <img src={img.url} alt="Real estate" className="w-full h-full object-cover" />
                           </div>
-                          <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            className="w-full"
-                            onClick={() => generatePolishedVersion(img.url, socialPosts[idx % socialPosts.length].title)}
-                            disabled={imageLoading}
-                          >
+                          <Button size="sm" variant="secondary" className="w-full" onClick={() => generatePolishedVersion(img.url, socialPosts[idx % socialPosts.length].title)} disabled={imageLoading}>
                             Create Polished AI Version
                           </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        </div>)}
+                    </div>}
                 </CardContent>
               </Card>
 
               <div className="grid gap-4 md:grid-cols-2">
-                {socialPosts.map((text, i) => (
-                  <Card key={i} className="shadow-elevated">
+                {socialPosts.map((text, i) => <Card key={i} className="shadow-elevated">
                     <CardHeader>
                       <CardTitle className="text-base">{text.title}</CardTitle>
                       <CardDescription>Ready to copy</CardDescription>
@@ -792,25 +735,17 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">Real Image</p>
                           <div className="aspect-video overflow-hidden rounded-md bg-muted border">
-                            {realImages[i] ? (
-                              <img src={realImages[i].url} alt={`Real ${neighborhood} image`} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
+                            {realImages[i] ? <img src={realImages[i].url} alt={`Real ${neighborhood} image`} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
                                 Search for real images above
-                              </div>
-                            )}
+                              </div>}
                           </div>
                         </div>
                         <div className="space-y-2">
                           <p className="text-xs font-medium text-muted-foreground">AI Polished</p>
                           <div className="aspect-video overflow-hidden rounded-md bg-muted border">
-                            {gallery[i] ? (
-                              <img src={gallery[i]} alt={`AI polished ${neighborhood} image`} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
+                            {gallery[i] ? <img src={gallery[i]} alt={`AI polished ${neighborhood} image`} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
                                 Generate polished version
-                              </div>
-                            )}
+                              </div>}
                           </div>
                         </div>
                       </div>
@@ -819,20 +754,15 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button size="sm" variant="secondary" onClick={() => copy(text.content)}>Copy Text</Button>
-                        {realImages[i] && (
-                          <Button size="sm" variant="outline" onClick={() => downloadImage(realImages[i].url, i)}>
+                        {realImages[i] && <Button size="sm" variant="outline" onClick={() => downloadImage(realImages[i].url, i)}>
                             Download Real
-                          </Button>
-                        )}
-                        {gallery[i] && (
-                          <Button size="sm" variant="outline" onClick={() => downloadImage(gallery[i], i)}>
+                          </Button>}
+                        {gallery[i] && <Button size="sm" variant="outline" onClick={() => downloadImage(gallery[i], i)}>
                             Download AI
-                          </Button>
-                        )}
+                          </Button>}
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </TabsContent>
@@ -850,176 +780,113 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {!lifestyleData ? (
-                  <div className="text-center py-8">
+                {!lifestyleData ? <div className="text-center py-8">
                     <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground mb-4">
                       Generate lifestyle insights to showcase what makes this neighborhood unique
                     </p>
                     <Button onClick={generateLifestyleInsights} disabled={lifestyleLoading}>
-                      {lifestyleLoading ? (
-                        <>
+                      {lifestyleLoading ? <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Generating Guide...
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           <ImageIcon className="h-4 w-4 mr-2" />
                           Create Lifestyle Guide
-                        </>
-                      )}
+                        </>}
                     </Button>
-                  </div>
-                ) : (
-                    <div className="space-y-6">
-                      {lifestyleData.localFavorites && (
-                        <div>
+                  </div> : <div className="space-y-6">
+                      {lifestyleData.localFavorites && <div>
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold">☕ Local Favorites</h4>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copy(lifestyleData.localFavorites)}
-                            >
+                            <Button size="sm" variant="ghost" onClick={() => copy(lifestyleData.localFavorites)}>
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
                           <div className="bg-muted p-4 rounded-lg">
                             <p className="whitespace-pre-wrap">{lifestyleData.localFavorites}</p>
                           </div>
-                        </div>
-                      )}
+                        </div>}
                       
-                      {lifestyleData.communityLife && (
-                        <div>
+                      {lifestyleData.communityLife && <div>
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold">🎉 Community Life</h4>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copy(lifestyleData.communityLife)}
-                            >
+                            <Button size="sm" variant="ghost" onClick={() => copy(lifestyleData.communityLife)}>
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
                           <div className="bg-muted p-4 rounded-lg">
                             <p className="whitespace-pre-wrap">{lifestyleData.communityLife}</p>
                           </div>
-                        </div>
-                      )}
+                        </div>}
 
-                      {lifestyleData.familyLiving && (
-                        <div>
+                      {lifestyleData.familyLiving && <div>
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold">👨‍👩‍👧‍👦 Family Living</h4>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copy(lifestyleData.familyLiving)}
-                            >
+                            <Button size="sm" variant="ghost" onClick={() => copy(lifestyleData.familyLiving)}>
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
                           <div className="bg-muted p-4 rounded-lg">
                             <p className="whitespace-pre-wrap">{lifestyleData.familyLiving}</p>
                           </div>
-                        </div>
-                      )}
+                        </div>}
 
-                      {lifestyleData.lifestylePerks && (
-                        <div>
+                      {lifestyleData.lifestylePerks && <div>
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold">✨ Lifestyle Perks</h4>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copy(lifestyleData.lifestylePerks)}
-                            >
+                            <Button size="sm" variant="ghost" onClick={() => copy(lifestyleData.lifestylePerks)}>
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
                           <div className="bg-muted p-4 rounded-lg">
                             <p className="whitespace-pre-wrap">{lifestyleData.lifestylePerks}</p>
                           </div>
-                        </div>
-                      )}
+                        </div>}
                       
-                      {lifestyleData.socialContentIdeas && Array.isArray(lifestyleData.socialContentIdeas) && lifestyleData.socialContentIdeas.length > 0 && (
-                        <div>
+                      {lifestyleData.socialContentIdeas && Array.isArray(lifestyleData.socialContentIdeas) && lifestyleData.socialContentIdeas.length > 0 && <div>
                           <h4 className="font-semibold mb-2">📸 Social Content Ideas</h4>
                           <div className="space-y-2">
-                            {lifestyleData.socialContentIdeas.map((idea: string, idx: number) => (
-                              <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                            {lifestyleData.socialContentIdeas.map((idea: string, idx: number) => <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
                                 <span className="text-sm">{idea}</span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => copy(idea)}
-                                  className="ml-2"
-                                >
+                                <Button size="sm" variant="ghost" onClick={() => copy(idea)} className="ml-2">
                                   <Copy className="h-3 w-3" />
                                 </Button>
-                              </div>
-                            ))}
+                              </div>)}
                           </div>
-                        </div>
-                      )}
+                        </div>}
 
-                      {lifestyleData.emotionalHooks && Array.isArray(lifestyleData.emotionalHooks) && lifestyleData.emotionalHooks.length > 0 && (
-                        <div>
+                      {lifestyleData.emotionalHooks && Array.isArray(lifestyleData.emotionalHooks) && lifestyleData.emotionalHooks.length > 0 && <div>
                           <h4 className="font-semibold mb-2">💝 Emotional Hooks</h4>
                           <div className="space-y-2">
-                            {lifestyleData.emotionalHooks.map((hook: string, idx: number) => (
-                              <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
+                            {lifestyleData.emotionalHooks.map((hook: string, idx: number) => <div key={idx} className="bg-muted p-3 rounded-lg flex items-start justify-between">
                                 <span className="text-sm">{hook}</span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => copy(hook)}
-                                  className="ml-2"
-                                >
+                                <Button size="sm" variant="ghost" onClick={() => copy(hook)} className="ml-2">
                                   <Copy className="h-3 w-3" />
                                 </Button>
-                              </div>
-                            ))}
+                              </div>)}
                           </div>
-                        </div>
-                      )}
+                        </div>}
                       
                       <div className="flex gap-2">
-                        <Button 
-                          onClick={generateLifestyleInsights} 
-                          disabled={lifestyleLoading}
-                          variant="outline"
-                          size="sm"
-                        >
+                        <Button onClick={generateLifestyleInsights} disabled={lifestyleLoading} variant="outline" size="sm">
                           <RefreshCw className={`h-4 w-4 mr-2 ${lifestyleLoading ? 'animate-spin' : ''}`} />
                           Refresh Guide
                         </Button>
-                        {lifestyleData && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copy(JSON.stringify(lifestyleData, null, 2))}
-                          >
+                        {lifestyleData && <Button variant="ghost" size="sm" onClick={() => copy(JSON.stringify(lifestyleData, null, 2))}>
                             <Copy className="h-4 w-4 mr-2" />
                             Copy All
-                          </Button>
-                        )}
+                          </Button>}
                       </div>
-                    </div>
-                 )}
+                    </div>}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="templates">
-            <ContentTemplates 
-              onSelectTemplate={(template) => {
-                // Apply template to current content
-                toast.success(`Applied template: ${template.name}`);
-              }}
-            />
+            <ContentTemplates onSelectTemplate={template => {
+            // Apply template to current content
+            toast.success(`Applied template: ${template.name}`);
+          }} />
           </TabsContent>
 
           <TabsContent value="history">
@@ -1034,17 +901,13 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
               </CardHeader>
               <CardContent>
                 <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
-                  {marketDataPoints.map((pt) => (
-                    <li key={pt}>{pt}</li>
-                  ))}
+                  {marketDataPoints.map(pt => <li key={pt}>{pt}</li>)}
                 </ul>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </main>
-    </>
-  );
+    </>;
 };
-
 export default ContentPackage;
