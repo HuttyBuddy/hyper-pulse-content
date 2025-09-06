@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
+import { QuickSetup } from "@/components/onboarding/QuickSetup";
 import { AISuggestions } from "@/components/content/AISuggestions";
 import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
+  const [showQuickSetup, setShowQuickSetup] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -55,8 +57,10 @@ const Dashboard = () => {
         const isOnboardingCompleted = profile?.onboarding_completed ?? false;
         setOnboardingCompleted(isOnboardingCompleted);
         
-        // Show welcome tour for new users
-        if (!isOnboardingCompleted) {
+        // Show quick setup for new users (higher priority than welcome tour)
+        if (!isOnboardingCompleted || !profile?.neighborhood) {
+          setShowQuickSetup(true);
+        } else if (!isOnboardingCompleted) {
           setShowWelcomeTour(true);
         }
         
@@ -138,6 +142,13 @@ const Dashboard = () => {
           onboarding_completed: true 
         });
     }
+  };
+
+  const handleCompleteSetup = async () => {
+    setShowQuickSetup(false);
+    setOnboardingCompleted(true);
+    // Refresh page to reload dashboard data after setup
+    window.location.reload();
   };
 
   return (
@@ -312,6 +323,11 @@ const Dashboard = () => {
           )}
         </section>
       </main>
+      
+      <QuickSetup 
+        open={showQuickSetup}
+        onComplete={handleCompleteSetup}
+      />
       
       <WelcomeTour 
         open={showWelcomeTour} 

@@ -15,6 +15,7 @@ import NeighborhoodSelector from "@/components/NeighborhoodSelector";
 import { ContentTemplates } from "@/components/content/ContentTemplates";
 import { ContentHistory } from "@/components/content/ContentHistory";
 import { AISuggestions } from "@/components/content/AISuggestions";
+import { FirstContentCelebration } from "@/components/content/FirstContentCelebration";
 
 import home1 from "@/assets/carmichael-home-1.jpg";
 import home2 from "@/assets/carmichael-home-2.jpg";
@@ -33,6 +34,7 @@ const ContentPackage = () => {
   const [searchingImages, setSearchingImages] = useState(false);
   const [lifestyleData, setLifestyleData] = useState<any>(null);
   const [lifestyleLoading, setLifestyleLoading] = useState(false);
+  const [showFirstContentCelebration, setShowFirstContentCelebration] = useState(false);
   const navigate = useNavigate();
 
   const [neighborhood, setNeighborhood] = useState("Carmichael");
@@ -196,6 +198,23 @@ const ContentPackage = () => {
 
   useEffect(() => {
     fetchReports();
+    
+    // Check if we should show first content celebration
+    const checkFirstContent = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { count } = await supabase
+        .from('content_history')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      
+      if (count && count <= 1) {
+        setShowFirstContentCelebration(true);
+      }
+    };
+    
+    checkFirstContent();
   }, [slugDate, neighborhood, county, stateCode]);
 
   const editionISO = reportDate ? reportDate.toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
@@ -651,6 +670,15 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">{titleText}</h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1 truncate">{freshnessText}</p>
         </header>
+
+        {showFirstContentCelebration && (
+          <div className="mb-6">
+            <FirstContentCelebration
+              neighborhood={displayNeighborhood}
+              onDismiss={() => setShowFirstContentCelebration(false)}
+            />
+          </div>
+        )}
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
           <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
