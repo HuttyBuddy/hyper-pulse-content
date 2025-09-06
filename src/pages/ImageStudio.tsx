@@ -1,11 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EnhancedTabs, TabsContent } from "@/components/ui/enhanced-tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/image/ImageUpload";
 import { ImageLibrary } from "@/components/image/ImageLibrary";
-import { Upload, Palette, Images } from "lucide-react";
+import { Upload, Palette, Images, Layers } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ImageStudio = () => {
@@ -27,27 +27,35 @@ const ImageStudio = () => {
           <p className="text-muted-foreground text-sm md:text-base">Professional image processing for real estate photography. Upload, enhance, and optimize property photos for marketing materials.</p>
         </section>
 
-        <Tabs defaultValue="upload" className="space-y-4 md:space-y-6">
-          <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
-            <TabsList className="flex w-max min-w-full h-12 p-1">
-              <TabsTrigger value="upload" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[90px] text-xs md:text-sm whitespace-nowrap">
-                <Upload className="h-4 w-4" />
-                Upload
-              </TabsTrigger>
-              <TabsTrigger value="batch" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
-                <Images className="h-4 w-4" />
-                Batch
-              </TabsTrigger>
-              <TabsTrigger value="library" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
-                <Images className="h-4 w-4" />
-                Library
-              </TabsTrigger>
-              <TabsTrigger value="presets" className="flex items-center gap-1 md:gap-2 flex-shrink-0 px-3 py-2 min-w-[80px] text-xs md:text-sm whitespace-nowrap">
-                <Palette className="h-4 w-4" />
-                Presets
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <EnhancedTabs 
+          defaultValue="upload" 
+          className="space-y-4 md:space-y-6"
+          tabs={[
+            { 
+              value: "upload", 
+              label: "Upload", 
+              icon: Upload,
+              badge: "New"
+            },
+            { 
+              value: "batch", 
+              label: "Batch", 
+              icon: Layers,
+              badge: "Soon"
+            },
+            { 
+              value: "library", 
+              label: "Library", 
+              icon: Images
+            },
+            { 
+              value: "presets", 
+              label: "Presets", 
+              icon: Palette,
+              badge: "12"
+            }
+          ]}
+        >
 
           <TabsContent value="upload">
             <Card>
@@ -135,7 +143,7 @@ const ImageStudio = () => {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+        </EnhancedTabs>
       </main>
     </>
   );

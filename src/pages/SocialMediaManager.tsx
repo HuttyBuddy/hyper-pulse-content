@@ -1,10 +1,10 @@
 import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EnhancedTabs, TabsContent } from "@/components/ui/enhanced-tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, BarChart3, Plus, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, BarChart3, Plus, Clock, CheckCircle, AlertCircle, Edit3, FileText, Activity } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -175,23 +175,36 @@ const SocialMediaManager = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="composer" className="space-y-6">
-          <div className="overflow-x-auto pb-2 scroll-smooth scrollbar-hide">
-            <TabsList className="flex w-max min-w-full h-12 p-1">
-              <TabsTrigger value="composer" className="flex-shrink-0 px-4 py-2 min-w-[100px] text-sm whitespace-nowrap">
-                Composer
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="flex-shrink-0 px-4 py-2 min-w-[90px] text-sm whitespace-nowrap">
-                Calendar
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex-shrink-0 px-4 py-2 min-w-[90px] text-sm whitespace-nowrap">
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger value="templates" className="flex-shrink-0 px-4 py-2 min-w-[100px] text-sm whitespace-nowrap">
-                Templates
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <EnhancedTabs 
+          defaultValue="composer" 
+          className="space-y-6"
+          tabs={[
+            { 
+              value: "composer", 
+              label: "Composer", 
+              icon: Edit3,
+              badge: "New"
+            },
+            { 
+              value: "calendar", 
+              label: "Calendar", 
+              icon: Calendar,
+              badge: stats.scheduledPosts > 0 ? `${stats.scheduledPosts}` : undefined
+            },
+            { 
+              value: "analytics", 
+              label: "Analytics", 
+              icon: Activity,
+              badge: stats.totalEngagement > 0 ? `${stats.totalEngagement}` : undefined
+            },
+            { 
+              value: "templates", 
+              label: "Templates", 
+              icon: FileText,
+              badge: "Pro"
+            }
+          ]}
+        >
 
           <TabsContent value="composer">
             <SocialMediaComposer onPostCreated={fetchPosts} />
@@ -208,7 +221,7 @@ const SocialMediaManager = () => {
           <TabsContent value="templates">
             <SocialMediaTemplates />
           </TabsContent>
-        </Tabs>
+        </EnhancedTabs>
 
         {/* Recent Posts */}
         <Card className="mt-6">

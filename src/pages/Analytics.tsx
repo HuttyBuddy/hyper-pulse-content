@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart3, TrendingUp, Users, DollarSign, Target, Mail, Phone, Download } from "lucide-react";
+import { EnhancedTabs, TabsContent } from "@/components/ui/enhanced-tabs";
+import { BarChart3, TrendingUp, Users, DollarSign, Target, Mail, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import AnalyticsDashboard from "@/components/analytics/AnalyticsDashboard";
@@ -168,100 +167,42 @@ const Analytics = () => {
         </div>
 
         {/* Main Analytics Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
-          {isMobile ? (
-            <Select value={selectedTab} onValueChange={setSelectedTab}>
-              <SelectTrigger className="w-full">
-                <SelectValue>
-                  {selectedTab === "overview" && (
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Overview
-                    </div>
-                  )}
-                  {selectedTab === "funnel" && (
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Funnel
-                    </div>
-                  )}
-                  {selectedTab === "roi" && (
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      ROI
-                    </div>
-                  )}
-                  {selectedTab === "leads" && (
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Leads
-                    </div>
-                  )}
-                  {selectedTab === "email" && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      Email
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="overview">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Overview
-                  </div>
-                </SelectItem>
-                <SelectItem value="funnel">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Funnel
-                  </div>
-                </SelectItem>
-                <SelectItem value="roi">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    ROI
-                  </div>
-                </SelectItem>
-                <SelectItem value="leads">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Leads
-                  </div>
-                </SelectItem>
-                <SelectItem value="email">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    Email
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <TabsList className="grid w-full lg:w-[600px] grid-cols-5 h-10">
-              <TabsTrigger value="overview" className="flex items-center justify-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="funnel" className="flex items-center justify-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Funnel
-              </TabsTrigger>
-              <TabsTrigger value="roi" className="flex items-center justify-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                ROI
-              </TabsTrigger>
-              <TabsTrigger value="leads" className="flex items-center justify-center gap-2">
-                <Users className="h-4 w-4" />
-                Leads
-              </TabsTrigger>
-              <TabsTrigger value="email" className="flex items-center justify-center gap-2">
-                <Mail className="h-4 w-4" />
-                Email
-              </TabsTrigger>
-            </TabsList>
-          )}
+        <EnhancedTabs 
+          value={selectedTab} 
+          onValueChange={setSelectedTab}
+          tabs={[
+            { 
+              value: "overview", 
+              label: "Overview", 
+              icon: BarChart3,
+              badge: analyticsData.totalLeads > 0 ? `${analyticsData.totalLeads}` : undefined
+            },
+            { 
+              value: "funnel", 
+              label: "Funnel", 
+              icon: TrendingUp,
+              badge: analyticsData.conversionRate > 0 ? `${analyticsData.conversionRate.toFixed(0)}%` : undefined
+            },
+            { 
+              value: "roi", 
+              label: "ROI", 
+              icon: DollarSign,
+              badge: analyticsData.totalRevenue > 0 ? `$${analyticsData.totalRevenue > 999 ? `${(analyticsData.totalRevenue/1000).toFixed(0)}k` : analyticsData.totalRevenue.toFixed(0)}` : undefined
+            },
+            { 
+              value: "leads", 
+              label: "Leads", 
+              icon: Users,
+              badge: analyticsData.totalLeads > 0 ? "Active" : undefined
+            },
+            { 
+              value: "email", 
+              label: "Email", 
+              icon: Mail,
+              badge: analyticsData.emailSubscribers > 0 ? `${analyticsData.emailSubscribers}` : undefined
+            }
+          ]}
+        >
 
           <TabsContent value="overview">
             <AnalyticsDashboard />
@@ -282,7 +223,7 @@ const Analytics = () => {
           <TabsContent value="email">
             <NewsletterManagement />
           </TabsContent>
-        </Tabs>
+        </EnhancedTabs>
       </main>
     </div>
   );
