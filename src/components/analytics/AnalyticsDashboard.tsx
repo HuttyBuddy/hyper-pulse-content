@@ -236,13 +236,6 @@ const AnalyticsDashboard = () => {
                 >
                   <Download className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setExpandedChart(null)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
               </div>
             </DialogTitle>
           </DialogHeader>
