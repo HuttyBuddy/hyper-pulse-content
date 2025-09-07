@@ -233,7 +233,7 @@ const Profile = () => {
                 <div className="text-sm mb-1">Personal Logo</div>
                 <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => logoInputRef.current?.click()} role="button" aria-label="Upload personal logo">
                   <AspectRatio ratio={1} className="w-full">
-                    {logoUrl ? <img src={logoUrl} alt="Personal logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                    {logoUrl ? <img src={logoUrl} alt="Personal logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
                         Click to upload logo
                       </div>}
                   </AspectRatio>
