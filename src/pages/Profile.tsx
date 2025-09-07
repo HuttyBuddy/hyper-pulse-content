@@ -222,7 +222,7 @@ const Profile = () => {
                 <div className="text-sm mb-1">Headshot</div>
                 <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => headshotInputRef.current?.click()} role="button" aria-label="Upload headshot">
                   <AspectRatio ratio={1} className="w-full">
-                    {headshotUrl ? <img src={headshotUrl} alt="Realtor headshot branding image" className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
+                     {headshotUrl ? <img src={headshotUrl} alt="Realtor headshot branding image" className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
                         Click to upload headshot
                       </div>}
                   </AspectRatio>
