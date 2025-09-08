@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ManageSubscription from "./pages/ManageSubscription";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Support from "./pages/Support";
 
 const queryClient = new QueryClient();
 
@@ -130,6 +131,7 @@ const App = () => (
                   </ChatProvider>
                 </ProtectedRoute>
               } />
+              <Route path="/support" element={<Support />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="*" element={<NotFound />} />

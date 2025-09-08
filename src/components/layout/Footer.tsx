@@ -13,6 +13,13 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-4 text-sm">
               <Link 
+                to="/support" 
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Support
+              </Link>
+              <span className="text-muted-foreground">•</span>
+              <Link 
                 to="/privacy" 
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
