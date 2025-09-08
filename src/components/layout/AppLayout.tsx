@@ -1,6 +1,7 @@
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { Helmet } from "react-helmet-async";
 import { ReactNode } from "react";
+import Footer from "./Footer";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -33,8 +34,11 @@ export default function AppLayout({ children, title, description, canonical }: A
         <meta name="twitter:description" content={description || defaultDescription} />
       </Helmet>
       
-      <div className="min-h-screen bg-background">
-        {children}
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
+        <Footer />
       </div>
     </ErrorBoundary>
   );
