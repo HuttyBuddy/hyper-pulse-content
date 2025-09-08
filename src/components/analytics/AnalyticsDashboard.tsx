@@ -138,14 +138,14 @@ const AnalyticsDashboard = () => {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className={`grid ${isMobile ? 'gap-3' : 'gap-6'}`}>
       {/* Content Performance Chart */}
       <Card className="cursor-pointer" onClick={() => setExpandedChart('performance')}>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+        <CardHeader className={isMobile ? 'p-4' : ''}>
+          <CardTitle className={`flex items-center justify-between ${isMobile ? 'text-lg' : ''}`}>
             <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Content Performance Over Time
+              <Eye className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+              <span className={isMobile ? 'text-sm' : ''}>Content Performance Over Time</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -170,17 +170,17 @@ const AnalyticsDashboard = () => {
               </Button>
             </div>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className={isMobile ? 'text-xs' : ''}>
             Track how your content generates views, leads, and revenue
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? 'p-4 pt-0' : ''}>
           <ChartContainer
             config={{
               views: { label: "Page Views", color: "hsl(var(--primary))" },
               leads: { label: "Leads Generated", color: "hsl(var(--secondary))" },
             }}
-            className="h-[300px]"
+            className={isMobile ? "h-[200px]" : "h-[300px]"}
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={contentMetrics}>
@@ -321,11 +321,11 @@ const AnalyticsDashboard = () => {
       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
         {/* Channel Performance */}
         <Card className="cursor-pointer" onClick={() => setExpandedChart('sources')}>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+          <CardHeader className={isMobile ? 'p-4' : ''}>
+            <CardTitle className={`flex items-center justify-between ${isMobile ? 'text-lg' : ''}`}>
               <div className="flex items-center gap-2">
-                <Share2 className="h-5 w-5" />
-                Lead Sources
+                <Share2 className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                <span className={isMobile ? 'text-sm' : ''}>Lead Sources</span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -350,16 +350,16 @@ const AnalyticsDashboard = () => {
                 </Button>
               </div>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={isMobile ? 'text-xs' : ''}>
               Which channels generate the most leads
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? 'p-4 pt-0' : ''}>
             <ChartContainer
               config={{
                 leads: { label: "Leads", color: "hsl(var(--primary))" }
               }}
-              className="h-[250px]"
+              className={isMobile ? "h-[180px]" : "h-[250px]"}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -384,11 +384,11 @@ const AnalyticsDashboard = () => {
 
         {/* Conversion Rates by Channel */}
         <Card className="cursor-pointer" onClick={() => setExpandedChart('conversion')}>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+          <CardHeader className={isMobile ? 'p-4' : ''}>
+            <CardTitle className={`flex items-center justify-between ${isMobile ? 'text-lg' : ''}`}>
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Conversion Rates
+                <Calendar className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+                <span className={isMobile ? 'text-sm' : ''}>Conversion Rates</span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -413,16 +413,16 @@ const AnalyticsDashboard = () => {
                 </Button>
               </div>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={isMobile ? 'text-xs' : ''}>
               How well each channel converts leads
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? 'p-4 pt-0' : ''}>
             <ChartContainer
             config={{
               conversion: { label: "Conversion %", color: "hsl(var(--primary))" }
             }}
-            className={isMobile ? "h-[200px]" : "h-[250px]"}
+            className={isMobile ? "h-[180px]" : "h-[250px]"}
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={channelPerformance}>
