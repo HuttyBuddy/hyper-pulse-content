@@ -244,9 +244,9 @@ const Profile = () => {
               <div className="text-sm mb-1">Brokerage Logo</div>
                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => brokerageLogoInputRef.current?.click()} role="button" aria-label="Upload brokerage logo">
                  <AspectRatio ratio={1} className="w-full">
-                   {brokerageLogoUrl ? <img src={brokerageLogoUrl} alt="Brokerage logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground">
-                       Click to upload brokerage logo
-                     </div>}
+                    {brokerageLogoUrl ? <img src={brokerageLogoUrl} alt="Brokerage logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
+                        Click to upload brokerage logo
+                      </div>}
                  </AspectRatio>
                 </div>
               <input ref={brokerageLogoInputRef} type="file" accept="image/*" className="hidden" onChange={onBrokerageLogoSelected} />
