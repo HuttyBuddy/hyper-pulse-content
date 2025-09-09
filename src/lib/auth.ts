@@ -22,3 +22,41 @@ export const cleanupAuthState = () => {
     // no-op
   }
 };
+
+export const handleCriticalAuthError = async (error: any) => {
+  const errorMessage = error?.message || String(error);
+  
+  // Check for authentication-related error messages
+  const authErrorPatterns = [
+    'invalid claim',
+    'missing sub claim',
+    'unauthorized',
+    'JWT expired',
+    'Auth session missing',
+    'token expired',
+    'invalid token'
+  ];
+  
+  const isAuthError = authErrorPatterns.some(pattern => 
+    errorMessage.toLowerCase().includes(pattern.toLowerCase())
+  );
+  
+  if (isAuthError) {
+    try {
+      // Import supabase client dynamically to avoid circular dependencies
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Clear authentication state
+      cleanupAuthState();
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Redirect to login page
+      window.location.href = '/';
+    } catch (e) {
+      // If all else fails, just redirect
+      window.location.href = '/';
+    }
+  }
+};
