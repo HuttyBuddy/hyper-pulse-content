@@ -42,7 +42,7 @@ const Profile = () => {
       if (!mounted) return;
       if (userErr) {
         console.error(userErr);
-        toast("Failed to get user");
+        await handleCriticalAuthError(userErr);
         return;
       }
       if (!user) {
