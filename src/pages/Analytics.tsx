@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedTabs, TabsContent } from "@/components/ui/enhanced-tabs";
-import { BarChart3, TrendingUp, Users, DollarSign, Target, Mail, Activity } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, Target, Mail, Activity, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import AnalyticsDashboard from "@/components/analytics/AnalyticsDashboard";
