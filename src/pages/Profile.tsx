@@ -8,8 +8,9 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { openCustomerPortal } from "@/lib/billing";
-const Profile = () => {
 import { handleCriticalAuthError } from "@/lib/auth";
+
+const Profile = () => {
   const [name, setName] = useState("Alex Morgan");
   const [email, setEmail] = useState("alex@example.com");
   const [userId, setUserId] = useState<string | null>(null);
