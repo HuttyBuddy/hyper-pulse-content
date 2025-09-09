@@ -35,3 +35,12 @@ verify_jwt = true
 
 [functions.fetch-crm-contacts]
 verify_jwt = true
+
+[functions.generate-shareable-report]
+verify_jwt = true
+
+[functions.generate-shareable-dashboard]
+verify_jwt = true
+
+[functions.fetch-shareable-analytics]
+verify_jwt = false

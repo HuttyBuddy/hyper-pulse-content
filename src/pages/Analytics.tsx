@@ -12,6 +12,7 @@ import ROIDashboard from "@/components/analytics/ROIDashboard";
 import LeadManagement from "@/components/analytics/LeadManagement";
 import NewsletterManagement from "@/components/analytics/NewsletterManagement";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ShareableDashboardDialog } from "@/components/reports/ShareableDashboardDialog";
 
 interface AnalyticsData {
   totalLeads: number;
@@ -34,6 +35,8 @@ const Analytics = () => {
     emailSubscribers: 0
   });
   const [loading, setLoading] = useState(true);
+  const [showDashboardDialog, setShowDashboardDialog] = useState(false);
+  const [generatingDashboard, setGeneratingDashboard] = useState(false);
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -83,6 +86,38 @@ const Analytics = () => {
     }
   };
 
+  const handleGenerateShareableDashboard = async (config: any) => {
+    setGeneratingDashboard(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-shareable-dashboard', {
+        body: {
+          title: config.title,
+          description: config.description,
+          selectedMetrics: config.selectedMetrics,
+          dateRange: config.dateRange,
+          expiresInDays: config.expiresInDays,
+          clientInfo: config.clientInfo
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.shareUrl) {
+        navigator.clipboard.writeText(data.shareUrl);
+        toast.success("Client dashboard created! Link copied to clipboard.", {
+          description: `Share this link with your client: ${data.shareUrl}`
+        });
+      }
+    } catch (error: any) {
+      console.error('Error generating shareable dashboard:', error);
+      toast.error("Failed to generate client dashboard", {
+        description: error.message || "Please try again"
+      });
+    } finally {
+      setGeneratingDashboard(false);
+      setShowDashboardDialog(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -98,6 +133,17 @@ const Analytics = () => {
             <div className="flex items-center gap-2">
               <BarChart3 className={`text-primary ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
               {isMobile ? 'Analytics & ROI' : 'Analytics & ROI Dashboard'}
+            </div>
+            <div className="ml-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDashboardDialog(true)}
+                disabled={generatingDashboard}
+                className="gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                {generatingDashboard ? 'Creating...' : 'Share Client Dashboard'}
+              </Button>
             </div>
           </h1>
           <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
@@ -225,6 +271,13 @@ const Analytics = () => {
           </TabsContent>
         </EnhancedTabs>
       </main>
+      
+      <ShareableDashboardDialog
+        open={showDashboardDialog}
+        onOpenChange={setShowDashboardDialog}
+        onGenerate={handleGenerateShareableDashboard}
+        analyticsData={analyticsData}
+      />
     </div>
   );
 };

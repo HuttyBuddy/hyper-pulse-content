@@ -18,7 +18,7 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
-import { ExternalLink, Upload, RefreshCw } from "lucide-react";
+import { ExternalLink, Upload, RefreshCw, Share2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -666,6 +666,16 @@ const LeadManagement = () => {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleShareLeadReport(lead)}
+                      className="gap-1"
+                    >
+                      <Share2 className="h-4 w-4" />
+                      Share
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -693,6 +703,42 @@ const LeadManagement = () => {
       )}
     </div>
   );
+
+  const handleShareLeadReport = async (lead: Lead) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-shareable-report', {
+        body: {
+          reportType: 'content_package',
+          title: `Market Report for ${lead.lead_data?.name || 'Client'}`,
+          description: `Personalized market analysis and insights`,
+          expiresInDays: 30,
+          includeAnalytics: false,
+          clientInfo: {
+            name: lead.lead_data?.name,
+            email: lead.lead_data?.email,
+            propertyAddress: lead.lead_data?.propertyAddress
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.shareUrl) {
+        navigator.clipboard.writeText(data.shareUrl);
+        toast({
+          title: "Client Report Generated",
+          description: "Shareable link copied to clipboard"
+        });
+      }
+    } catch (error: any) {
+      console.error('Error generating lead report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate client report",
+        variant: "destructive"
+      });
+    }
+  };
 };
 
 export default LeadManagement;

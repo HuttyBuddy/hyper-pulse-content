@@ -21,6 +21,7 @@ import home2 from "@/assets/carmichael-home-2.jpg";
 import home3 from "@/assets/carmichael-home-3.jpg";
 import lifestyleThumb from "@/assets/carmichael-lifestyle-thumb.jpg";
 import marketThumb from "@/assets/market-update-thumb.jpg";
+import { ShareableReportDialog } from "@/components/reports/ShareableReportDialog";
 const ContentPackage = () => {
   const [tab, setTab] = useState("blog");
   const [selectedTab, setSelectedTab] = useState("blog");
@@ -36,6 +37,8 @@ const ContentPackage = () => {
   const [lifestyleData, setLifestyleData] = useState<any>(null);
   const [lifestyleLoading, setLifestyleLoading] = useState(false);
   const [showFirstContentCelebration, setShowFirstContentCelebration] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
   const navigate = useNavigate();
   const [neighborhood, setNeighborhood] = useState("Carmichael");
   const [county, setCounty] = useState("Sacramento County");
@@ -221,6 +224,39 @@ const ContentPackage = () => {
     checkFirstContent();
   }, [slugDate, neighborhood, county, stateCode]);
   const editionISO = reportDate ? reportDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+  const handleGenerateShareableReport = async (config: any) => {
+    setGeneratingReport(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-shareable-report', {
+        body: {
+          reportType: 'content_package',
+          title: `${displayNeighborhood} Market Report - ${titleDate}`,
+          description: `Comprehensive market analysis for ${displayNeighborhood}, ${county}`,
+          expiresInDays: config.expiresInDays,
+          includeAnalytics: config.includeAnalytics,
+          customBranding: config.customBranding
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.shareUrl) {
+        navigator.clipboard.writeText(data.shareUrl);
+        toast.success("Shareable report created! Link copied to clipboard.", {
+          description: `Share this link with your clients: ${data.shareUrl}`
+        });
+      }
+    } catch (error: any) {
+      console.error('Error generating shareable report:', error);
+      toast.error("Failed to generate shareable report", {
+        description: error.message || "Please try again"
+      });
+    } finally {
+      setGeneratingReport(false);
+      setShowShareDialog(false);
+    }
+  };
+
   const titleDate = format(new Date(editionISO), "MMMM d, yyyy");
   const displayNeighborhood = neighborhood || (neighborhoodSlug ? neighborhoodSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Your Area");
   const titleText = `${displayNeighborhood} Pulse: ${titleDate}`;
@@ -645,6 +681,15 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
         <header className="mb-4 md:mb-6">
           <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">{titleText}</h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1 truncate">{freshnessText}</p>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowShareDialog(true)}
+              disabled={generatingReport}
+              className="w-full sm:w-auto"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              {generatingReport ? 'Generating...' : 'Share with Client'}
+            </Button>
         </header>
 
         {showFirstContentCelebration && <div className="mb-6">
@@ -908,6 +953,14 @@ Ready to write your own success story? Let's talk about what's possible for YOU 
           </TabsContent>
         </Tabs>
       </main>
+      
+      <ShareableReportDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        onGenerate={handleGenerateShareableReport}
+        reportTitle={`${displayNeighborhood} Market Report - ${titleDate}`}
+        reportDescription={`Comprehensive market analysis for ${displayNeighborhood}, ${county}`}
+      />
     </>;
 };
 export default ContentPackage;
