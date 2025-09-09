@@ -21,6 +21,10 @@ const Profile = () => {
   const [uploadingHeadshot, setUploadingHeadshot] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBrokerageLogo, setUploadingBrokerageLogo] = useState(false);
+  const [crmType, setCrmType] = useState("");
+  const [crmApiKey, setCrmApiKey] = useState("");
+  const [crmSettings, setCrmSettings] = useState("{}");
+  const [testingCrm, setTestingCrm] = useState(false);
   const headshotInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +51,7 @@ const Profile = () => {
       const {
         data,
         error
-      } = await supabase.from("profiles").select("name, email, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state").eq("user_id", user.id).maybeSingle();
+      } = await supabase.from("profiles").select("name, email, headshot_url, logo_url, brokerage_logo_url, neighborhood, county, state, crm_type, crm_api_key, crm_settings").eq("user_id", user.id).maybeSingle();
       if (error) {
         console.error(error);
         toast("Failed to load profile");
@@ -62,6 +66,9 @@ const Profile = () => {
         setNeighborhood((data as any).neighborhood ?? "");
         setCounty((data as any).county ?? "");
         setStateCode((data as any).state ?? "");
+        setCrmType((data as any).crm_type ?? "");
+        setCrmApiKey((data as any).crm_api_key ?? "");
+        setCrmSettings(JSON.stringify((data as any).crm_settings ?? {}, null, 2));
       }
     };
     init();
@@ -82,13 +89,42 @@ const Profile = () => {
       email,
       neighborhood,
       county,
-      state: stateCode
+      state: stateCode,
+      crm_type: crmType || null,
+      crm_api_key: crmApiKey || null,
+      crm_settings: crmSettings ? JSON.parse(crmSettings) : {}
     });
     if (error) {
       console.error(error);
       toast("Failed to save profile");
     } else {
       toast("Profile saved");
+    }
+  };
+  const testCrmConnection = async () => {
+    if (!crmType || !crmApiKey) {
+      toast("Please select CRM type and enter API key first");
+      return;
+    }
+
+    setTestingCrm(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-crm-contacts', {
+        body: { limit: 1 }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast("CRM connection successful!");
+      } else {
+        throw new Error(data?.error || "Connection test failed");
+      }
+    } catch (error: any) {
+      console.error('CRM test error:', error);
+      toast(`CRM connection failed: ${error.message}`);
+    } finally {
+      setTestingCrm(false);
     }
   };
   const uploadImage = async (kind: "headshot" | "logo" | "brokerage_logo", file: File) => {
@@ -255,6 +291,95 @@ const Profile = () => {
           </Card>
         </section>
 
+        <section>
+          <Card>
+            <CardHeader>
+              <CardTitle>CRM Integration</CardTitle>
+              <CardDescription>Connect your CRM system for seamless lead management</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label htmlFor="crmType" className="text-sm">CRM System</label>
+                <select
+                  id="crmType"
+                  value={crmType}
+                  onChange={(e) => setCrmType(e.target.value)}
+                  className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background"
+                >
+                  <option value="">Select CRM</option>
+                  <option value="hubspot">HubSpot</option>
+                  <option value="salesforce">Salesforce</option>
+                  <option value="pipedrive">Pipedrive</option>
+                  <option value="followupboss">Follow Up Boss</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="crmApiKey" className="text-sm">API Key</label>
+                <Input
+                  id="crmApiKey"
+                  type="password"
+                  value={crmApiKey}
+                  onChange={(e) => setCrmApiKey(e.target.value)}
+                  placeholder="Enter your CRM API key"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your API key is stored securely and never shared
+                </p>
+              </div>
+              <div>
+                <label htmlFor="crmSettings" className="text-sm">CRM Settings (JSON)</label>
+                <textarea
+                  id="crmSettings"
+                  value={crmSettings}
+                  onChange={(e) => setCrmSettings(e.target.value)}
+                  placeholder='{"instance_url": "https://your-instance.salesforce.com", "default_owner_id": "123"}'
+                  className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background min-h-[80px] font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Additional settings specific to your CRM (optional)
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={handleSaveProfile}>Save CRM Settings</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={testCrmConnection}
+                  disabled={testingCrm || !crmType || !crmApiKey}
+                >
+                  {testingCrm ? "Testing..." : "Test Connection"}
+                </Button>
+              </div>
+              {crmType && (
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">Setup Instructions for {crmType}:</h4>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    {crmType === 'hubspot' && (
+                      <>
+                        <p>1. Go to HubSpot Settings → Integrations → Private Apps</p>
+                        <p>2. Create a new private app with CRM scopes</p>
+                        <p>3. Copy the access token and paste it above</p>
+                      </>
+                    )}
+                    {crmType === 'salesforce' && (
+                      <>
+                        <p>1. Create a Connected App in Salesforce Setup</p>
+                        <p>2. Generate OAuth credentials</p>
+                        <p>3. Add your instance URL to CRM Settings</p>
+                      </>
+                    )}
+                    {crmType === 'pipedrive' && (
+                      <>
+                        <p>1. Go to Pipedrive Settings → Personal Preferences → API</p>
+                        <p>2. Copy your API token</p>
+                        <p>3. Add your company domain to CRM Settings</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
 
         <div className="pt-2">
           <Button variant="outline" onClick={() => toast("Logged out (demo)")}>Log Out</Button>
