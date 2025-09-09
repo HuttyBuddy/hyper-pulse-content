@@ -131,35 +131,35 @@ const Analytics = () => {
         <div className="mb-6 md:mb-8">
           <h1 className={`font-bold tracking-tight flex items-center gap-2 ${isMobile ? 'text-2xl flex-col items-start' : 'text-3xl'}`}>
             <div className="flex items-center gap-2">
-              <BarChart3 className={`text-primary ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <BarChart3 className={`text-primary ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} drop-shadow-sm`} />
               {isMobile ? 'Analytics & ROI' : 'Analytics & ROI Dashboard'}
             </div>
             <div className="ml-auto">
               <Button 
-                variant="outline" 
+                variant="outline"
                 onClick={() => setShowDashboardDialog(true)}
                 disabled={generatingDashboard}
-                className="gap-2"
+                className="gap-2 hover:scale-105 transition-transform"
               >
                 <Share2 className="w-4 h-4" />
                 {generatingDashboard ? 'Creating...' : 'Share Client Dashboard'}
               </Button>
             </div>
           </h1>
-          <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
+          <p className={`text-muted-foreground mt-3 ${isMobile ? 'text-sm' : 'text-base'} leading-relaxed`}>
             Track your marketing performance, lead generation, and return on investment
           </p>
         </div>
 
         {/* Key Metrics Overview */}
-        <div className={`grid gap-3 md:gap-4 mb-6 md:mb-8 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
+        <div className={`grid gap-4 md:gap-6 mb-6 md:mb-8 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
           <Card>
-            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
-              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Total Leads</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2 px-4 pt-4' : 'pb-3'}`}>
+              <CardTitle className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>Total Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
-              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>{loading ? "..." : analyticsData.totalLeads}</div>
+            <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+              <div className={`font-bold text-primary ${isMobile ? 'text-xl' : 'text-3xl'}`}>{loading ? "..." : analyticsData.totalLeads}</div>
               <p className="text-xs text-muted-foreground">
                 {isMobile ? 'This period' : 'Generated this period'}
               </p>
@@ -167,12 +167,12 @@ const Analytics = () => {
           </Card>
 
           <Card>
-            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
-              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Revenue</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2 px-4 pt-4' : 'pb-3'}`}>
+              <CardTitle className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>Revenue</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
-              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+              <div className={`font-bold text-primary ${isMobile ? 'text-xl' : 'text-3xl'}`}>
                 {loading ? "..." : `$${isMobile && analyticsData.totalRevenue > 999 ? `${(analyticsData.totalRevenue/1000).toFixed(0)}k` : analyticsData.totalRevenue.toLocaleString()}`}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -182,12 +182,12 @@ const Analytics = () => {
           </Card>
 
           <Card>
-            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
-              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Conversion</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2 px-4 pt-4' : 'pb-3'}`}>
+              <CardTitle className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>Conversion</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
-              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+              <div className={`font-bold text-primary ${isMobile ? 'text-xl' : 'text-3xl'}`}>
                 {loading ? "..." : `${analyticsData.conversionRate.toFixed(1)}%`}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -197,12 +197,12 @@ const Analytics = () => {
           </Card>
 
           <Card>
-            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-1 px-3 pt-3' : 'pb-2'}`}>
-              <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Avg Value</CardTitle>
+            <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2 px-4 pt-4' : 'pb-3'}`}>
+              <CardTitle className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>Avg Value</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className={isMobile ? 'px-3 pb-3' : ''}>
-              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+            <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+              <div className={`font-bold text-primary ${isMobile ? 'text-xl' : 'text-3xl'}`}>
                 {loading ? "..." : `$${isMobile && analyticsData.avgLeadValue > 999 ? `${(analyticsData.avgLeadValue/1000).toFixed(0)}k` : analyticsData.avgLeadValue.toFixed(0)}`}
               </div>
               <p className="text-xs text-muted-foreground">

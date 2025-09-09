@@ -164,13 +164,13 @@ const Dashboard = () => {
           {isLoading ? (
             <LoadingText className="w-64 h-8" />
           ) : (
-            <h1 className="text-xl md:text-3xl font-semibold tracking-tight truncate">
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight truncate text-gradient animate-fade-in">
               Welcome back{displayName ? `, ${displayName}` : ""}!
             </h1>
           )}
         </section>
 
-        <section className="grid gap-6">
+        <section className="grid gap-6 animate-slide-up">
           {isLoading ? (
             <>
               <LoadingCard className="h-32" />
@@ -184,13 +184,13 @@ const Dashboard = () => {
           ) : (
             <>
               {userNeighborhoods.length > 0 && (
-                <Card className="shadow-elevated">
+                <Card className="shadow-elevated bg-gradient-to-r from-card to-card/95 border-primary/10">
                   <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
                       <CardTitle>
                         Latest Content: {userNeighborhoods[0].neighborhood}, {userNeighborhoods[0].state} - {format(new Date(), 'MMMM d, yyyy')}
                       </CardTitle>
-                      <CardDescription className="mt-1">
+                      <CardDescription className="mt-2">
                         Generate fresh content for your primary market area
                       </CardDescription>
                     </div>
@@ -212,64 +212,64 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 <Card>
-                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                  <CardHeader className="flex-row items-center gap-3 px-4 md:px-6 py-4 md:py-6">
                     <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
                     <div className="min-w-0">
-                      <CardDescription className="text-xs md:text-sm truncate">Content Generated This Month</CardDescription>
-                      <CardTitle className="text-lg md:text-xl">{stats.contentCount}</CardTitle>
+                      <CardDescription className="text-xs md:text-sm truncate font-medium">Content Generated This Month</CardDescription>
+                      <CardTitle className="text-xl md:text-2xl font-bold">{stats.contentCount}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
                 <Card>
-                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                  <CardHeader className="flex-row items-center gap-3 px-4 md:px-6 py-4 md:py-6">
                     <Home className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
                     <div className="min-w-0">
-                      <CardDescription className="text-xs md:text-sm truncate">Neighborhoods Covered</CardDescription>
-                      <CardTitle className="text-lg md:text-xl">{stats.neighborhoodCount}</CardTitle>
+                      <CardDescription className="text-xs md:text-sm truncate font-medium">Neighborhoods Covered</CardDescription>
+                      <CardTitle className="text-xl md:text-2xl font-bold">{stats.neighborhoodCount}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
                 <Card className="sm:col-span-2 lg:col-span-1">
-                  <CardHeader className="flex-row items-center gap-2 md:gap-3 px-3 md:px-6 py-3 md:py-6">
+                  <CardHeader className="flex-row items-center gap-3 px-4 md:px-6 py-4 md:py-6">
                     <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
                     <div className="min-w-0">
-                      <CardDescription className="text-xs md:text-sm truncate">AI Media Credits</CardDescription>
-                      <CardTitle className="text-lg md:text-xl">{stats.creditsRemaining}</CardTitle>
+                      <CardDescription className="text-xs md:text-sm truncate font-medium">AI Media Credits</CardDescription>
+                      <CardTitle className="text-xl md:text-2xl font-bold">{stats.creditsRemaining}</CardTitle>
                     </div>
                   </CardHeader>
                 </Card>
               </div>
 
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-row items-center justify-between pb-4">
                   <div>
                     <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>Access your most-used tools</CardDescription>
+                    <CardDescription className="mt-1">Access your most-used tools</CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 gap-3 px-3 md:px-6">
-                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
+                <CardContent className="grid grid-cols-1 gap-4 px-4 md:px-6">
+                  <Button asChild variant="outline" className="h-auto p-4 md:p-5 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 hover:scale-[1.02] transition-transform">
                     <Link to="/image-studio">
                       <ImagePlus className="h-5 w-5 sm:mb-2 flex-shrink-0" />
                       <div className="text-left flex-1 min-w-0">
-                        <div className="font-medium truncate">Image Studio</div>
+                        <div className="font-semibold truncate">Image Studio</div>
                         <div className="text-sm text-muted-foreground truncate">Upload & enhance lifestyle photos</div>
                       </div>
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
+                  <Button asChild variant="outline" className="h-auto p-4 md:p-5 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 hover:scale-[1.02] transition-transform">
                     <Link to="/social-media">
                       <div className="text-xl sm:text-2xl sm:mb-2 flex-shrink-0">📱</div>
                       <div className="text-left flex-1 min-w-0">
-                        <div className="font-medium truncate">Social Media Manager</div>
+                        <div className="font-semibold truncate">Social Media Manager</div>
                         <div className="text-sm text-muted-foreground truncate">Schedule posts & track performance</div>
                       </div>
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="h-auto p-3 md:p-4 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
+                  <Button asChild variant="outline" className="h-auto p-4 md:p-5 flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 hover:scale-[1.02] transition-transform">
                     <Link to="/editor">
                       <div className="text-left flex-1 min-w-0">
-                        <div className="font-medium truncate">Newsletter Editor</div>
+                        <div className="font-semibold truncate">Newsletter Editor</div>
                         <div className="text-sm text-muted-foreground truncate">Create branded newsletters</div>
                       </div>
                     </Link>
@@ -280,13 +280,13 @@ const Dashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Your Neighborhoods</CardTitle>
-                  <CardDescription>Your market areas and quick content generation</CardDescription>
+                  <CardDescription className="mt-1">Your market areas and quick content generation</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {userNeighborhoods.map((neighborhood, index) => (
-                    <div key={neighborhood.neighborhood_slug} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg">
+                    <div key={neighborhood.neighborhood_slug} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">
+                        <div className="font-semibold truncate">
                           {neighborhood.neighborhood}, {neighborhood.state}
                         </div>
                         <div className="text-sm text-muted-foreground truncate">
@@ -294,12 +294,12 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                        <Button asChild variant="outline" size="sm" className="w-full sm:w-auto hover:scale-105 transition-transform">
                           <Link to={`/content/${neighborhood.neighborhood_slug}-${neighborhood.report_date}`}>
                             <span className="truncate">View Latest</span>
                           </Link>
                         </Button>
-                        <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
+                        <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto hover:scale-105 transition-transform">
                           <Link to={generateContentUrl(neighborhood)}>
                             <span className="truncate">Generate Fresh</span>
                           </Link>
@@ -307,7 +307,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ))}
-                  <Button asChild variant="outline" className="w-full">
+                  <Button asChild variant="outline" className="w-full hover:scale-[1.02] transition-transform">
                     <Link to="/profile">+ Add New Neighborhood</Link>
                   </Button>
                 </CardContent>

@@ -88,9 +88,9 @@ const AppHeader = () => {
     }
   };
   return (
-    <header className="h-14 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+    <header className="h-16 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sticky top-0 z-50 shadow-soft">
       <div className="container h-full flex items-center justify-between px-3 md:px-4">
-        <Link to="/dashboard" className="text-base md:text-xl font-semibold tracking-tight truncate">
+        <Link to="/dashboard" className="text-base md:text-xl font-bold tracking-tight truncate hover:text-primary transition-colors">
           <span className="hidden sm:inline">The Hyper‑Local Pulse</span>
           <span className="sm:hidden">Hyper‑Local</span>
         </Link>
@@ -98,32 +98,32 @@ const AppHeader = () => {
           {/* Mobile navigation */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hover:bg-accent/80">
                 <Menu className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] max-w-[85vw]">
+            <SheetContent side="right" className="w-[280px] max-w-[85vw] glass">
               <nav className="flex flex-col gap-3 mt-6">
-                <Button asChild variant="ghost" className="justify-start">
+                <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
                   <Link to="/dashboard">
                     <Home className="h-4 w-4 mr-2" />
                     Dashboard
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="justify-start">
+                <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
                   <Link to="/analytics">
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Analytics
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="justify-start">
+                <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
                   <Link to="/profile">
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </Link>
                 </Button>
-                <Button variant="ghost" className="justify-start mt-4" onClick={handleSignOut}>
+                <Button variant="ghost" className="justify-start mt-4 hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={handleSignOut}>
                   Log out
                 </Button>
               </nav>
@@ -132,17 +132,17 @@ const AppHeader = () => {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex gap-1">
-            <Button asChild variant="ghost" size="sm" className="text-sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="text-sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
               <Link to="/analytics">Analytics</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="text-sm">
+            <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
               <Link to="/profile">Profile</Link>
             </Button>
           </nav>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex text-sm">
+          <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex text-sm hover:bg-destructive/10 hover:text-destructive transition-colors">
             Log out
           </Button>
           <button
@@ -152,7 +152,7 @@ const AppHeader = () => {
             className="focus:outline-none flex-shrink-0"
             disabled={isUploadingLogo}
             title={isUploadingLogo ? "Uploading..." : "Click to upload a new logo"}>
-            <Avatar className="h-8 w-8 md:h-10 md:w-10">
+            <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200">
               {(profile?.headshot_url || profile?.logo_url) ? (
                 <AvatarImage
                   src={profile?.logo_url ?? profile?.headshot_url ?? ''}
