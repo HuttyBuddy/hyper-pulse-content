@@ -18,6 +18,7 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
+import { ExternalLink, Upload, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -52,6 +53,10 @@ const LeadManagement = () => {
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [syncingLeads, setSyncingLeads] = useState<Set<string>>(new Set());
+  const [bulkSyncing, setBulkSyncing] = useState(false);
+  const [crmConfigured, setCrmConfigured] = useState(false);
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
 
   const [newLead, setNewLead] = useState({
     source: 'newsletter_signup',
@@ -65,6 +70,7 @@ const LeadManagement = () => {
 
   useEffect(() => {
     fetchLeads();
+    checkCrmConfiguration();
   }, []);
 
   useEffect(() => {
@@ -112,6 +118,146 @@ const LeadManagement = () => {
     }
 
     setFilteredLeads(filtered);
+  };
+
+  const checkCrmConfiguration = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('crm_type, crm_api_key')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setCrmConfigured(!!(profile?.crm_type && profile?.crm_api_key));
+    } catch (error) {
+      console.error('Error checking CRM configuration:', error);
+    }
+  };
+
+  const handleSyncToCrm = async (leadId: string) => {
+    if (!crmConfigured) {
+      toast({
+        title: "CRM Not Configured",
+        description: "Please set up your CRM integration in Profile settings",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSyncingLeads(prev => new Set(prev).add(leadId));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-crm-lead', {
+        body: { leadId }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Lead Synced",
+          description: `Successfully synced to ${data.crm_type}`
+        });
+      } else {
+        throw new Error(data?.error || "Sync failed");
+      }
+    } catch (error: any) {
+      console.error('Error syncing lead to CRM:', error);
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync lead to CRM",
+        variant: "destructive"
+      });
+    } finally {
+      setSyncingLeads(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(leadId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleBulkSyncToCrm = async () => {
+    if (!crmConfigured) {
+      toast({
+        title: "CRM Not Configured",
+        description: "Please set up your CRM integration in Profile settings",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (selectedLeads.size === 0) {
+      toast({
+        title: "No Leads Selected",
+        description: "Please select leads to sync",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setBulkSyncing(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const leadId of selectedLeads) {
+        try {
+          const { data, error } = await supabase.functions.invoke('sync-crm-lead', {
+            body: { leadId }
+          });
+
+          if (error) throw error;
+          if (data?.success) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Error syncing lead ${leadId}:`, error);
+          errorCount++;
+        }
+      }
+
+      toast({
+        title: "Bulk Sync Complete",
+        description: `${successCount} leads synced successfully, ${errorCount} failed`
+      });
+
+      setSelectedLeads(new Set());
+    } catch (error: any) {
+      console.error('Error in bulk sync:', error);
+      toast({
+        title: "Bulk Sync Failed",
+        description: error.message || "Failed to sync leads to CRM",
+        variant: "destructive"
+      });
+    } finally {
+      setBulkSyncing(false);
+    }
+  };
+
+  const toggleLeadSelection = (leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId);
+      } else {
+        newSet.add(leadId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLeads.size === filteredLeads.length) {
+      setSelectedLeads(new Set());
+    } else {
+      setSelectedLeads(new Set(filteredLeads.map(lead => lead.id)));
+    }
   };
 
   const handleAddLead = async () => {
@@ -242,6 +388,17 @@ const LeadManagement = () => {
               Add Lead
             </Button>
           </DialogTrigger>
+          {crmConfigured && selectedLeads.size > 0 && (
+            <Button 
+              variant="secondary" 
+              onClick={handleBulkSyncToCrm}
+              disabled={bulkSyncing}
+              className="gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              {bulkSyncing ? "Syncing..." : `Sync ${selectedLeads.size} to CRM`}
+            </Button>
+          )}
           <DialogContent className={isMobile ? "max-w-[95vw] mx-2" : ""}>
             <DialogHeader>
               <DialogTitle>Add New Lead</DialogTitle>
@@ -372,6 +529,37 @@ const LeadManagement = () => {
 
       {/* Leads List */}
       <div className="grid gap-4">
+        {filteredLeads.length > 0 && crmConfigured && (
+          <Card className="bg-muted/30">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                    onChange={toggleSelectAll}
+                    className="rounded border-input"
+                  />
+                  <span className="text-sm font-medium">
+                    {selectedLeads.size > 0 ? `${selectedLeads.size} selected` : "Select all"}
+                  </span>
+                </div>
+                {selectedLeads.size > 0 && (
+                  <Button 
+                    size="sm" 
+                    onClick={handleBulkSyncToCrm}
+                    disabled={bulkSyncing}
+                    className="gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {bulkSyncing ? "Syncing..." : "Sync to CRM"}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {filteredLeads.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center">
@@ -387,6 +575,16 @@ const LeadManagement = () => {
             <Card key={lead.id}>
               <CardContent className="py-4">
                 <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-start'}`}>
+                  {crmConfigured && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeads.has(lead.id)}
+                        onChange={() => toggleLeadSelection(lead.id)}
+                        className="rounded border-input"
+                      />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className={`flex items-center gap-3 mb-2 ${isMobile ? 'flex-wrap' : ''}`}>
                       <h3 className="font-semibold">
@@ -444,6 +642,23 @@ const LeadManagement = () => {
                       </SelectContent>
                     </Select>
                     
+                    {crmConfigured && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSyncToCrm(lead.id)}
+                        disabled={syncingLeads.has(lead.id)}
+                        className="gap-2"
+                      >
+                        {syncingLeads.has(lead.id) ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ExternalLink className="h-4 w-4" />
+                        )}
+                        {syncingLeads.has(lead.id) ? "Syncing..." : "Push to CRM"}
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="outline"
                       size="sm"
@@ -458,6 +673,24 @@ const LeadManagement = () => {
           ))
         )}
       </div>
+
+      {!crmConfigured && filteredLeads.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">CRM Integration Available</h4>
+                <p className="text-sm text-muted-foreground">
+                  Connect your CRM to automatically sync leads and eliminate manual data entry
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <a href="/profile">Configure CRM</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
