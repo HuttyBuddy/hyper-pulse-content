@@ -44,7 +44,7 @@ const Profile = () => {
         return;
       }
       if (!user) {
-        toast("Please log in");
+        console.warn("No authenticated user found");
         return;
       }
       setUserId(user.id);
