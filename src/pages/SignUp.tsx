@@ -1,20 +1,29 @@
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, FormEvent } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import AppUrlHelper from "@/components/auth/AppUrlHelper";
+import { signUpSchema, type SignUpFormData } from "@/schemas/auth";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  
+  const form = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirm: "",
+    },
+  });
 
   const formatAuthError = (message?: string) => {
     const msg = message?.toLowerCase() || "";
@@ -31,12 +40,8 @@ const SignUp = () => {
     };
   };
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (password !== confirm) {
-      toast({ title: "Passwords do not match", description: "Please confirm your password.", variant: "destructive" });
-      return;
-    }
+  const onSubmit = async (data: SignUpFormData) => {
+    const { email, password } = data;
 
     try {
       cleanupAuthState();
@@ -78,20 +83,60 @@ const SignUp = () => {
               <CardTitle>Create your account</CardTitle>
               <CardDescription>We’ll send a verification email after you sign up</CardDescription>
             </CardHeader>
-            <form onSubmit={onSubmit}>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="space-y-4">
-                <div className="text-left">
-                  <label htmlFor="email" className="text-sm">Email</label>
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" required />
-                </div>
-                <div className="text-left">
-                  <label htmlFor="password" className="text-sm">Password</label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
-                </div>
-                <div className="text-left">
-                  <label htmlFor="confirm" className="text-sm">Confirm Password</label>
-                  <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" required />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="you@company.com" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirm"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" variant="hero">Create Account</Button>
@@ -101,6 +146,7 @@ const SignUp = () => {
                 <AppUrlHelper />
               </CardFooter>
             </form>
+            </Form>
           </Card>
         </div>
       </main>

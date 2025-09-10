@@ -1,13 +1,17 @@
 import { Helmet } from "react-helmet-async";
 import { useNavigate, Link } from "react-router-dom";
-import { useState, useEffect, FormEvent } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import AppUrlHelper from "@/components/auth/AppUrlHelper";
+import { loginSchema, type LoginFormData } from "@/schemas/auth";
 
 // Development mode bypass - redirect to dashboard
 const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
@@ -15,8 +19,14 @@ const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !==
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   useEffect(() => {
     // In development mode, auto-redirect to dashboard
@@ -61,36 +71,8 @@ const Index = () => {
     };
   };
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    // Client-side validation
-    if (!email.trim()) {
-      toast({ 
-        title: "Email required", 
-        description: "Please enter your email address.",
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    if (!password.trim()) {
-      toast({ 
-        title: "Password required", 
-        description: "Please enter your password.",
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    if (password.length < 6) {
-      toast({ 
-        title: "Password too short", 
-        description: "Password must be at least 6 characters.",
-        variant: "destructive" 
-      });
-      return;
-    }
+  const onSubmit = async (data: LoginFormData) => {
+    const { email, password } = data;
 
     try {
       // Clean up potential limbo states before attempting login
@@ -98,7 +80,7 @@ const Index = () => {
       try { await supabase.auth.signOut({ scope: 'global' }); } catch {}
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: email,
         password,
       });
       if (error) throw error;
@@ -130,16 +112,43 @@ const Index = () => {
               <CardTitle>Welcome back</CardTitle>
               <CardDescription>Enter your credentials to continue</CardDescription>
             </CardHeader>
-            <form onSubmit={onSubmit}>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="space-y-4">
-                <div className="text-left">
-                  <label htmlFor="email" className="text-sm">Email</label>
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" required />
-                </div>
-                <div className="text-left">
-                  <label htmlFor="password" className="text-sm">Password</label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="you@company.com" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="text-left">
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" variant="hero">Login</Button>
@@ -149,6 +158,7 @@ const Index = () => {
                 <AppUrlHelper />
               </CardFooter>
             </form>
+            </Form>
           </Card>
         </div>
       </main>
