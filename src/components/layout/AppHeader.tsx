@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, BarChart3, User, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
@@ -104,6 +104,9 @@ const AppHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] max-w-[85vw] glass">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Main Navigation</SheetTitle>
+              </SheetHeader>
               <nav className="flex flex-col gap-3 mt-6">
                 <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
                   <Link to="/dashboard">
