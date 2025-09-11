@@ -195,6 +195,7 @@ const AnalyticsDashboard = () => {
             config={{
               views: { label: "Page Views", color: "hsl(var(--primary))" },
               leads: { label: "Leads Generated", color: "hsl(var(--secondary))" },
+              uniqueVisitors: { label: "Unique Visitors", color: "hsl(var(--accent))" },
             }}
             className={isMobile ? "h-[200px]" : "h-[300px]"}
           >
@@ -214,6 +215,13 @@ const AnalyticsDashboard = () => {
                   dataKey="leads" 
                   stroke="hsl(var(--secondary))" 
                   strokeWidth={2}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="uniqueVisitors" 
+                  stroke="hsl(var(--accent))" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
                 />
               </LineChart>
             </ResponsiveContainer>

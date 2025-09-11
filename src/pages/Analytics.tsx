@@ -132,7 +132,7 @@ const Analytics = () => {
           <h1 className={`font-bold tracking-tight flex items-center gap-2 ${isMobile ? 'text-2xl flex-col items-start' : 'text-3xl'}`}>
             <div className="flex items-center gap-2">
               <BarChart3 className={`text-primary ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} drop-shadow-sm`} />
-              {isMobile ? 'Analytics & ROI' : 'Analytics & ROI Dashboard'}
+              {isMobile ? 'Market Intelligence' : 'Market Intelligence Dashboard'}
             </div>
             <div className="ml-auto">
               <Button 
@@ -147,7 +147,7 @@ const Analytics = () => {
             </div>
           </h1>
           <p className={`text-muted-foreground mt-3 ${isMobile ? 'text-sm' : 'text-base'} leading-relaxed`}>
-            Track your marketing performance, lead generation, and return on investment
+            Transform data into actionable insights that drive your real estate success
           </p>
         </div>
 

@@ -658,6 +658,11 @@ const ContentPackage = () => {
                       </div>
                     )}
 
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Content Quality:</span>
+                      <Badge variant="default">AI-Enhanced</Badge>
+                    </div>
+
                     {marketData.mom_change && typeof marketData.mom_change === 'object' && (
                       <div className="space-y-2">
                         <span className="text-sm font-medium">Month-over-Month:</span>
@@ -678,20 +683,27 @@ const ContentPackage = () => {
               {/* Content Stats */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Content Package</CardTitle>
+                  <CardTitle>Content Intelligence</CardTitle>
+                  <CardDescription>AI-powered content ready for deployment</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Blog Post:</span>
-                    <Badge variant="default">Ready</Badge>
+                    <Badge variant="default">✨ AI-Enhanced</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Social Posts:</span>
-                    <Badge variant="default">{contentData.socialPosts.length} Posts</Badge>
+                    <Badge variant="default">{contentData.socialPosts.length} Ready Posts</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Newsletter:</span>
-                    <Badge variant="default">Draft Ready</Badge>
+                    <Badge variant="default">Professional Draft</Badge>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Content Quality:</span>
+                      <span className="font-medium text-primary">Market Expert Level</span>
+                    </div>
                   </div>
                   <Separator />
                   <div className="text-xs text-muted-foreground">
