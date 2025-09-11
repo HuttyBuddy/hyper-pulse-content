@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:flex-row md:gap-4">
             <p className="text-sm text-muted-foreground font-medium">
-              © {currentYear} Hyper-Local Pulse. All rights reserved.
+              © {currentYear} Hyper Pulse Content. All rights reserved.
             </p>
             <div className="flex items-center gap-4 text-sm">
               <Link 

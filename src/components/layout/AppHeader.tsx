@@ -91,8 +91,8 @@ const AppHeader = () => {
     <header className="h-16 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sticky top-0 z-50 shadow-soft">
       <div className="container h-full flex items-center justify-between px-3 md:px-4">
         <Link to="/dashboard" className="text-base md:text-xl font-bold tracking-tight truncate hover:text-primary transition-colors">
-          <span className="hidden sm:inline">The Hyper‑Local Pulse</span>
-          <span className="sm:hidden">Hyper‑Local</span>
+          <span className="hidden sm:inline">Hyper Pulse Content</span>
+          <span className="sm:hidden">Hyper Pulse</span>
         </Link>
         <div className="flex items-center gap-1 md:gap-2">
           {/* Mobile navigation */}

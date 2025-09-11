@@ -12,10 +12,10 @@ interface WelcomeTourProps {
 
 const tourSteps = [
   {
-    title: "Welcome to The Hyper-Local Pulse!",
+    title: "Welcome to Hyper Pulse Content!",
     description: "Your AI-powered real estate content creation platform",
     icon: <Sparkles className="h-8 w-8 text-primary" />,
-    content: "Transform your real estate marketing with AI-generated content that showcases your expertise and keeps your audience engaged with hyper-local market insights."
+    content: "Empower your real estate business with cutting-edge AI-generated content packages that position you as the go-to community expert and drive meaningful engagement."
   },
   {
     title: "Set Your Market Area",

@@ -14,7 +14,7 @@ const ImageStudio = () => {
   return (
     <>
       <Helmet>
-        <title>Image Studio — The Hyper-Local Pulse</title>
+        <title>Image Studio — Hyper Pulse Content</title>
         <meta name="description" content="Upload, enhance, and manage lifestyle images for your real estate content." />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/image-studio'} />
       </Helmet>

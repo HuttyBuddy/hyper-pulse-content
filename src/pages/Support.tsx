@@ -48,7 +48,7 @@ export default function Support() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Customer Support</h1>
           <p className="text-xl text-muted-foreground">
-            We're here to help you get the most out of Hyper-Local Pulse
+            We're here to help you get the most out of Hyper Pulse Content
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export default function Support() {
                   href="mailto:support@hyper-local-pulse.com" 
                   className="text-primary hover:underline font-medium"
                 >
-                  support@hyper-local-pulse.com
+                  support@hyperpulsecontent.com
                 </a>
               </CardContent>
             </Card>
@@ -168,7 +168,7 @@ export default function Support() {
           <CardContent>
             <Accordion type="single" collapsible>
               <AccordionItem value="getting-started">
-                <AccordionTrigger>How do I get started with Hyper-Local Pulse?</AccordionTrigger>
+                <AccordionTrigger>How do I get started with Hyper Pulse Content?</AccordionTrigger>
                 <AccordionContent>
                   After signing up, you'll be guided through our quick setup process. You can create your first marketing content using our AI-powered tools, set up lead capture forms, and start tracking your ROI right away.
                 </AccordionContent>

@@ -154,8 +154,8 @@ const Dashboard = () => {
   return (
     <>
       <Helmet>
-        <title>Dashboard — The Hyper-Local Pulse</title>
-        <meta name="description" content="Your command center for hyper-local content packages and performance stats." />
+        <title>Dashboard — Hyper Pulse Content</title>
+        <meta name="description" content="Your command center for AI-powered content generation and performance analytics." />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/dashboard'} />
       </Helmet>
       <AppHeader />

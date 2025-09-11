@@ -112,8 +112,8 @@ const ManageSubscription = () => {
 
   return (
     <AppLayout 
-      title="Manage Subscription — Hyper-Local Pulse"
-      description="Manage your subscription, billing, and payments securely. Choose the perfect plan for your real estate marketing needs."
+      title="Manage Subscription — Hyper Pulse Content"
+      description="Choose the perfect plan for your content generation needs. Upgrade or manage your subscription anytime."
     >
       <AppHeader />
       <main className="container py-8 space-y-8">

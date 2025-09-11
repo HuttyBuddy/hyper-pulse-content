@@ -11,8 +11,8 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, title, description, canonical }: AppLayoutProps) {
-  const defaultTitle = "Hyper-Local Pulse — Real Estate Marketing Platform";
-  const defaultDescription = "AI-powered real estate marketing platform for creating personalized content, managing leads, and tracking ROI across multiple channels.";
+  const defaultTitle = "Hyper Pulse Content — AI-powered content for modern agents";
+  const defaultDescription = "Empower your real estate business with cutting-edge AI-generated content packages—blogs, social posts, and market analysis to become the go-to community expert.";
   
   return (
     <ErrorBoundary>

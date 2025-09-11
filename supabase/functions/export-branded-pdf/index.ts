@@ -102,7 +102,7 @@ serve(async (req) => {
     </style>
 </head>
 <body>
-    <h1>The Hyper-Local Pulse</h1>
+    <h1>Hyper Pulse Content</h1>
     <div class="content">${content}</div>
     
     ${appendBranding && brandingAssets ? `

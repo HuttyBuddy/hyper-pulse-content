@@ -277,7 +277,7 @@ const Editor = () => {
   };
   return <>
       <Helmet>
-        <title>Customize & Brand — The Hyper-Local Pulse</title>
+        <title>Customize & Brand — Hyper Pulse Content</title>
         <meta name="description" content="Edit your blog content and append your branding before exporting." />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/editor'} />
       </Helmet>

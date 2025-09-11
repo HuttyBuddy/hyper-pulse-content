@@ -75,8 +75,8 @@ const SignUp = () => {
       <main className="min-h-screen grid place-items-center bg-background">
         <div className="w-full max-w-md px-4">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Sign Up for The Hyper‑Local Pulse</h1>
-            <p className="text-muted-foreground mt-1">Create your account to get your first Pulse</p>
+            <h1 className="text-3xl font-bold tracking-tight">Join Hyper Pulse Content</h1>
+            <p className="text-muted-foreground mt-1">Create your account to start generating professional content</p>
           </div>
           <Card className="shadow-elevated">
             <CardHeader>

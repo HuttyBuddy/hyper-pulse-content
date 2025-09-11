@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function PrivacyPolicy() {
   return (
     <AppLayout
-      title="Privacy Policy — Hyper-Local Pulse"
-      description="Privacy policy for Hyper-Local Pulse real estate marketing platform. Learn how we collect, use, and protect your personal information."
+      title="Privacy Policy — Hyper Pulse Content"
+      description="Privacy policy for Hyper Pulse Content real estate marketing platform. Learn how we collect, use, and protect your personal information."
       canonical="/privacy"
     >
       <main className="min-h-screen bg-background">
@@ -77,8 +77,8 @@ export default function PrivacyPolicy() {
                 <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
                 <p className="mb-4">
                   If you have any questions about this Privacy Policy, please contact us at:{" "}
-                  <a href="mailto:privacy@hyper-local-pulse.com" className="text-primary hover:underline">
-                    privacy@hyper-local-pulse.com
+                  <a href="mailto:privacy@hyperpulsecontent.com" className="text-primary hover:underline">
+                    privacy@hyperpulsecontent.com
                   </a>
                 </p>
               </section>

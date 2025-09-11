@@ -121,7 +121,7 @@ const Analytics = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Analytics & ROI Dashboard - Hyper-Local Pulse</title>
+        <title>Analytics & ROI Dashboard - Hyper Pulse Content</title>
         <meta name="description" content="Track your real estate marketing ROI, lead generation, and content performance with comprehensive analytics." />
       </Helmet>
       

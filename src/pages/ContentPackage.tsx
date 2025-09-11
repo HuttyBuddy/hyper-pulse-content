@@ -303,7 +303,7 @@ const ContentPackage = () => {
     return (
       <>
         <Helmet>
-          <title>Generating Content — The Hyper-Local Pulse</title>
+          <title>Generating Content — Hyper Pulse Content</title>
         </Helmet>
         <AppHeader />
         <main className="container px-4 py-8">
@@ -350,7 +350,7 @@ const ContentPackage = () => {
     return (
       <>
         <Helmet>
-          <title>Content Error — The Hyper-Local Pulse</title>
+          <title>Content Error — Hyper Pulse Content</title>
         </Helmet>
         <AppHeader />
         <main className="container px-4 py-8">
@@ -381,7 +381,7 @@ const ContentPackage = () => {
     return (
       <>
         <Helmet>
-          <title>Content Not Found — The Hyper-Local Pulse</title>
+          <title>Content Not Found — Hyper Pulse Content</title>
         </Helmet>
         <AppHeader />
         <main className="container px-4 py-8">
@@ -411,7 +411,7 @@ const ContentPackage = () => {
   return (
     <>
       <Helmet>
-        <title>{marketData.neighborhood} Market Pulse — The Hyper-Local Pulse</title>
+        <title>{marketData.neighborhood} Market Pulse — Hyper Pulse Content</title>
         <meta name="description" content={`Professional market analysis and insights for ${marketData.neighborhood}, ${marketData.state}`} />
       </Helmet>
       

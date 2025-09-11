@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function TermsOfService() {
   return (
     <AppLayout
-      title="Terms of Service — Hyper-Local Pulse"
-      description="Terms of service for Hyper-Local Pulse real estate marketing platform. Review our terms and conditions for using our services."
+      title="Terms of Service — Hyper Pulse Content"
+      description="Terms of service for Hyper Pulse Content real estate marketing platform. Review our terms and conditions for using our services."
       canonical="/terms"
     >
       <main className="min-h-screen bg-background">
@@ -19,7 +19,7 @@ export default function TermsOfService() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">Acceptance of Terms</h2>
                 <p className="mb-4">
-                  By accessing and using Hyper-Local Pulse, you accept and agree to be bound by the terms 
+                  By accessing and using Hyper Pulse Content, you accept and agree to be bound by the terms 
                   and provision of this agreement.
                 </p>
               </section>
@@ -27,7 +27,7 @@ export default function TermsOfService() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">Use License</h2>
                 <p className="mb-4">
-                  Permission is granted to temporarily use Hyper-Local Pulse for personal, 
+                  Permission is granted to temporarily use Hyper Pulse Content for personal, 
                   non-commercial transitory viewing only.
                 </p>
                 <p className="mb-4">Under this license you may not:</p>
@@ -78,8 +78,8 @@ export default function TermsOfService() {
                 <h2 className="text-2xl font-semibold mb-4">Contact Information</h2>
                 <p className="mb-4">
                   Questions about the Terms of Service should be sent to us at:{" "}
-                  <a href="mailto:legal@hyper-local-pulse.com" className="text-primary hover:underline">
-                    legal@hyper-local-pulse.com
+                  <a href="mailto:legal@hyperpulsecontent.com" className="text-primary hover:underline">
+                    legal@hyperpulsecontent.com
                   </a>
                 </p>
               </section>

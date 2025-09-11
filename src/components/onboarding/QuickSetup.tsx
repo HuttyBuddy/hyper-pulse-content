@@ -133,7 +133,7 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
             )}
           </div>
           <CardTitle>
-            {step === 1 ? "Welcome to Hyper-Local Pulse!" : "Set Your Market Area"}
+            {step === 1 ? "Welcome to Hyper Pulse Content!" : "Set Your Market Area"}
           </CardTitle>
           <CardDescription>
             {step === 1 

@@ -116,7 +116,7 @@ const SocialMediaManager = () => {
   return (
     <>
       <Helmet>
-        <title>Social Media Manager — The Hyper-Local Pulse</title>
+        <title>Social Media Manager — Hyper Pulse Content</title>
         <meta name="description" content="Manage your social media content, schedule posts, and track performance across all platforms." />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : '/social-media'} />
       </Helmet>
