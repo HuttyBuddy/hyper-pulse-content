@@ -54,6 +54,11 @@ const AnalyticsDashboard = () => {
         .from('content_performance')
         .select(`
           page_views,
+          unique_visitors,
+          time_on_page,
+          bounce_rate,
+          shares,
+          downloads,
           leads_generated,
           revenue_attributed,
           date_recorded,
@@ -69,11 +74,21 @@ const AnalyticsDashboard = () => {
         .select('lead_medium, status')
         .eq('user_id', user.id);
 
+      // Fetch detailed lead submissions for enhanced analytics
+      const { data: submissionData } = await supabase
+        .from('lead_submissions')
+        .select('utm_source, utm_medium, utm_campaign, lead_score, status, engagement_data')
+        .eq('user_id', user.id);
       // Process content metrics
       if (contentData) {
         const metrics = contentData.map(item => ({
           name: item.content_history.title.substring(0, 20) + '...',
           views: item.page_views || 0,
+          uniqueVisitors: item.unique_visitors || 0,
+          timeOnPage: item.time_on_page || 0,
+          bounceRate: item.bounce_rate || 0,
+          shares: item.shares || 0,
+          downloads: item.downloads || 0,
           leads: item.leads_generated || 0,
           revenue: item.revenue_attributed || 0,
           date: new Date(item.date_recorded).toLocaleDateString()
@@ -99,6 +114,7 @@ const AnalyticsDashboard = () => {
           channel,
           leads: stats.total,
           conversion: stats.total > 0 ? (stats.converted / stats.total) * 100 : 0,
+          avgScore: stats.total > 0 ? Math.round(stats.totalScore / stats.total) : 0,
           color: CHANNEL_COLORS[channel as keyof typeof CHANNEL_COLORS] || 'hsl(var(--muted))'
         }));
 

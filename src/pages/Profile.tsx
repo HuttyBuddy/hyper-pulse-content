@@ -520,6 +520,16 @@ const Profile = () => {
               <CardDescription>Connect your CRM system to automatically sync leads and eliminate manual data entry</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                <h4 className="font-medium text-sm mb-2">🚀 Advanced CRM Features</h4>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>• Automatic lead scoring based on source and engagement</p>
+                  <p>• Custom field mapping for seamless data sync</p>
+                  <p>• UTM parameter tracking for attribution</p>
+                  <p>• Bulk lead synchronization capabilities</p>
+                </div>
+              </div>
+              
               <div>
                 <label htmlFor="crmType" className="text-sm">CRM System</label>
                 <select
@@ -561,6 +571,40 @@ const Profile = () => {
                   Additional CRM-specific configuration settings (optional)
                 </p>
               </div>
+              
+              {crmType && (
+                <div>
+                  <label className="text-sm font-medium">Lead Scoring Configuration</label>
+                  <div className="mt-2 p-4 border rounded-lg bg-muted/30">
+                    <h5 className="font-medium text-sm mb-3">Source Weights (1-10 points)</h5>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex justify-between">
+                        <span>Property Valuation:</span>
+                        <Badge variant="default">10 pts</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Consultation Request:</span>
+                        <Badge variant="default">8 pts</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Newsletter Signup:</span>
+                        <Badge variant="secondary">5 pts</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Content Download:</span>
+                        <Badge variant="secondary">3 pts</Badge>
+                      </div>
+                    </div>
+                    <h5 className="font-medium text-sm mb-2 mt-4">Engagement Bonuses</h5>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p>• Multiple pages viewed: +2 points</p>
+                      <p>• Time on site >2 minutes: +1 point</p>
+                      <p>• Return visitor: +3 points</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleSaveProfile}>Save CRM Settings</Button>
                 <Button 

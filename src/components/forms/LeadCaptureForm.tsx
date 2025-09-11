@@ -62,8 +62,26 @@ const LeadCaptureForm = ({ type, contentId, title, className = "" }: LeadCapture
     propertyAddress: '',
     interests: [] as string[],
     message: '',
-    source: window.location.href
+    source: window.location.href,
+    referrer: document.referrer || '',
+    utmSource: new URLSearchParams(window.location.search).get('utm_source') || '',
+    utmMedium: new URLSearchParams(window.location.search).get('utm_medium') || '',
+    utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign') || '',
+    pagesViewed: 1,
+    timeOnSite: Math.floor((Date.now() - performance.timing.navigationStart) / 1000),
+    isReturnVisitor: localStorage.getItem('returning_visitor') === 'true'
   });
+
+  // Track returning visitors
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('has_visited');
+    if (hasVisited) {
+      localStorage.setItem('returning_visitor', 'true');
+    } else {
+      localStorage.setItem('has_visited', 'true');
+      localStorage.setItem('returning_visitor', 'false');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,13 +123,48 @@ const LeadCaptureForm = ({ type, contentId, title, className = "" }: LeadCapture
             propertyAddress: formData.propertyAddress,
             interests: formData.interests,
             message: formData.message,
-            source_url: formData.source
+            source_url: formData.source,
+            source: config.source
           },
           lead_value: type === 'valuation' ? 5000 : type === 'consultation' ? 3000 : 1000,
           status: 'new'
         });
 
       if (leadError) throw leadError;
+
+      // Create detailed lead submission record
+      const { error: submissionError } = await supabase
+        .from('lead_submissions')
+        .insert({
+          user_id: user.id,
+          form_id: contentId || crypto.randomUUID(), // Use contentId or generate temp ID
+          lead_data: {
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email,
+            phone: formData.phone,
+            propertyAddress: formData.propertyAddress,
+            interests: formData.interests,
+            message: formData.message,
+            source: config.source
+          },
+          source_url: formData.source,
+          referrer_url: formData.referrer,
+          utm_source: formData.utmSource,
+          utm_medium: formData.utmMedium,
+          utm_campaign: formData.utmCampaign,
+          engagement_data: {
+            pages_viewed: formData.pagesViewed,
+            time_on_site: formData.timeOnSite,
+            is_return_visitor: formData.isReturnVisitor,
+            form_type: type,
+            submission_timestamp: Date.now()
+          },
+          status: 'new'
+        });
+
+      if (submissionError) {
+        console.warn('Lead submission tracking error:', submissionError);
+      }
 
       // Add to newsletter subscribers if applicable
       if (type === 'newsletter' || formData.interests.length > 0) {

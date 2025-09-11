@@ -33,6 +33,12 @@ interface Lead {
   follow_up_date: string;
   notes: string;
   created_at: string;
+  lead_score?: number;
+  lead_score_details?: any;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  engagement_data?: any;
 }
 
 const statusColors = {
@@ -82,14 +88,37 @@ const LeadManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Fetch from both lead_generation_tracking and lead_submissions for comprehensive view
+      const { data: trackingData, error: trackingError } = await supabase
         .from('lead_generation_tracking')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setLeads(data || []);
+      const { data: submissionData, error: submissionError } = await supabase
+        .from('lead_submissions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (trackingError) throw trackingError;
+      
+      // Combine and deduplicate leads
+      const combinedLeads = [
+        ...(trackingData || []),
+        ...(submissionData || []).map(sub => ({
+          ...sub,
+          lead_source: sub.lead_data?.source || sub.utm_source || 'unknown',
+          lead_medium: sub.utm_medium || 'direct'
+        }))
+      ];
+      
+      // Remove duplicates based on email
+      const uniqueLeads = combinedLeads.filter((lead, index, self) => 
+        index === self.findIndex(l => l.lead_data?.email === lead.lead_data?.email)
+      );
+      
+      setLeads(uniqueLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
       toast({
@@ -595,6 +624,14 @@ const LeadManagement = () => {
                       >
                         {lead.status}
                       </Badge>
+                      {lead.lead_score && (
+                        <Badge 
+                          variant={lead.lead_score >= 80 ? "default" : lead.lead_score >= 60 ? "secondary" : "outline"}
+                          className="gap-1"
+                        >
+                          🎯 {lead.lead_score}
+                        </Badge>
+                      )}
                     </div>
                     
                     <div className="grid gap-2 text-sm text-muted-foreground">
@@ -616,7 +653,27 @@ const LeadManagement = () => {
                         <Calendar className="h-4 w-4" />
                         Created: {new Date(lead.created_at).toLocaleDateString()}
                       </div>
+                      {(lead.utm_source || lead.utm_medium || lead.utm_campaign) && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="font-medium">UTM:</span>
+                          <span>
+                            {[lead.utm_source, lead.utm_medium, lead.utm_campaign]
+                              .filter(Boolean)
+                              .join(' / ')}
+                          </span>
+                        </div>
+                      )}
                     </div>
+
+                    {lead.lead_score_details && (
+                      <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+                        <div className="font-medium mb-1">Lead Score Breakdown:</div>
+                        <div className="grid grid-cols-2 gap-1">
+                          <span>Source Score: {lead.lead_score_details.source_score || 0}</span>
+                          <span>Engagement: +{lead.lead_score_details.engagement_bonus || 0}</span>
+                        </div>
+                      </div>
+                    )}
 
                     {lead.notes && (
                       <p className="mt-2 text-sm bg-muted p-2 rounded">

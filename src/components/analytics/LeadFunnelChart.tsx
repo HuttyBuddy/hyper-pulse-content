@@ -19,6 +19,8 @@ interface LeadStats {
   leads: number;
   qualified: number;
   converted: number;
+  leadSubmissions: number;
+  crmSynced: number;
 }
 
 const LeadFunnelChart = () => {
@@ -28,7 +30,9 @@ const LeadFunnelChart = () => {
     visitors: 0,
     leads: 0,
     qualified: 0,
-    converted: 0
+    converted: 0,
+    leadSubmissions: 0,
+    crmSynced: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -53,18 +57,28 @@ const LeadFunnelChart = () => {
         .select('status')
         .eq('user_id', user.id);
 
+      // Fetch lead submissions data
+      const { data: submissionData } = await supabase
+        .from('lead_submissions')
+        .select('status, lead_score, utm_source')
+        .eq('user_id', user.id);
+
       const totalVisitors = contentData?.reduce((sum, item) => sum + (item.unique_visitors || 0), 0) || 0;
       const totalLeads = leadData?.length || 0;
+      const totalSubmissions = submissionData?.length || 0;
       const qualifiedLeads = leadData?.filter(lead => 
         ['qualified', 'converted'].includes(lead.status)
       ).length || 0;
       const convertedLeads = leadData?.filter(lead => lead.status === 'converted').length || 0;
+      const crmSyncedLeads = submissionData?.filter(sub => sub.utm_source).length || 0;
 
       const stats = {
         visitors: Math.max(totalVisitors, totalLeads * 10), // Estimate if no visitor data
         leads: totalLeads,
+        leadSubmissions: totalSubmissions,
         qualified: qualifiedLeads,
-        converted: convertedLeads
+        converted: convertedLeads,
+        crmSynced: crmSyncedLeads
       };
 
       setLeadStats(stats);
@@ -84,15 +98,21 @@ const LeadFunnelChart = () => {
           icon: <Target className="h-4 w-4" />
         },
         {
+          name: "Form Submissions",
+          value: stats.leadSubmissions,
+          color: "hsl(var(--secondary))",
+          icon: <UserCheck className="h-4 w-4" />
+        },
+        {
           name: "Qualified Leads",
           value: stats.qualified,
-          color: "hsl(var(--secondary))",
+          color: "hsl(var(--accent))",
           icon: <UserCheck className="h-4 w-4" />
         },
         {
           name: "Converted Customers",
           value: stats.converted,
-          color: "hsl(var(--accent))",
+          color: "hsl(var(--primary))",
           icon: <DollarSign className="h-4 w-4" />
         }
       ];
@@ -172,7 +192,7 @@ const LeadFunnelChart = () => {
       </Card>
 
       {/* Conversion Rate Breakdown */}
-      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-4'}`}>
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Visitor to Lead</CardTitle>
@@ -187,6 +207,24 @@ const LeadFunnelChart = () => {
             />
             <p className="text-xs text-muted-foreground mt-1">
               {leadStats.leads} of {leadStats.visitors} visitors
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Lead to Submission</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {calculateConversionRate(leadStats.leadSubmissions, leadStats.leads)}%
+            </div>
+            <Progress 
+              value={parseFloat(calculateConversionRate(leadStats.leadSubmissions, leadStats.leads))} 
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {leadStats.leadSubmissions} detailed submissions
             </p>
           </CardContent>
         </Card>
