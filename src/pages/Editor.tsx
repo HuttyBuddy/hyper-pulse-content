@@ -7,6 +7,8 @@ import { toast } from "@/components/ui/sonner";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Download, Save } from "lucide-react";
+import { format } from "date-fns";
+
 const initialContent = `**MARKET SNAPSHOT**
 
 Carmichael continues to shine this month with steady buyer interest and well-priced listings moving quickly. The current market reflects a balanced environment where strategic pricing and quality presentation drive results. Local favorites like the Jensen Botanical Garden and the American River Parkway keep lifestyle appeal strong, while proximity to downtown Sacramento maintains strong demand.
@@ -36,6 +38,7 @@ Recent infrastructure improvements along Fair Oaks Boulevard have enhanced walka
 Looking ahead, seasonal patterns suggest continued stability through the fall months. Economic indicators point to sustained demand, with employment growth in the Sacramento region supporting homebuying activity. 
 
 Buyers should expect continued competition for well-priced homes, while sellers can capitalize on low inventory levels by ensuring their properties stand out through professional staging and strategic improvements. The next 90 days present optimal conditions for both transactions and strategic market positioning.`;
+
 const Editor = () => {
   const [content, setContent] = useState(initialContent);
   const [appendBranding, setAppendBranding] = useState(true);
@@ -55,6 +58,7 @@ const Editor = () => {
   const headshotInputRef = useRef<HTMLInputElement | null>(null);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const brokerageInputRef = useRef<HTMLInputElement | null>(null);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -79,6 +83,7 @@ const Editor = () => {
       mounted = false;
     };
   }, []);
+
   const generateSmartContent = useCallback(async () => {
     if (!userProfile) {
       toast("Please set up your profile with neighborhood information first.");
@@ -114,6 +119,7 @@ const Editor = () => {
       setIsGenerating(false);
     }
   }, [userProfile]);
+
   const saveChanges = useCallback(async () => {
     setIsSaving(true);
     try {
@@ -138,13 +144,11 @@ const Editor = () => {
       setIsSaving(false);
     }
   }, [content, appendBranding]);
+
   const exportBrandedPDF = useCallback(async () => {
     setIsExporting(true);
     try {
       const { data, error } = await supabase.functions.invoke('export-branded-content', {
-        data,
-        error
-      } = await supabase.functions.invoke('export-branded-pdf', {
         body: {
           content,
           appendBranding,
@@ -172,6 +176,7 @@ const Editor = () => {
       setIsExporting(false);
     }
   }, [content, appendBranding, exportFormat]);
+
   const toSquareImageBlob = (file: File, size = 96): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -196,6 +201,7 @@ const Editor = () => {
       img.src = URL.createObjectURL(file);
     });
   };
+
   const uploadImage = async (kind: 'headshot' | 'logo' | 'brokerage_logo', file: File) => {
     const {
       data: {
@@ -274,10 +280,12 @@ const Editor = () => {
       }));
     }
   };
+
   const onSelect = (kind: 'headshot' | 'logo' | 'brokerage_logo') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) uploadImage(kind, file);
   };
+
   return <>
       <Helmet>
         <title>Customize & Brand — Hyper Pulse Content</title>
@@ -431,91 +439,5 @@ const Editor = () => {
       </main>
     </>;
 };
-export default Editor;
-              <Download className="w-4 h-4 mr-2" />
-              {isExporting ? 'Exporting...' : 'Export Branded PDF'}
-            </Button>
-          </div>
-        </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_360px]">
-          <Card className="shadow-elevated">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Newsletter / Blog Content</CardTitle>
-                  <CardDescription>Edit the text as needed</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={generateSmartContent} disabled={isGenerating || !userProfile?.neighborhood}>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Generate Smart Content'}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <textarea value={content} onChange={e => setContent(e.target.value)} className="w-full min-h-[420px] rounded-md border border-input bg-background p-4 leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Your newsletter content will appear here..." />
-            </CardContent>
-          </Card>
-
-            <aside>
-              <Card className="shadow-elevated lg:sticky lg:top-24">
-                <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">Your Branding</CardTitle>
-                  <CardDescription>Assets and signature details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 md:space-y-5">
-                <div>
-                  <div className="text-sm mb-1">Agent Headshot </div>
-                  <div className="w-[1in] h-[1in] rounded-md border bg-muted overflow-hidden cursor-pointer relative" onClick={() => headshotInputRef.current?.click()} aria-label="Upload agent headshot">
-                    {headshotUrl ? <img src={headshotUrl} alt="Agent headshot square 1x1 inch" className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full grid place-items-center text-xs text-muted-foreground">
-                        Click to upload
-                      </div>}
-                    {uploading.headshot ? <div className="absolute inset-0 bg-background/60 grid place-items-center text-xs">
-                        Uploading…
-                      </div> : null}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-sm mb-1">Personal Logo </div>
-                  <div className="w-[1in] h-[1in] rounded-md border bg-muted overflow-hidden cursor-pointer relative" onClick={() => logoInputRef.current?.click()} aria-label="Upload personal logo">
-                    {logoUrl ? <img src={logoUrl} alt="Personal logo square 1x1 inch" className="w-full h-full object-contain p-1" loading="lazy" /> : <div className="w-full h-full grid place-items-center text-xs text-muted-foreground">
-                        Click to upload
-                      </div>}
-                    {uploading.logo ? <div className="absolute inset-0 bg-background/60 grid place-items-center text-xs">
-                        Uploading…
-                      </div> : null}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-sm mb-1">Brokerage Logo</div>
-                  <div className="w-[1in] h-[1in] rounded-md border bg-muted overflow-hidden cursor-pointer relative" onClick={() => brokerageInputRef.current?.click()} aria-label="Upload brokerage logo">
-                    {brokerageLogoUrl ? <img src={brokerageLogoUrl} alt="Brokerage logo square 1x1 inch" className="w-full h-full object-contain p-1" loading="lazy" /> : <div className="w-full h-full grid place-items-center text-xs text-muted-foreground">
-                        Click to upload
-                      </div>}
-                    {uploading.brokerage_logo ? <div className="absolute inset-0 bg-background/60 grid place-items-center text-xs">
-                        Uploading…
-                      </div> : null}
-                  </div>
-                </div>
-
-                    <div className="flex items-center justify-between py-2">
-                      <div>
-                        <div className="font-medium text-sm md:text-base">Append my branding to this post</div>
-                        <div className="text-xs md:text-sm text-muted-foreground">Adds your headshot, personal and brokerage logos to the footer</div>
-                      </div>
-                      <Switch checked={appendBranding} onCheckedChange={setAppendBranding} />
-                    </div>
-
-                <input ref={headshotInputRef} type="file" accept="image/*" className="hidden" onChange={onSelect('headshot')} />
-                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onSelect('logo')} />
-                <input ref={brokerageInputRef} type="file" accept="image/*" className="hidden" onChange={onSelect('brokerage_logo')} />
-              </CardContent>
-            </Card>
-          </aside>
-        </div>
-      </main>
-    </>;
-};
 export default Editor;
