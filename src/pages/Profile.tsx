@@ -27,6 +27,8 @@ const Profile = () => {
   const [crmApiKey, setCrmApiKey] = useState("");
   const [crmSettings, setCrmSettings] = useState("{}");
   const [testingCrm, setTestingCrm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
   const headshotInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brokerageLogoInputRef = useRef<HTMLInputElement>(null);
@@ -71,6 +73,10 @@ const Profile = () => {
         setCrmType((data as any).crm_type ?? "");
         setCrmApiKey((data as any).crm_api_key ?? "");
         setCrmSettings(JSON.stringify((data as any).crm_settings ?? {}, null, 2));
+        
+        // Check if profile is complete
+        const isComplete = !!(data?.name && data?.email && (data as any).neighborhood && (data as any).county && (data as any).state);
+        setProfileComplete(isComplete);
       }
     };
     init();
@@ -83,6 +89,32 @@ const Profile = () => {
       toast("Not signed in");
       return;
     }
+    
+    // Validate required fields
+    if (!name.trim()) {
+      toast("Name is required");
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast("Email is required");
+      return;
+    }
+    
+    if (!neighborhood.trim() || !county.trim() || !stateCode.trim()) {
+      toast("Please complete all location fields - this is essential for generating hyper-local content");
+      return;
+    }
+    
+    setSaving(true);
+    
+    try {
+      // Create neighborhood slug for URL-friendly routing
+      const neighborhoodSlug = neighborhood.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
+    
     const {
       error
     } = await supabase.from("profiles").upsert({
@@ -90,17 +122,40 @@ const Profile = () => {
       name,
       email,
       neighborhood,
+      neighborhood_slug: neighborhoodSlug,
       county,
       state: stateCode,
+      onboarding_completed: true,
       crm_type: crmType || null,
       crm_api_key: crmApiKey || null,
       crm_settings: crmSettings ? JSON.parse(crmSettings) : {}
     });
+    
     if (error) {
       console.error(error);
       toast("Failed to save profile");
     } else {
       toast("Profile saved");
+      setProfileComplete(true);
+      
+      // Track profile completion for analytics
+      await supabase.from('content_analytics').insert({
+        user_id: userId,
+        content_type: 'profile',
+        event_type: 'completed',
+        event_data: { 
+          neighborhood,
+          county,
+          state: stateCode,
+          timestamp: Date.now()
+        }
+      });
+    }
+    } catch (error: any) {
+      console.error('Profile save error:', error);
+      toast("Failed to save profile");
+    } finally {
+      setSaving(false);
     }
   };
   const testCrmConnection = async () => {
@@ -209,34 +264,107 @@ const Profile = () => {
       <AppHeader />
       <main className="container py-8 grid gap-6">
         <section className="grid gap-6 md:grid-cols-2">
+          {!profileComplete && (
+            <div className="md:col-span-2">
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                      <span className="text-primary font-bold">!</span>
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Complete Your Profile</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Add your name, email, and market area to start generating hyper-local content
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Keep your details up to date</CardDescription>
+              <CardDescription>
+                {profileComplete 
+                  ? "Keep your details up to date" 
+                  : "Complete your profile to unlock AI content generation"
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <label htmlFor="name" className="text-sm">Name</label>
-                <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+                <Input 
+                  id="name" 
+                  value={name} 
+                  onChange={e => setName(e.target.value)} 
+                  placeholder="Your full name"
+                  className={!name.trim() ? "border-yellow-300 focus:border-yellow-500" : ""}
+                />
               </div>
               <div>
                 <label htmlFor="email" className="text-sm">Email</label>
-                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  placeholder="your.email@company.com"
+                  className={!email.trim() ? "border-yellow-300 focus:border-yellow-500" : ""}
+                />
+              </div>
+              
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium text-sm mb-2">🎯 Your Primary Market Area</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  This information is essential for generating accurate, hyper-local content that resonates with your audience.
+                </p>
+              </div>
+              
+              <div>
+                <label htmlFor="neighborhood" className="text-sm font-medium">Neighborhood *</label>
+                <Input 
+                  id="neighborhood" 
+                  value={neighborhood} 
+                  onChange={e => setNeighborhood(e.target.value)} 
+                  placeholder="e.g., Carmichael, Downtown, Midtown"
+                  className={!neighborhood.trim() ? "border-yellow-300 focus:border-yellow-500" : ""}
+                />
               </div>
               <div>
-                <label htmlFor="neighborhood" className="text-sm">Neighborhood</label>
-                <Input id="neighborhood" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="e.g., Carmichael" />
+                <label htmlFor="county" className="text-sm font-medium">County *</label>
+                <Input 
+                  id="county" 
+                  value={county} 
+                  onChange={e => setCounty(e.target.value)} 
+                  placeholder="e.g., Sacramento County, Orange County"
+                  className={!county.trim() ? "border-yellow-300 focus:border-yellow-500" : ""}
+                />
               </div>
               <div>
-                <label htmlFor="county" className="text-sm">County</label>
-                <Input id="county" value={county} onChange={e => setCounty(e.target.value)} placeholder="e.g., Sacramento County" />
+                <label htmlFor="state" className="text-sm font-medium">State *</label>
+                <Input 
+                  id="state" 
+                  value={stateCode} 
+                  onChange={e => setStateCode(e.target.value)} 
+                  placeholder="e.g., CA, TX, FL"
+                  maxLength={2}
+                  className={!stateCode.trim() ? "border-yellow-300 focus:border-yellow-500" : ""}
+                />
               </div>
-              <div>
-                <label htmlFor="state" className="text-sm">State</label>
-                <Input id="state" value={stateCode} onChange={e => setStateCode(e.target.value)} placeholder="e.g., CA" />
-              </div>
+              
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={handleSaveProfile}>Save</Button>
+                <Button 
+                  variant={profileComplete ? "secondary" : "hero"} 
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  {saving ? "Saving..." : profileComplete ? "Update Profile" : "Complete Profile & Start Generating"}
+                </Button>
                 <Button variant="outline" onClick={async () => {
                 try {
                   setOpeningPortal(true);
@@ -248,6 +376,20 @@ const Profile = () => {
                   {openingPortal ? "Opening…" : "Manage Subscription"}
                 </Button>
               </div>
+              
+              {profileComplete && (
+                <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-800">Profile Complete!</span>
+                  </div>
+                  <p className="text-xs text-green-700 mt-1">
+                    You can now generate hyper-local content for {neighborhood}, {stateCode}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

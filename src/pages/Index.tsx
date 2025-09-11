@@ -85,8 +85,20 @@ const Index = () => {
       });
       if (error) throw error;
       if (data.user) {
-        // Full refresh ensures a clean state everywhere
-        window.location.href = "/dashboard";
+        // Check if user has completed profile setup
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed, neighborhood, county, state')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+        
+        // If profile is incomplete, redirect to dashboard which will show QuickSetup
+        if (!profile?.onboarding_completed || !profile?.neighborhood) {
+          window.location.href = "/dashboard";
+        } else {
+          // Profile is complete, go to dashboard
+          window.location.href = "/dashboard";
+        }
       }
     } catch (err: any) {
       const { title, description } = formatAuthError(err?.message);

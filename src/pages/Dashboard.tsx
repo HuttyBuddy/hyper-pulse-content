@@ -58,7 +58,7 @@ const Dashboard = () => {
         setOnboardingCompleted(isOnboardingCompleted);
         
         // Show quick setup for new users (higher priority than welcome tour)
-        if (!isOnboardingCompleted || !profile?.neighborhood) {
+        if (!isOnboardingCompleted || !profile?.neighborhood || !profile?.county || !profile?.state) {
           setShowQuickSetup(true);
         } else if (!isOnboardingCompleted) {
           setShowWelcomeTour(true);
@@ -183,6 +183,28 @@ const Dashboard = () => {
             </>
           ) : (
             <>
+              {/* Profile Completion Check */}
+              {(!userNeighborhoods.length || !profile?.neighborhood) && (
+                <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                      <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">!</span>
+                      </div>
+                      Complete Your Setup
+                    </CardTitle>
+                    <CardDescription className="text-yellow-700 dark:text-yellow-300">
+                      Add your market area information to start generating hyper-local content
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild variant="default" className="w-full">
+                      <Link to="/profile">Complete Profile Setup</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+              
               {userNeighborhoods.length > 0 && (
                 <Card className="shadow-elevated bg-gradient-to-r from-card to-card/95 border-primary/10">
                   <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">

@@ -56,8 +56,8 @@ const SignUp = () => {
       if (error) throw error;
 
       toast({
-        title: "Verify your email",
-        description: "We've sent a verification link. After verifying, return to the login page.",
+        title: "Check your email",
+        description: "We've sent a verification link. Click it to activate your account, then return here to log in.",
       });
     } catch (err: any) {
       const { title, description } = formatAuthError(err?.message);
@@ -86,6 +86,13 @@ const SignUp = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="space-y-4">
+                <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+                  <p className="text-sm text-primary font-medium">🚀 Get Started in 60 Seconds</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Create account → Set market area → Generate first content package
+                  </p>
+                </div>
+                
                 <FormField
                   control={form.control}
                   name="email"

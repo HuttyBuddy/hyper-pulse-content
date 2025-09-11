@@ -58,7 +58,7 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
 
       // Save profile with onboarding completed
       const neighborhoodSlug = neighborhood.toLowerCase().replace(/\s+/g, '-');
-      await supabase.from('profiles').upsert({
+      const { error: profileError } = await supabase.from('profiles').upsert({
         user_id: user.id,
         name: name.trim(),
         neighborhood: neighborhood.trim(),
@@ -67,6 +67,25 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
         neighborhood_slug: neighborhoodSlug,
         onboarding_completed: true
       });
+      
+      if (profileError) {
+        console.error('Profile save error:', profileError);
+        throw new Error('Failed to save profile');
+      }
+
+      // Trigger market data fetch for this location
+      try {
+        await supabase.functions.invoke('fetch-market-data', {
+          body: {
+            neighborhood: neighborhood.trim(),
+            county: county.trim(),
+            state: state.trim(),
+            neighborhood_slug: neighborhoodSlug
+          }
+        });
+      } catch (marketError) {
+        console.warn('Market data fetch failed, but continuing:', marketError);
+      }
 
       // Navigate directly to first content generation
       const today = format(new Date(), 'yyyy-MM-dd');
@@ -74,7 +93,7 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
       
       toast({
         title: "Profile created!",
-        description: "Let's generate your first content package",
+        description: "Generating your first hyper-local content package...",
       });
 
       // Track onboarding completion
@@ -139,13 +158,14 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  What you'll get:
+                  What you'll get in your first package:
                 </h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Market analysis blog post</li>
-                  <li>• Social media content (5 posts)</li>
-                  <li>• Newsletter draft</li>
-                  <li>• Real estate market data</li>
+                  <li>• Professional market analysis blog post with real data</li>
+                  <li>• 5 ready-to-post social media updates</li>
+                  <li>• Newsletter draft for your subscriber list</li>
+                  <li>• Current market statistics and trends</li>
+                  <li>• Lifestyle insights for your area</li>
                 </ul>
               </div>
             </div>
@@ -183,7 +203,19 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
               </div>
               <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
                 <p className="text-sm">
-                  <strong>Next:</strong> We'll generate your first content package for {neighborhood || 'your area'} with current market data and ready-to-use social posts.
+                  <strong>🎯 Ready to Launch:</strong> We'll fetch live market data for {neighborhood || 'your area'} and create your first professional content package.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  This usually takes 30-45 seconds. You'll have everything you need to start marketing immediately.
+                </p>
+                <ul className="text-xs mt-2 space-y-1 text-muted-foreground">
+                  <li>• Market analysis blog post with current data</li>
+                  <li>• Ready-to-use social media content</li>
+                  <li>• Newsletter draft for your subscribers</li>
+                  <li>• Professional branding integration</li>
+                </ul>
+                <p className="text-xs mt-2 font-medium text-primary">
+                  This takes about 30 seconds to generate.
                 </p>
               </div>
             </div>
@@ -198,10 +230,15 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
             <Button 
               onClick={handleNext} 
               disabled={loading}
-              className="ml-auto"
+              className={`ml-auto ${step === 2 ? 'min-w-[200px]' : ''}`}
               variant="hero"
             >
-              {loading ? "Setting up..." : step === 1 ? "Continue" : "Generate My First Content"}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Setting up...
+                </div>
+              ) : step === 1 ? "Continue" : "Generate My First Content"}
             </Button>
           </div>
         </CardContent>
