@@ -80,7 +80,7 @@ Year-over-Year Changes: ${JSON.stringify(marketReport.yoy_change || {})}
 
 ${marketDataText}
 
-Create a thorough, engaging newsletter content (800-1200 words) with the following detailed structure:
+Create a thorough, engaging market analysis blog post (800-1200 words) with the following detailed structure:
 
 **MARKET SNAPSHOT SECTION (150-200 words):**
 - Open with a compelling hook about current market conditions
@@ -112,8 +112,9 @@ Create a thorough, engaging newsletter content (800-1200 words) with the followi
 - Economic factors that could influence the market
 - Recommended action steps for different buyer/seller profiles
 
-The content should be data-driven yet accessible, demonstrating deep market expertise while remaining engaging for all readers. Use specific numbers and statistics throughout, but explain their practical implications. Write in a confident, professional tone that positions you as the local market authority.
+The content should be data-driven yet accessible, demonstrating deep market expertise while remaining engaging for all readers. Use specific numbers and statistics throughout, but explain their practical implications. Write in a confident, professional tone that positions the agent as the local market authority.
 
+CRITICAL: If no market data is available, create realistic market insights based on general market conditions for the area type and current economic climate. Always provide valuable, actionable content even without specific data.
 Do not include any greeting, signature, or boilerplate text - just the comprehensive newsletter body content organized with clear section breaks.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${googleApiKey}`, {

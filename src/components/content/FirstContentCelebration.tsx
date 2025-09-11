@@ -57,6 +57,21 @@ export function FirstContentCelebration({ neighborhood, onDismiss }: FirstConten
       title: "Great start!",
       description: "Your first content package is ready to share and grow your business.",
     });
+    
+    // Track the share action
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('content_analytics').insert({
+        user_id: user.id,
+        content_type: 'milestone',
+        event_type: 'first_content_shared',
+        event_data: { 
+          neighborhood,
+          action: 'share_success',
+          timestamp: Date.now()
+        }
+      });
+    }
   };
 
   if (loading || !isFirstContent) return null;

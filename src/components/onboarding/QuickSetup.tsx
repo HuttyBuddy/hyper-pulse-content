@@ -93,7 +93,7 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
       
       toast({
         title: "Profile created!",
-        description: "Generating your first hyper-local content package...",
+        description: "Redirecting to generate your first content package...",
       });
 
       // Track onboarding completion
@@ -113,7 +113,7 @@ export function QuickSetup({ open, onComplete }: QuickSetupProps) {
       console.error('Setup error:', error);
       toast({
         title: "Setup failed",
-        description: "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive"
       });
     } finally {

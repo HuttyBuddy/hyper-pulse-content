@@ -125,7 +125,7 @@ const Dashboard = () => {
 
   const generateContentUrl = (neighborhood: any) => {
     const today = format(new Date(), 'yyyy-MM-dd');
-    return `/content/${neighborhood.neighborhood_slug}-${today}`;
+    return `/content/${neighborhood.neighborhood_slug || neighborhood.neighborhood.toLowerCase().replace(/\s+/g, '-')}-${today}`;
   };
 
   const handleCompleteTour = async () => {
