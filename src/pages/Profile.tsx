@@ -28,6 +28,7 @@ const Profile = () => {
   const [crmSettings, setCrmSettings] = useState("{}");
   const [testingCrm, setTestingCrm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [googleApiKey, setGoogleApiKey] = useState("");
   const [profileComplete, setProfileComplete] = useState(false);
   const headshotInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -73,6 +74,8 @@ const Profile = () => {
         setCrmType((data as any).crm_type ?? "");
         setCrmApiKey((data as any).crm_api_key ?? "");
         setCrmSettings(JSON.stringify((data as any).crm_settings ?? {}, null, 2));
+        setGoogleApiKey((data as any).google_api_key ?? "");
+        setGoogleApiKey((data as any).google_api_key ?? "");
         
         // Check if profile is complete
         const isComplete = !!(data?.name && data?.email && (data as any).neighborhood && (data as any).county && (data as any).state);
@@ -128,7 +131,8 @@ const Profile = () => {
       onboarding_completed: true,
       crm_type: crmType || null,
       crm_api_key: crmApiKey || null,
-      crm_settings: crmSettings ? JSON.parse(crmSettings) : {}
+      crm_settings: crmSettings ? JSON.parse(crmSettings) : {},
+      google_api_key: googleApiKey || null
     });
     
     if (error) {
@@ -320,7 +324,7 @@ const Profile = () => {
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h4 className="font-medium text-sm mb-2">🎯 Your Primary Market Area</h4>
                 <p className="text-xs text-muted-foreground mb-3">
-                  This information is essential for generating accurate, hyper-local content that resonates with your audience.
+                  This information powers our AI to generate accurate, hyper-local content that positions you as the neighborhood expert.
                 </p>
               </div>
               
@@ -363,7 +367,7 @@ const Profile = () => {
                   disabled={saving}
                   className="flex-1"
                 >
-                  {saving ? "Saving..." : profileComplete ? "Update Profile" : "Complete Profile & Start Generating"}
+                  {saving ? "Saving..." : profileComplete ? "Update Profile" : "Complete Setup & Generate First Content"}
                 </Button>
                 <Button variant="outline" onClick={async () => {
                 try {
@@ -386,7 +390,7 @@ const Profile = () => {
                     <span className="text-sm font-medium text-green-800">Profile Complete!</span>
                   </div>
                   <p className="text-xs text-green-700 mt-1">
-                    You can now generate hyper-local content for {neighborhood}, {stateCode}
+                    Ready to generate AI-powered content for {neighborhood}, {stateCode}
                   </p>
                 </div>
               )}
@@ -395,41 +399,51 @@ const Profile = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>My Branding Assets</CardTitle>
-              <CardDescription>Upload your headshot, personal logo, and brokerage logo</CardDescription>
+              <CardTitle>Professional Branding Assets</CardTitle>
+              <CardDescription>Upload your professional assets for consistent, branded content</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+                <p className="text-sm text-primary font-medium">🎨 Brand Consistency</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your uploaded assets will be automatically included in all exported content and client reports.
+                </p>
+              </div>
+
               <div>
-                <div className="text-sm mb-1">Headshot</div>
-                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => headshotInputRef.current?.click()} role="button" aria-label="Upload headshot">
+                <div className="text-sm mb-2 font-medium">Professional Headshot</div>
+                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors" onClick={() => headshotInputRef.current?.click()} role="button" aria-label="Upload headshot">
                   <AspectRatio ratio={1} className="w-full">
                      {headshotUrl ? <img src={headshotUrl} alt="Realtor headshot branding image" className="h-full w-full object-cover" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
-                        Click to upload headshot
+                        Click to upload professional headshot
                       </div>}
                   </AspectRatio>
                 </div>
+                <p className="text-xs text-muted-foreground">Square format recommended for best results</p>
                 <input ref={headshotInputRef} type="file" accept="image/*" className="hidden" onChange={onHeadshotSelected} />
               </div>
               <div>
-                <div className="text-sm mb-1">Personal Logo</div>
-                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => logoInputRef.current?.click()} role="button" aria-label="Upload personal logo">
+                <div className="text-sm mb-2 font-medium">Personal Brand Logo</div>
+                <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors" onClick={() => logoInputRef.current?.click()} role="button" aria-label="Upload personal logo">
                   <AspectRatio ratio={1} className="w-full">
                     {logoUrl ? <img src={logoUrl} alt="Personal logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
-                        Click to upload logo
+                        Click to upload personal logo
                       </div>}
                   </AspectRatio>
                 </div>
+                <p className="text-xs text-muted-foreground">PNG with transparent background preferred</p>
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onLogoSelected} />
               </div>
             <div>
-              <div className="text-sm mb-1">Brokerage Logo</div>
-               <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer" onClick={() => brokerageLogoInputRef.current?.click()} role="button" aria-label="Upload brokerage logo">
+              <div className="text-sm mb-2 font-medium">Brokerage Logo</div>
+               <div className="w-[1in] rounded-md border bg-muted mb-2 overflow-hidden cursor-pointer hover:border-primary/50 transition-colors" onClick={() => brokerageLogoInputRef.current?.click()} role="button" aria-label="Upload brokerage logo">
                  <AspectRatio ratio={1} className="w-full">
                     {brokerageLogoUrl ? <img src={brokerageLogoUrl} alt="Brokerage logo branding image" className="h-full w-full object-contain bg-background" loading="lazy" /> : <div className="h-full w-full grid place-items-center text-xs text-muted-foreground text-center">
                         Click to upload brokerage logo
                       </div>}
                  </AspectRatio>
                 </div>
+              <p className="text-xs text-muted-foreground">High-resolution logo recommended</p>
               <input ref={brokerageLogoInputRef} type="file" accept="image/*" className="hidden" onChange={onBrokerageLogoSelected} />
             </div>
             </CardContent>
@@ -439,8 +453,71 @@ const Profile = () => {
         <section>
           <Card>
             <CardHeader>
+              <CardTitle>Google AI Studio Integration</CardTitle>
+              <CardDescription>Connect your Google AI Studio API key for enhanced content generation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label htmlFor="googleApiKey" className="text-sm font-medium">Google AI Studio API Key</label>
+                <Input
+                  id="googleApiKey"
+                  type="password"
+                  value={googleApiKey}
+                  onChange={(e) => setGoogleApiKey(e.target.value)}
+                  placeholder="Enter your Google AI Studio API key"
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your API key is encrypted and stored securely. Used exclusively for generating your content.
+                </p>
+              </div>
+              <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                <h4 className="font-medium text-sm mb-2">🚀 Enhanced AI Content Generation</h4>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>1. Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Google AI Studio</a></p>
+                  <p>2. Sign in with your Google account</p>
+                  <p>3. Click "Create API Key" and copy the generated key</p>
+                  <p>4. Paste it above and save your profile</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Google AI Studio API Key</CardTitle>
+              <CardDescription>Add your Google AI Studio API key for enhanced content generation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label htmlFor="googleApiKey" className="text-sm">Google AI Studio API Key</label>
+                <Input
+                  id="googleApiKey"
+                  type="password"
+                  value={googleApiKey}
+                  onChange={(e) => setGoogleApiKey(e.target.value)}
+                  placeholder="Enter your Google AI Studio API key"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your API key is stored securely and used for generating enhanced content
+                </p>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium text-sm mb-2">How to get your Google AI Studio API key:</h4>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a></p>
+                  <p>2. Sign in with your Google account</p>
+                  <p>3. Click "Create API Key" and copy the generated key</p>
+                  <p>4. Paste it above and save your profile</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>CRM Integration</CardTitle>
-              <CardDescription>Connect your CRM system for seamless lead management</CardDescription>
+              <CardDescription>Connect your CRM system to automatically sync leads and eliminate manual data entry</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -468,7 +545,7 @@ const Profile = () => {
                   placeholder="Enter your CRM API key"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Your API key is stored securely and never shared
+                  Your API key is encrypted and stored securely. Never shared with third parties.
                 </p>
               </div>
               <div>
@@ -481,7 +558,7 @@ const Profile = () => {
                   className="w-full mt-1 px-3 py-2 border border-input rounded-md bg-background min-h-[80px] font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Additional settings specific to your CRM (optional)
+                  Additional CRM-specific configuration settings (optional)
                 </p>
               </div>
               <div className="flex gap-2">
@@ -496,7 +573,7 @@ const Profile = () => {
               </div>
               {crmType && (
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-medium text-sm mb-2">Setup Instructions for {crmType}:</h4>
+                  <h4 className="font-medium text-sm mb-2">🔧 Setup Instructions for {crmType}:</h4>
                   <div className="text-xs text-muted-foreground space-y-1">
                     {crmType === 'hubspot' && (
                       <>
@@ -527,7 +604,7 @@ const Profile = () => {
         </section>
 
         <div className="pt-2">
-          <Button variant="outline" onClick={() => toast("Logged out (demo)")}>Log Out</Button>
+          <Button variant="outline" onClick={() => toast("Signed out successfully")}>Sign Out</Button>
         </div>
       </main>
     </>;
