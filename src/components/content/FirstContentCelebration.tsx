@@ -52,7 +52,7 @@ export function FirstContentCelebration({ neighborhood, onDismiss }: FirstConten
     checkIfFirstContent();
   }, [neighborhood]);
 
-  const handleShareSuccess = () => {
+  const handleShareSuccess = async () => {
     toast({
       title: "Great start!",
       description: "Your first content package is ready to share and grow your business.",
