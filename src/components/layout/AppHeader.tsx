@@ -7,6 +7,7 @@ import { Menu, BarChart3, User, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
 
 const AppHeader = () => {
   const [profile, setProfile] = useState<{ name?: string | null; headshot_url?: string | null; logo_url?: string | null } | null>(null);
@@ -95,6 +96,8 @@ const AppHeader = () => {
           <span className="sm:hidden">Hyper Pulse</span>
         </Link>
         <div className="flex items-center gap-1 md:gap-2">
+          <NotificationCenter />
+          
           {/* Mobile navigation */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
