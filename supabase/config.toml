@@ -44,3 +44,5 @@ verify_jwt = true
 
 [functions.fetch-shareable-analytics]
 verify_jwt = false
+[functions.send-email-campaign]
+verify_jwt = true

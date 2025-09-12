@@ -64,7 +64,11 @@ export function EnhancedTabs({
                 <div className="flex items-center gap-2">
                   {tab.icon && <tab.icon className="h-4 w-4" />}
                   <span className="truncate">{tab.label}</span>
-                  {tab.badge}
+                  {tab.badge && (
+                    <Badge variant="secondary" className="text-xs">
+                      {tab.badge}
+                    </Badge>
+                  )}
                 </div>
               </TabsTrigger>)}
           </TabsList>

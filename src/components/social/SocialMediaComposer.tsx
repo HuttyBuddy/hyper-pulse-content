@@ -8,11 +8,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, ImageIcon, Hash, Send, Clock, X } from "lucide-react";
+import { CalendarIcon, ImageIcon, Hash, Send, Clock, X, Repeat, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 interface SocialMediaComposerProps {
   onPostCreated?: () => void;
@@ -26,6 +28,15 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [currentHashtag, setCurrentHashtag] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState({
+    frequency: 'weekly', // daily, weekly, monthly
+    interval: 1, // every X days/weeks/months
+    endDate: undefined as Date | undefined,
+    maxOccurrences: 10
+  });
+  const [bulkPosts, setBulkPosts] = useState<string[]>([]);
+  const [showBulkMode, setShowBulkMode] = useState(false);
 
   const platforms = [
     { value: "facebook", label: "Facebook", icon: "📘" },
@@ -55,8 +66,21 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
     return limits[platform as keyof typeof limits] || 2200;
   };
 
+  const addBulkPost = () => {
+    if (content.trim()) {
+      setBulkPosts([...bulkPosts, content.trim()]);
+      setContent("");
+    }
+  };
+
+  const removeBulkPost = (index: number) => {
+    setBulkPosts(bulkPosts.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (action: 'draft' | 'schedule' | 'publish') => {
-    if (!content.trim() || !platform) {
+    const postsToProcess = showBulkMode ? bulkPosts : [content];
+    
+    if (postsToProcess.length === 0 || !platform) {
       toast("Please add content and select a platform");
       return;
     }
@@ -79,22 +103,45 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
         scheduledAt = dateTime.toISOString();
       }
 
-      const postData = {
-        user_id: user.id,
-        platform,
-        post_content: content,
-        scheduled_at: scheduledAt,
-        status: action === 'publish' ? 'posted' : action === 'schedule' ? 'scheduled' : 'draft',
-        posted_at: action === 'publish' ? new Date().toISOString() : null
-      };
+      // Process each post
+      const results = [];
+      for (let i = 0; i < postsToProcess.length; i++) {
+        const postContent = postsToProcess[i];
+        let postScheduledAt = scheduledAt;
+        
+        // For bulk posts, space them out by 1 hour
+        if (showBulkMode && scheduledAt && i > 0) {
+          const baseDate = new Date(scheduledAt);
+          baseDate.setHours(baseDate.getHours() + i);
+          postScheduledAt = baseDate.toISOString();
+        }
 
-      const { error } = await supabase
-        .from('social_media_posts')
-        .insert(postData);
+        const postData = {
+          user_id: user.id,
+          platform,
+          post_content: postContent,
+          scheduled_at: postScheduledAt,
+          status: action === 'publish' ? 'posted' : action === 'schedule' ? 'scheduled' : 'draft',
+          posted_at: action === 'publish' ? new Date().toISOString() : null,
+          recurrence_pattern: isRecurring ? recurrencePattern : null,
+          auto_generated: false
+        };
 
-      if (error) throw error;
+        const { data: insertedPost, error } = await supabase
+          .from('social_media_posts')
+          .insert(postData)
+          .select()
+          .single();
 
-      toast(`Post ${action === 'publish' ? 'published' : action}d successfully!`);
+        if (error) throw error;
+        results.push(insertedPost);
+      }
+
+      const successMessage = showBulkMode 
+        ? `${results.length} posts ${action === 'publish' ? 'published' : action}d successfully!`
+        : `Post ${action === 'publish' ? 'published' : action}d successfully!`;
+      
+      toast(successMessage);
       
       // Reset form
       setContent("");
@@ -102,6 +149,9 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
       setScheduledDate(undefined);
       setScheduledTime("");
       setHashtags([]);
+      setBulkPosts([]);
+      setIsRecurring(false);
+      setShowBulkMode(false);
       
       onPostCreated?.();
     } catch (error: any) {
@@ -123,6 +173,26 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
         <CardDescription>Compose and schedule your social media content</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={!showBulkMode}
+              onCheckedChange={(checked) => setShowBulkMode(!(checked as boolean))}
+            />
+            <Label>Single Post</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={showBulkMode}
+              onCheckedChange={(checked) => setShowBulkMode(checked as boolean)}
+            />
+            <Label>Bulk Posts</Label>
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Platform Selection */}
         <div>
           <Label>Platform</Label>
@@ -143,27 +213,73 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
           </Select>
         </div>
 
-        {/* Content Textarea */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label>Content</Label>
-            {platform && (
-              <span className={cn(
-                "text-sm",
-                remainingCharacters < 0 ? "text-red-500" : remainingCharacters < 50 ? "text-yellow-500" : "text-muted-foreground"
-              )}>
-                {remainingCharacters} characters remaining
-              </span>
+        {/* Content Input */}
+        {showBulkMode ? (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Add Posts to Queue</Label>
+              <Badge variant="outline">{bulkPosts.length} posts queued</Badge>
+            </div>
+            <div className="space-y-3">
+              <Textarea
+                value={content}
+                onChange={e => setContent(e.target.value)}
+                placeholder="Write a post and click 'Add to Queue'"
+                className="min-h-[100px]"
+                maxLength={characterLimit}
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={addBulkPost}
+                disabled={!content.trim()}
+                className="w-full"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Add to Queue
+              </Button>
+            </div>
+            
+            {bulkPosts.length > 0 && (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                <Label>Queued Posts ({bulkPosts.length})</Label>
+                {bulkPosts.map((post, index) => (
+                  <div key={index} className="flex items-start gap-2 p-2 border rounded text-sm">
+                    <span className="flex-1 line-clamp-2">{post}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeBulkPost(index)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening in your local market?"
-            className="min-h-[120px]"
-            maxLength={characterLimit}
-          />
-        </div>
+        ) : (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Content</Label>
+              {platform && (
+                <span className={cn(
+                  "text-sm",
+                  remainingCharacters < 0 ? "text-red-500" : remainingCharacters < 50 ? "text-yellow-500" : "text-muted-foreground"
+                )}>
+                  {remainingCharacters} characters remaining
+                </span>
+              )}
+            </div>
+            <Textarea
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              placeholder="What's happening in your local market?"
+              className="min-h-[120px]"
+              maxLength={characterLimit}
+            />
+          </div>
+        )}
 
         {/* Hashtags */}
         <div>
@@ -188,6 +304,76 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
                 </Badge>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Recurring Options */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={isRecurring}
+              onCheckedChange={(checked) => setIsRecurring(checked as boolean)}
+            />
+            <Label>Make this a recurring post</Label>
+          </div>
+
+          {isRecurring && (
+            <Card className="bg-muted/30">
+              <CardContent className="pt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Frequency</Label>
+                    <Select 
+                      value={recurrencePattern.frequency} 
+                      onValueChange={(value) => setRecurrencePattern({...recurrencePattern, frequency: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Repeat every</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={recurrencePattern.interval}
+                      onChange={(e) => setRecurrencePattern({
+                        ...recurrencePattern, 
+                        interval: parseInt(e.target.value) || 1
+                      })}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Maximum occurrences</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={recurrencePattern.maxOccurrences}
+                    onChange={(e) => setRecurrencePattern({
+                      ...recurrencePattern, 
+                      maxOccurrences: parseInt(e.target.value) || 10
+                    })}
+                  />
+                </div>
+                
+                <div className="text-xs text-muted-foreground bg-background p-2 rounded">
+                  <Repeat className="w-3 h-3 inline mr-1" />
+                  This will create {recurrencePattern.maxOccurrences} posts, 
+                  one every {recurrencePattern.interval} {recurrencePattern.frequency.slice(0, -2)}
+                  {recurrencePattern.interval > 1 ? 's' : ''}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
@@ -241,25 +427,30 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
           <Button
             variant="secondary"
             onClick={() => handleSubmit('schedule')}
-            disabled={isLoading || !scheduledDate || !scheduledTime}
+            disabled={isLoading || (!showBulkMode && !content.trim()) || (showBulkMode && bulkPosts.length === 0) || !scheduledDate || !scheduledTime}
             className="gap-2"
           >
             <Clock className="w-4 h-4" />
-            Schedule Post
+            {showBulkMode ? `Schedule ${bulkPosts.length} Posts` : 'Schedule Post'}
           </Button>
           <Button
             onClick={() => handleSubmit('publish')}
-            disabled={isLoading}
+            disabled={isLoading || (!showBulkMode && !content.trim()) || (showBulkMode && bulkPosts.length === 0)}
             className="gap-2"
           >
             <Send className="w-4 h-4" />
-            Publish Now
+            {showBulkMode ? `Publish ${bulkPosts.length} Posts` : 'Publish Now'}
           </Button>
         </div>
 
         {selectedPlatform && (
           <div className="text-sm text-muted-foreground">
-            Posting to {selectedPlatform.icon} {selectedPlatform.label}
+            {showBulkMode ? `Bulk posting ${bulkPosts.length} posts to` : 'Posting to'} {selectedPlatform.icon} {selectedPlatform.label}
+            {isRecurring && (
+              <span className="ml-2">
+                • Recurring {recurrencePattern.frequency} ({recurrencePattern.maxOccurrences}x)
+              </span>
+            )}
           </div>
         )}
       </CardContent>

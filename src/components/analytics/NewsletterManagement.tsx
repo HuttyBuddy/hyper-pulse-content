@@ -16,12 +16,21 @@ import {
   Eye,
   MousePointer,
   UserMinus,
-  Filter
+  Filter,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Subscriber {
   id: string;
@@ -47,13 +56,26 @@ interface EmailCampaign {
   status: string;
 }
 
+interface NewsletterDraft {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const NewsletterManagement = () => {
   const isMobile = useIsMobile();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
+  const [drafts, setDrafts] = useState<NewsletterDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubscriberDialogOpen, setIsSubscriberDialogOpen] = useState(false);
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
+  const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState<NewsletterDraft | null>(null);
+  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
+  const [sendingCampaign, setSendingCampaign] = useState(false);
   const { toast } = useToast();
 
   const [newSubscriber, setNewSubscriber] = useState({
@@ -70,6 +92,14 @@ const NewsletterManagement = () => {
     subject: '',
     content: '',
     recipientTags: [] as string[]
+  });
+
+  const [sendConfig, setSendConfig] = useState({
+    subject: '',
+    senderName: '',
+    scheduledDate: undefined as Date | undefined,
+    scheduledTime: '',
+    sendNow: true
   });
 
   useEffect(() => {
@@ -95,8 +125,16 @@ const NewsletterManagement = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      // Fetch newsletter drafts
+      const { data: draftsData } = await supabase
+        .from('newsletter_drafts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
       setSubscribers(subscribersData || []);
       setCampaigns(campaignsData || []);
+      setDrafts(draftsData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -215,6 +253,106 @@ const NewsletterManagement = () => {
     }
   };
 
+  const handleSendCampaign = async () => {
+    if (!selectedDraft || !sendConfig.subject) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a draft and enter a subject line",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!sendConfig.sendNow && (!sendConfig.scheduledDate || !sendConfig.scheduledTime)) {
+      toast({
+        title: "Missing Schedule",
+        description: "Please set a date and time for scheduled sending",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSendingCampaign(true);
+    try {
+      const recipientIds = selectedRecipients.size > 0 
+        ? Array.from(selectedRecipients)
+        : subscribers.filter(s => s.is_active).map(s => s.id);
+
+      if (recipientIds.length === 0) {
+        throw new Error("No recipients selected");
+      }
+
+      let scheduledAt = null;
+      if (!sendConfig.sendNow && sendConfig.scheduledDate && sendConfig.scheduledTime) {
+        const [hours, minutes] = sendConfig.scheduledTime.split(':');
+        const dateTime = new Date(sendConfig.scheduledDate);
+        dateTime.setHours(parseInt(hours), parseInt(minutes));
+        scheduledAt = dateTime.toISOString();
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-email-campaign', {
+        body: {
+          draftId: selectedDraft.id,
+          subject: sendConfig.subject,
+          content: selectedDraft.content,
+          recipientIds,
+          senderName: sendConfig.senderName,
+          scheduledAt,
+          testMode: false
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Campaign Sent!",
+        description: `Successfully sent to ${data.results.sent} recipients`
+      });
+
+      setIsSendDialogOpen(false);
+      setSelectedDraft(null);
+      setSelectedRecipients(new Set());
+      setSendConfig({
+        subject: '',
+        senderName: '',
+        scheduledDate: undefined,
+        scheduledTime: '',
+        sendNow: true
+      });
+      fetchData();
+    } catch (error: any) {
+      console.error('Error sending campaign:', error);
+      toast({
+        title: "Send Failed",
+        description: error.message || "Failed to send email campaign",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingCampaign(false);
+    }
+  };
+
+  const toggleRecipientSelection = (subscriberId: string) => {
+    setSelectedRecipients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(subscriberId)) {
+        newSet.delete(subscriberId);
+      } else {
+        newSet.add(subscriberId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const activeSubscriberIds = subscribers.filter(s => s.is_active).map(s => s.id);
+    if (selectedRecipients.size === activeSubscriberIds.length) {
+      setSelectedRecipients(new Set());
+    } else {
+      setSelectedRecipients(new Set(activeSubscriberIds));
+    }
+  };
+
   const handleUnsubscribe = async (subscriberId: string) => {
     try {
       const { error } = await supabase
@@ -317,6 +455,12 @@ const NewsletterManagement = () => {
         <div className={isMobile ? "overflow-x-auto pb-2 scroll-smooth scrollbar-hide" : ""}>
           <TabsList className={isMobile ? "flex w-max min-w-full h-12 p-1" : ""}>
             <TabsTrigger 
+              value="drafts" 
+              className={isMobile ? "flex-shrink-0 px-4 py-2 min-w-[120px] text-xs whitespace-nowrap" : ""}
+            >
+              Drafts
+            </TabsTrigger>
+            <TabsTrigger 
               value="subscribers" 
               className={isMobile ? "flex-shrink-0 px-4 py-2 min-w-[120px] text-xs whitespace-nowrap" : ""}
             >
@@ -330,6 +474,66 @@ const NewsletterManagement = () => {
             </TabsTrigger>
           </TabsList>
         </div>
+
+        <TabsContent value="drafts">
+          <Card>
+            <CardHeader>
+              <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
+                <div>
+                  <CardTitle className={isMobile ? 'text-lg' : ''}>Newsletter Drafts</CardTitle>
+                  <CardDescription className={isMobile ? 'text-sm' : ''}>
+                    Send your generated content to subscribers
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {drafts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No drafts available</h3>
+                    <p className="text-muted-foreground">Generate content first, then return here to send it</p>
+                  </div>
+                ) : (
+                  drafts.map((draft) => (
+                    <div key={draft.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{draft.title || 'Untitled Draft'}</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {draft.content.slice(0, 150)}...
+                          </p>
+                        </div>
+                        <Badge variant="secondary">Draft</Badge>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">
+                          Updated: {format(new Date(draft.updated_at), 'MMM d, yyyy')}
+                        </span>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedDraft(draft);
+                            setSendConfig(prev => ({
+                              ...prev,
+                              subject: draft.title || `Market Update - ${format(new Date(), 'MMM d, yyyy')}`
+                            }));
+                            setIsSendDialogOpen(true);
+                          }}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Send to Subscribers
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="subscribers">
           <Card>
@@ -554,6 +758,200 @@ const NewsletterManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Send Campaign Dialog */}
+      <Dialog open={isSendDialogOpen} onOpenChange={setIsSendDialogOpen}>
+        <DialogContent className={isMobile ? "max-w-[95vw] mx-2" : "max-w-2xl"}>
+          <DialogHeader>
+            <DialogTitle>Send Email Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* Campaign Details */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="campaignSubject">Email Subject *</Label>
+                <Input
+                  id="campaignSubject"
+                  value={sendConfig.subject}
+                  onChange={(e) => setSendConfig({...sendConfig, subject: e.target.value})}
+                  placeholder="Your Market Update - January 2024"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="senderName">Sender Name</Label>
+                <Input
+                  id="senderName"
+                  value={sendConfig.senderName}
+                  onChange={(e) => setSendConfig({...sendConfig, senderName: e.target.value})}
+                  placeholder="Your Name (leave blank to use profile name)"
+                />
+              </div>
+            </div>
+
+            {/* Recipient Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Recipients</CardTitle>
+                <CardDescription>
+                  Select who will receive this campaign
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedRecipients.size === subscribers.filter(s => s.is_active).length && subscribers.filter(s => s.is_active).length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                      <span className="text-sm font-medium">
+                        Select All Active ({subscribers.filter(s => s.is_active).length})
+                      </span>
+                    </div>
+                    <Badge variant="outline">
+                      {selectedRecipients.size} selected
+                    </Badge>
+                  </div>
+
+                  <div className="max-h-48 overflow-y-auto space-y-2">
+                    {subscribers.filter(s => s.is_active).map((subscriber) => (
+                      <div key={subscriber.id} className="flex items-center gap-3 p-2 border rounded">
+                        <Checkbox
+                          checked={selectedRecipients.has(subscriber.id)}
+                          onCheckedChange={() => toggleRecipientSelection(subscriber.id)}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {subscriber.first_name} {subscriber.last_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{subscriber.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Scheduling Options */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Delivery Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={sendConfig.sendNow}
+                      onCheckedChange={(checked) => setSendConfig({...sendConfig, sendNow: checked as boolean})}
+                    />
+                    <Label>Send immediately</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={!sendConfig.sendNow}
+                      onCheckedChange={(checked) => setSendConfig({...sendConfig, sendNow: !(checked as boolean)})}
+                    />
+                    <Label>Schedule for later</Label>
+                  </div>
+                </div>
+
+                {!sendConfig.sendNow && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !sendConfig.scheduledDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {sendConfig.scheduledDate ? format(sendConfig.scheduledDate, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarComponent
+                            mode="single"
+                            selected={sendConfig.scheduledDate}
+                            onSelect={(date) => setSendConfig({...sendConfig, scheduledDate: date})}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Time</Label>
+                      <Input
+                        type="time"
+                        value={sendConfig.scheduledTime}
+                        onChange={(e) => setSendConfig({...sendConfig, scheduledTime: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Preview */}
+            {selectedDraft && (
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-lg">Campaign Preview</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Subject:</span>
+                    <span className="text-sm">{sendConfig.subject}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Recipients:</span>
+                    <span className="text-sm">
+                      {selectedRecipients.size > 0 ? selectedRecipients.size : subscribers.filter(s => s.is_active).length} subscribers
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Delivery:</span>
+                    <span className="text-sm">
+                      {sendConfig.sendNow ? 'Immediate' : 
+                       sendConfig.scheduledDate ? format(sendConfig.scheduledDate, 'MMM d, yyyy') + 
+                       (sendConfig.scheduledTime ? ` at ${sendConfig.scheduledTime}` : '') : 'Not scheduled'}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setIsSendDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSendCampaign} 
+                disabled={sendingCampaign || !selectedDraft || !sendConfig.subject}
+                className="gap-2"
+              >
+                {sendingCampaign ? (
+                  <>
+                    <Clock className="h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    {sendConfig.sendNow ? 'Send Now' : 'Schedule Campaign'}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
