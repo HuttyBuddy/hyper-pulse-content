@@ -598,7 +598,7 @@ const Profile = () => {
                     <h5 className="font-medium text-sm mb-2 mt-4">Engagement Bonuses</h5>
                     <div className="text-xs text-muted-foreground space-y-1">
                       <p>• Multiple pages viewed: +2 points</p>
-                      <p>• Time on site >2 minutes: +1 point</p>
+                      <p>• Time on site {'>'}2 minutes: +1 point</p>
                       <p>• Return visitor: +3 points</p>
                     </div>
                   </div>
