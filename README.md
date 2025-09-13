@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to Hyper Pulse Content project
 
 ## Project info
 
