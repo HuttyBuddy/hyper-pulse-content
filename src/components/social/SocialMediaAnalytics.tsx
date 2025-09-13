@@ -63,7 +63,7 @@ export const SocialMediaAnalytics = ({ posts }: SocialMediaAnalyticsProps) => {
       facebook: "📘",
       instagram: "📷",
       linkedin: "💼",
-      twitter: "🐦"
+      twitter: "𝕏"
     };
     return icons[platform as keyof typeof icons] || "📱";
   };

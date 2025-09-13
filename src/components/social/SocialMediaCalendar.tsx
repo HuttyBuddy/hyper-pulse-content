@@ -31,7 +31,7 @@ export const SocialMediaCalendar = ({ posts, onPostsChange }: SocialMediaCalenda
       facebook: "📘",
       instagram: "📷",
       linkedin: "💼",
-      twitter: "🐦"
+      twitter: "𝕏"
     };
     return icons[platform as keyof typeof icons] || "📱";
   };
