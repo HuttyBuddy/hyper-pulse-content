@@ -42,7 +42,7 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
     { value: "facebook", label: "Facebook", icon: "📘" },
     { value: "instagram", label: "Instagram", icon: "📷" },
     { value: "linkedin", label: "LinkedIn", icon: "💼" },
-    { value: "twitter", label: "Twitter", icon: "🐦" }
+    { value: "twitter", label: "X", icon: "🐦" }
   ];
 
   const addHashtag = () => {

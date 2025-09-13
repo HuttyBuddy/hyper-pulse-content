@@ -40,7 +40,7 @@ export const SocialMediaTemplates = () => {
     { value: "facebook", label: "Facebook", icon: "📘" },
     { value: "instagram", label: "Instagram", icon: "📷" },
     { value: "linkedin", label: "LinkedIn", icon: "💼" },
-    { value: "twitter", label: "Twitter", icon: "🐦" }
+    { value: "twitter", label: "X", icon: "🐦" }
   ];
 
   useEffect(() => {
