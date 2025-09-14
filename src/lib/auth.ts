@@ -1,25 +1,28 @@
 export const cleanupAuthState = () => {
   try {
-    // Remove standard Supabase auth tokens
-    localStorage.removeItem('supabase.auth.token');
-
-    // Remove all Supabase-related keys from localStorage
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Remove from sessionStorage if present
+    console.log('[AUTH] Starting aggressive cleanup of all storage');
+    
+    // Clear ALL localStorage (aggressive approach)
+    const localStorageKeys = Object.keys(localStorage);
+    console.log('[AUTH] Found localStorage keys:', localStorageKeys);
+    localStorage.clear();
+    console.log('[AUTH] localStorage cleared completely');
+    
+    // Clear ALL sessionStorage
     if (typeof sessionStorage !== 'undefined') {
-      Object.keys(sessionStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
+      const sessionStorageKeys = Object.keys(sessionStorage);
+      console.log('[AUTH] Found sessionStorage keys:', sessionStorageKeys);
+      sessionStorage.clear();
+      console.log('[AUTH] sessionStorage cleared completely');
     }
+    
+    // Clear any cookies that might contain auth data
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    console.log('[AUTH] Cookies cleared');
   } catch (e) {
-    // no-op
+    console.error('[AUTH] Error during cleanup:', e);
   }
 };
 
@@ -40,7 +43,8 @@ export const handleCriticalAuthError = async (error: any) => {
     'invalid token',
     'AuthSessionMissingError',
     'No authenticated user',
-    'AuthSessionMissing'
+    "AuthSessionMissing",
+    "Auth session missing"
   ];
   
   const isAuthError = authErrorPatterns.some(pattern => 
@@ -51,6 +55,7 @@ export const handleCriticalAuthError = async (error: any) => {
   
   if (isAuthError) {
     console.log('[AUTH] Critical auth error detected, starting cleanup process');
+    console.log('[AUTH] Original error:', error);
     
     try {
       console.log('[AUTH] Step 1: Clearing local storage');
@@ -67,14 +72,14 @@ export const handleCriticalAuthError = async (error: any) => {
       console.log('[AUTH] Step 4: Supabase signout complete');
       
       // Redirect to login page
-      console.log('[AUTH] Step 5: Redirecting to login page');
-      window.location.href = '/';
-      console.log('[AUTH] Step 6: Redirect initiated');
+      console.log('[AUTH] Step 5: Forcing redirect to login page');
+      window.location.replace('/');
+      console.log('[AUTH] Step 6: Redirect replace initiated');
     } catch (e) {
       console.error('[AUTH] Error during auth cleanup:', e);
       // If all else fails, just redirect
       console.log('[AUTH] Fallback: Direct redirect to login');
-      window.location.href = '/';
+      window.location.replace('/');
     }
   } else {
     console.log('[AUTH] Not an auth error, ignoring');

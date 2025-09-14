@@ -6,6 +6,9 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { handleCriticalAuthError } from "@/lib/auth";
 import { ChatProvider } from "@/contexts/ChatContext";
 import ChatSheet from "@/components/chat/ChatSheet";
 import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
@@ -28,11 +31,57 @@ import ClientDashboard from "./pages/ClientDashboard";
 
 const queryClient = new QueryClient();
 
+const AuthStateManager = () => {
+  useEffect(() => {
+    console.log('[AUTH] Setting up global auth state listener');
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('[AUTH] Auth state change detected:', event, session?.user?.id || 'no user');
+        
+        if (event === 'SIGNED_OUT') {
+          console.log('[AUTH] User signed out, redirecting to login');
+          window.location.replace('/');
+        }
+        
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.log('[AUTH] Token refresh failed, handling as critical error');
+          await handleCriticalAuthError('Token refresh failed');
+        }
+      }
+    );
+
+    // Listen for unhandled promise rejections that might be auth-related
+    const handleUnhandledRejection = async (event: PromiseRejectionEvent) => {
+      const error = event.reason;
+      const errorMessage = error?.message || String(error);
+      
+      if (errorMessage.includes('AuthSessionMissingError') || 
+          errorMessage.includes('Auth session missing')) {
+        console.log('[AUTH] Caught unhandled auth error:', errorMessage);
+        event.preventDefault();
+        await handleCriticalAuthError(error);
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      console.log('[AUTH] Cleaning up global auth listeners');
+      subscription.unsubscribe();
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <TooltipProvider>
         <ErrorBoundary>
+          <AuthStateManager />
           <Toaster />
           <Sonner />
           <BrowserRouter>
