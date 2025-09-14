@@ -9,6 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { handleCriticalAuthError } from "@/lib/auth";
+import { validateConfig, debugLog, env } from "@/lib/config";
 import { ChatProvider } from "@/contexts/ChatContext";
 import ChatSheet from "@/components/chat/ChatSheet";
 import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
@@ -33,19 +34,25 @@ const queryClient = new QueryClient();
 
 const AuthStateManager = () => {
   useEffect(() => {
-    console.log('[AUTH] Setting up global auth state listener');
+    debugLog('AUTH: Setting up global auth state listener');
+    
+    // Validate configuration on app start
+    const configErrors = validateConfig();
+    if (configErrors.length > 0) {
+      console.error('Configuration errors detected:', configErrors);
+    }
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[AUTH] Auth state change detected:', event, session?.user?.id || 'no user');
+        debugLog('AUTH: Auth state change detected:', event, session?.user?.id || 'no user');
         
         if (event === 'SIGNED_OUT') {
-          console.log('[AUTH] User signed out, redirecting to login');
+          debugLog('AUTH: User signed out, redirecting to login');
           window.location.replace('/');
         }
         
         if (event === 'TOKEN_REFRESHED' && !session) {
-          console.log('[AUTH] Token refresh failed, handling as critical error');
+          debugLog('AUTH: Token refresh failed, handling as critical error');
           await handleCriticalAuthError('Token refresh failed');
         }
       }
@@ -67,7 +74,7 @@ const AuthStateManager = () => {
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
-      console.log('[AUTH] Cleaning up global auth listeners');
+      debugLog('AUTH: Cleaning up global auth listeners');
       subscription.unsubscribe();
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };

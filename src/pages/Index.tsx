@@ -12,9 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState } from "@/lib/auth";
 import AppUrlHelper from "@/components/auth/AppUrlHelper";
 import { loginSchema, type LoginFormData } from "@/schemas/auth";
-
-// Development mode bypass - redirect to dashboard
-const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
+import { devMode, debugLog } from "@/lib/env";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,7 +28,8 @@ const Index = () => {
 
   useEffect(() => {
     // In development mode, auto-redirect to dashboard
-    if (DEV_MODE) {
+    if (devMode) {
+      debugLog('DEV_MODE: Auto-redirecting to dashboard');
       navigate("/dashboard", { replace: true });
       return;
     }

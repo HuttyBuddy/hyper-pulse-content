@@ -13,9 +13,7 @@ import { AISuggestions } from "@/components/content/AISuggestions";
 import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { handleCriticalAuthError } from "@/lib/auth";
-
-// Development mode bypass - redirect to dashboard
-const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
+import { devMode, debugLog, env } from "@/lib/env";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -40,8 +38,8 @@ const Dashboard = () => {
         setIsLoading(true);
         
         // In development mode, bypass auth checks and use mock data
-        if (DEV_MODE) {
-          console.log('[DEV] Bypassing auth checks in development mode');
+        if (devMode && env.enableMockData) {
+          debugLog('DEV_MODE: Bypassing auth checks and using mock data');
           if (!isMounted) return;
           
           setDisplayName("Development User");

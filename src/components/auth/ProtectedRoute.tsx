@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-
-// Development mode bypass - SECURITY: Disabled to prevent unauthorized access
-const DEV_MODE = false;
+import { devMode, debugLog } from '@/lib/env';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
@@ -12,7 +10,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Skip auth check in development mode
-    if (DEV_MODE) {
+    if (devMode) {
+      debugLog('DEV_MODE: Bypassing authentication check');
       setAuthed(true);
       setLoading(false);
       return;
@@ -55,7 +54,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   return (
     <>
-      {DEV_MODE && (
+      {devMode && (
         <div className="fixed top-0 left-0 z-50 bg-yellow-500 text-black px-3 py-1 text-sm font-medium">
           DEV MODE - Auth Bypassed
         </div>

@@ -32,9 +32,31 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Set up environment variables (optional)
+# Copy the example environment file and customize as needed
+cp .env.development.example .env.development
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
+
+## Environment Variables
+
+This project uses environment variables for configuration. The following files are used:
+
+- `.env` - Shared variables across all environments
+- `.env.development` - Development-specific variables
+- `.env.production` - Production-specific variables
+
+### Key Environment Variables:
+
+- `VITE_DEV_BYPASS_AUTH` - Set to `true` to bypass authentication in development
+- `VITE_DEBUG_MODE` - Enable debug logging in development
+- `VITE_ENABLE_MOCK_DATA` - Use mock data instead of real API calls
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+
+**Note**: All client-side environment variables must be prefixed with `VITE_` to be accessible in your code.
 
 **Edit a file directly in GitHub**
 

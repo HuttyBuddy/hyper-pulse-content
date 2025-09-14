@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState, handleCriticalAuthError } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { features, devMode } from "@/lib/config";
 
 const AppHeader = () => {
   const [profile, setProfile] = useState<{ name?: string | null; headshot_url?: string | null; logo_url?: string | null } | null>(null);
@@ -96,7 +97,7 @@ const AppHeader = () => {
           <span className="sm:hidden">Hyper Pulse</span>
         </Link>
         <div className="flex items-center gap-1 md:gap-2">
-          <NotificationCenter />
+          {features.analytics && <NotificationCenter />}
           
           {/* Mobile navigation */}
           <Sheet>
@@ -117,12 +118,14 @@ const AppHeader = () => {
                     Dashboard
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
-                  <Link to="/analytics">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Analytics
-                  </Link>
-                </Button>
+                {features.analytics && (
+                  <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
+                    <Link to="/analytics">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Analytics
+                    </Link>
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   className="justify-start hover:bg-accent/80 transition-colors"
@@ -146,9 +149,11 @@ const AppHeader = () => {
             <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
               <Link to="/dashboard">Dashboard</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
-              <Link to="/analytics">Analytics</Link>
-            </Button>
+            {features.analytics && (
+              <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
+                <Link to="/analytics">Analytics</Link>
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
@@ -172,6 +177,11 @@ const AppHeader = () => {
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex text-sm hover:bg-destructive/10 hover:text-destructive transition-colors">
             Log out
           </Button>
+          {devMode && (
+            <Badge variant="secondary" className="hidden md:flex text-xs">
+              DEV
+            </Badge>
+          )}
           <button
             type="button"
             onClick={onLogoClick}
