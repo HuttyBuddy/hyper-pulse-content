@@ -16,9 +16,6 @@ import { useToast } from "@/components/ui/use-toast";
 const Dashboard = () => {
   const navigate = useNavigate();
   
-  // Debug logging
-  console.log('Dashboard render - onboardingCompleted:', onboardingCompleted, 'showQuickSetup:', showQuickSetup);
-  
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
@@ -31,6 +28,9 @@ const Dashboard = () => {
     creditsRemaining: 45
   });
   const { toast } = useToast();
+  
+  // Debug logging
+  console.log('Dashboard render - onboardingCompleted:', onboardingCompleted, 'showQuickSetup:', showQuickSetup);
 
   useEffect(() => {
     let isMounted = true;
