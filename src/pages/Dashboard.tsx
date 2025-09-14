@@ -12,6 +12,7 @@ import { QuickSetup } from "@/components/onboarding/QuickSetup";
 import { AISuggestions } from "@/components/content/AISuggestions";
 import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
+import { handleCriticalAuthError } from "@/lib/auth";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -29,9 +30,6 @@ const Dashboard = () => {
   });
   const { toast } = useToast();
   
-  // Debug logging
-  console.log('Dashboard render - onboardingCompleted:', onboardingCompleted, 'showQuickSetup:', showQuickSetup);
-
   useEffect(() => {
     let isMounted = true;
     const loadDashboard = async () => {
@@ -53,6 +51,7 @@ const Dashboard = () => {
             description: error.message,
             variant: "destructive"
           });
+          await handleCriticalAuthError(error);
           return;
         }
 
@@ -111,6 +110,8 @@ const Dashboard = () => {
         }
       } catch (error) {
         if (isMounted) {
+          console.error('Dashboard error:', error);
+          await handleCriticalAuthError(error);
           toast({
             title: "Error loading dashboard",
             description: "Please refresh the page to try again.",
@@ -207,7 +208,6 @@ const Dashboard = () => {
                       variant="default" 
                       className="w-full"
                       onClick={() => {
-                        console.log('Complete Profile Setup button clicked!');
                         navigate('/profile');
                       }}
                     >
