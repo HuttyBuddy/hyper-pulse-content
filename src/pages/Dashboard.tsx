@@ -35,23 +35,41 @@ const Dashboard = () => {
     const loadDashboard = async () => {
       try {
         setIsLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        
+        // Check authentication with error handling
+        let user;
+        try {
+          const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+          if (authError) {
+            console.error('Auth error:', authError);
+            throw authError;
+          }
+          if (!authUser) {
+            console.error('No authenticated user found');
+            throw new Error('No authenticated user');
+          }
+          user = authUser;
+        } catch (authError) {
+          console.error('Authentication failed:', authError);
+          await handleCriticalAuthError(authError);
+          return;
+        }
         
         // Fetch profile
-        const { data: profile, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('name, neighborhood, county, state, neighborhood_slug, onboarding_completed')
           .eq('user_id', user.id)
           .maybeSingle();
         
-        if (error) {
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
           toast({
             title: "Error loading profile",
-            description: error.message,
+            description: profileError.message,
             variant: "destructive"
           });
-          await handleCriticalAuthError(error);
+          await handleCriticalAuthError(profileError);
           return;
         }
 
@@ -111,12 +129,12 @@ const Dashboard = () => {
       } catch (error) {
         if (isMounted) {
           console.error('Dashboard error:', error);
-          await handleCriticalAuthError(error);
           toast({
             title: "Error loading dashboard",
             description: "Please refresh the page to try again.",
             variant: "destructive"
           });
+          await handleCriticalAuthError(error);
         }
       } finally {
         if (isMounted) {
@@ -207,8 +225,18 @@ const Dashboard = () => {
                     <Button 
                       variant="default" 
                       className="w-full"
-                      onClick={() => {
-                        navigate('/profile');
+                      onClick={async () => {
+                        try {
+                          // Check auth before navigation
+                          const { data: { user }, error } = await supabase.auth.getUser();
+                          if (error || !user) {
+                            throw new Error('Authentication required');
+                          }
+                          navigate('/profile');
+                        } catch (error) {
+                          console.error('Navigation error:', error);
+                          await handleCriticalAuthError(error);
+                        }
                       }}
                     >
                       Complete Profile Setup

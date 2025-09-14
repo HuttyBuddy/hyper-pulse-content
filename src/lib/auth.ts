@@ -34,7 +34,9 @@ export const handleCriticalAuthError = async (error: any) => {
     'JWT expired',
     'Auth session missing',
     'token expired',
-    'invalid token'
+    'invalid token',
+    'AuthSessionMissingError',
+    'No authenticated user'
   ];
   
   const isAuthError = authErrorPatterns.some(pattern => 
@@ -42,6 +44,7 @@ export const handleCriticalAuthError = async (error: any) => {
   );
   
   if (isAuthError) {
+    console.log('Critical auth error detected, forcing logout:', errorMessage);
     try {
       // Import supabase client dynamically to avoid circular dependencies
       const { supabase } = await import('@/integrations/supabase/client');
@@ -55,6 +58,7 @@ export const handleCriticalAuthError = async (error: any) => {
       // Redirect to login page
       window.location.href = '/';
     } catch (e) {
+      console.error('Error during auth cleanup:', e);
       // If all else fails, just redirect
       window.location.href = '/';
     }

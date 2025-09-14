@@ -123,11 +123,24 @@ const AppHeader = () => {
                     Analytics
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" className="justify-start hover:bg-accent/80 transition-colors">
-                  <Link to="/profile">
-                    <User className="h-4 w-4 mr-2" />
-                    Profile
-                  </Link>
+                <Button 
+                  variant="ghost" 
+                  className="justify-start hover:bg-accent/80 transition-colors"
+                  onClick={async () => {
+                    try {
+                      const { data: { user }, error } = await supabase.auth.getUser();
+                      if (error || !user) {
+                        throw new Error('Authentication required');
+                      }
+                      window.location.href = '/profile';
+                    } catch (error) {
+                      console.error('Profile navigation error:', error);
+                      await handleCriticalAuthError(error);
+                    }
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
                 </Button>
                 <Button variant="ghost" className="justify-start mt-4 hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={handleSignOut}>
                   Log out
@@ -144,8 +157,24 @@ const AppHeader = () => {
             <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
               <Link to="/analytics">Analytics</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="text-sm hover:bg-accent/80 transition-colors">
-              <Link to="/profile">Profile</Link>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-sm hover:bg-accent/80 transition-colors"
+              onClick={async () => {
+                try {
+                  const { data: { user }, error } = await supabase.auth.getUser();
+                  if (error || !user) {
+                    throw new Error('Authentication required');
+                  }
+                  window.location.href = '/profile';
+                } catch (error) {
+                  console.error('Profile navigation error:', error);
+                  await handleCriticalAuthError(error);
+                }
+              }}
+            >
+              Profile
             </Button>
           </nav>
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex text-sm hover:bg-destructive/10 hover:text-destructive transition-colors">
