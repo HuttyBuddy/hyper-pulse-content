@@ -184,7 +184,7 @@ const Dashboard = () => {
           ) : (
             <>
               {/* Profile Completion Check */}
-              {(!userNeighborhoods.length || !profile?.neighborhood) && (
+              {(!userNeighborhoods.length || !onboardingCompleted) && (
                 <Card className="border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
@@ -198,9 +198,11 @@ const Dashboard = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button asChild variant="default" className="w-full">
-                      <Link to="/profile">Complete Profile Setup</Link>
-                    </Button>
+                    <Link to="/profile">
+                      <Button variant="default" className="w-full">
+                        Complete Profile Setup
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               )}
