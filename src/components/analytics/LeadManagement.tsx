@@ -26,12 +26,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface Lead {
   id: string;
   lead_source: string;
-  lead_medium: string;
+  lead_medium?: string;
   lead_data: any;
-  lead_value: number;
+  lead_value?: number;
   status: string;
-  follow_up_date: string;
-  notes: string;
+  follow_up_date?: string;
+  notes?: string;
   created_at: string;
   lead_score?: number;
   lead_score_details?: any;
@@ -103,20 +103,48 @@ const LeadManagement = () => {
 
       if (trackingError) throw trackingError;
       
-      // Combine and deduplicate leads
-      const combinedLeads = [
-        ...(trackingData || []),
-        ...(submissionData || []).map(sub => ({
+      // Process tracking leads
+      const processedTrackingLeads = (trackingData || []).map(lead => ({
+        ...lead,
+        lead_medium: lead.lead_medium || 'direct',
+        lead_value: lead.lead_value || 0,
+        follow_up_date: lead.follow_up_date || null,
+        notes: lead.notes || ''
+      }));
+
+      // Process submission leads
+      const processedSubmissionLeads = (submissionData || []).map(sub => {
+        const leadData = typeof sub.lead_data === 'string' 
+          ? JSON.parse(sub.lead_data) 
+          : sub.lead_data || {};
+        
+        return {
           ...sub,
-          lead_source: sub.lead_data?.source || sub.utm_source || 'unknown',
-          lead_medium: sub.utm_medium || 'direct'
-        }))
-      ];
+          lead_source: leadData.source || sub.utm_source || 'unknown',
+          lead_medium: sub.utm_medium || 'direct',
+          lead_value: 0, // submissions don't have lead_value
+          follow_up_date: null, // submissions don't have follow_up_date
+          notes: sub.notes || ''
+        };
+      });
+      
+      // Combine all leads
+      const combinedLeads = [...processedTrackingLeads, ...processedSubmissionLeads];
       
       // Remove duplicates based on email
-      const uniqueLeads = combinedLeads.filter((lead, index, self) => 
-        index === self.findIndex(l => l.lead_data?.email === lead.lead_data?.email)
-      );
+      const uniqueLeads = combinedLeads.filter((lead, index, self) => {
+        const leadData = typeof lead.lead_data === 'string' 
+          ? JSON.parse(lead.lead_data) 
+          : lead.lead_data || {};
+        const email = leadData.email;
+        
+        return index === self.findIndex(l => {
+          const lData = typeof l.lead_data === 'string' 
+            ? JSON.parse(l.lead_data) 
+            : l.lead_data || {};
+          return lData.email === email;
+        });
+      });
       
       setLeads(uniqueLeads);
     } catch (error) {
@@ -140,7 +168,9 @@ const LeadManagement = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(lead => {
-        const leadData = lead.lead_data || {};
+        const leadData = typeof lead.lead_data === 'string' 
+          ? JSON.parse(lead.lead_data) 
+          : lead.lead_data || {};
         const searchText = `${leadData.name || ''} ${leadData.email || ''} ${lead.lead_source}`.toLowerCase();
         return searchText.includes(searchTerm.toLowerCase());
       });
@@ -156,11 +186,11 @@ const LeadManagement = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('crm_type, crm_api_key')
+        .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      setCrmConfigured(!!(profile?.crm_type && profile?.crm_api_key));
+      setCrmConfigured(!!(profile && 'crm_type' in profile && 'crm_api_key' in profile && profile.crm_type && profile.crm_api_key));
     } catch (error) {
       console.error('Error checking CRM configuration:', error);
     }

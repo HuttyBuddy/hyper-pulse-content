@@ -13,6 +13,7 @@ import LeadManagement from "@/components/analytics/LeadManagement";
 import NewsletterManagement from "@/components/analytics/NewsletterManagement";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ShareableDashboardDialog } from "@/components/reports/ShareableDashboardDialog";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AnalyticsData {
   totalLeads: number;
@@ -25,6 +26,7 @@ interface AnalyticsData {
 
 const Analytics = () => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     totalLeads: 0,
@@ -104,14 +106,17 @@ const Analytics = () => {
 
       if (data?.shareUrl) {
         navigator.clipboard.writeText(data.shareUrl);
-        toast.success("Client dashboard created! Link copied to clipboard.", {
-          description: `Share this link with your client: ${data.shareUrl}`
+        toast({
+          title: "Success",
+          description: "Client dashboard created! Link copied to clipboard."
         });
       }
     } catch (error: any) {
       console.error('Error generating shareable dashboard:', error);
-      toast.error("Failed to generate client dashboard", {
-        description: error.message || "Please try again"
+      toast({
+        title: "Error",
+        description: "Failed to generate client dashboard",
+        variant: "destructive"
       });
     } finally {
       setGeneratingDashboard(false);

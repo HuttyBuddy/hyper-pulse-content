@@ -114,7 +114,7 @@ const AnalyticsDashboard = () => {
           channel,
           leads: stats.total,
           conversion: stats.total > 0 ? (stats.converted / stats.total) * 100 : 0,
-          avgScore: stats.total > 0 ? Math.round(stats.totalScore / stats.total) : 0,
+          avgScore: stats.total > 0 ? Math.round(stats.total / stats.total) : 0,
           color: CHANNEL_COLORS[channel as keyof typeof CHANNEL_COLORS] || 'hsl(var(--muted))'
         }));
 

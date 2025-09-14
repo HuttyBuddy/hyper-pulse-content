@@ -256,6 +256,45 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_funnel_stages: {
+        Row: {
+          conversion_count: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date_recorded: string | null
+          id: string
+          stage_name: string
+          stage_order: number
+          updated_at: string | null
+          user_id: string
+          visitor_count: number | null
+        }
+        Insert: {
+          conversion_count?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date_recorded?: string | null
+          id?: string
+          stage_name: string
+          stage_order: number
+          updated_at?: string | null
+          user_id: string
+          visitor_count?: number | null
+        }
+        Update: {
+          conversion_count?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date_recorded?: string | null
+          id?: string
+          stage_name?: string
+          stage_order?: number
+          updated_at?: string | null
+          user_id?: string
+          visitor_count?: number | null
+        }
+        Relationships: []
+      }
       conversion_tracking: {
         Row: {
           attribution_data: Json | null
@@ -308,6 +347,7 @@ export type Database = {
       }
       email_campaigns: {
         Row: {
+          automation_config: Json | null
           bounce_rate: number | null
           campaign_name: string
           campaign_settings: Json | null
@@ -319,16 +359,19 @@ export type Database = {
           preview_text: string | null
           recipients_count: number
           scheduled_at: string | null
+          send_status: string | null
           sender_email: string | null
           sender_name: string | null
           sent_at: string | null
           status: string
           subject_line: string
+          template_id: string | null
           unsubscribe_rate: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          automation_config?: Json | null
           bounce_rate?: number | null
           campaign_name: string
           campaign_settings?: Json | null
@@ -340,16 +383,19 @@ export type Database = {
           preview_text?: string | null
           recipients_count?: number
           scheduled_at?: string | null
+          send_status?: string | null
           sender_email?: string | null
           sender_name?: string | null
           sent_at?: string | null
           status?: string
           subject_line: string
+          template_id?: string | null
           unsubscribe_rate?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          automation_config?: Json | null
           bounce_rate?: number | null
           campaign_name?: string
           campaign_settings?: Json | null
@@ -361,11 +407,13 @@ export type Database = {
           preview_text?: string | null
           recipients_count?: number
           scheduled_at?: string | null
+          send_status?: string | null
           sender_email?: string | null
           sender_name?: string | null
           sent_at?: string | null
           status?: string
           subject_line?: string
+          template_id?: string | null
           unsubscribe_rate?: number | null
           updated_at?: string
           user_id?: string
@@ -560,11 +608,14 @@ export type Database = {
       lead_submissions: {
         Row: {
           created_at: string
+          engagement_data: Json | null
           form_id: string
           id: string
           lead_data: Json
           lead_score: number | null
+          lead_score_details: Json | null
           notes: string | null
+          referrer_url: string | null
           source_url: string | null
           status: string
           updated_at: string
@@ -575,11 +626,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          engagement_data?: Json | null
           form_id: string
           id?: string
           lead_data?: Json
           lead_score?: number | null
+          lead_score_details?: Json | null
           notes?: string | null
+          referrer_url?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
@@ -590,11 +644,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          engagement_data?: Json | null
           form_id?: string
           id?: string
           lead_data?: Json
           lead_score?: number | null
+          lead_score_details?: Json | null
           notes?: string | null
+          referrer_url?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
@@ -766,14 +823,43 @@ export type Database = {
         }
         Relationships: []
       }
+      predictive_results: {
+        Row: {
+          created_at: string | null
+          id: number
+          input_data: Json | null
+          prediction: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          input_data?: Json | null
+          prediction?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          input_data?: Json | null
+          prediction?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brokerage_logo_url: string | null
           county: string | null
           created_at: string
+          crm_api_key: string | null
+          crm_field_mappings: Json | null
+          crm_settings: Json | null
+          crm_type: string | null
           email: string | null
           google_api_key: string | null
           headshot_url: string | null
+          lead_scoring_config: Json | null
           logo_url: string | null
           name: string | null
           neighborhood: string | null
@@ -787,9 +873,14 @@ export type Database = {
           brokerage_logo_url?: string | null
           county?: string | null
           created_at?: string
+          crm_api_key?: string | null
+          crm_field_mappings?: Json | null
+          crm_settings?: Json | null
+          crm_type?: string | null
           email?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
+          lead_scoring_config?: Json | null
           logo_url?: string | null
           name?: string | null
           neighborhood?: string | null
@@ -803,9 +894,14 @@ export type Database = {
           brokerage_logo_url?: string | null
           county?: string | null
           created_at?: string
+          crm_api_key?: string | null
+          crm_field_mappings?: Json | null
+          crm_settings?: Json | null
+          crm_type?: string | null
           email?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
+          lead_scoring_config?: Json | null
           logo_url?: string | null
           name?: string | null
           neighborhood?: string | null
@@ -814,6 +910,60 @@ export type Database = {
           state?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shared_reports: {
+        Row: {
+          access_token: string | null
+          branding_config: Json | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          report_config: Json
+          report_type: string
+          share_url: string
+          source_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          access_token?: string | null
+          branding_config?: Json | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          report_config?: Json
+          report_type: string
+          share_url: string
+          source_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          access_token?: string | null
+          branding_config?: Json | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          report_config?: Json
+          report_type?: string
+          share_url?: string
+          source_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -854,45 +1004,54 @@ export type Database = {
       }
       social_media_posts: {
         Row: {
+          auto_generated: boolean | null
           content_history_id: string | null
           created_at: string
           engagement_metrics: Json | null
           id: string
           media_urls: string[] | null
+          parent_post_id: string | null
           platform: string
           platform_post_id: string | null
           post_content: string
           posted_at: string | null
+          recurrence_pattern: Json | null
           scheduled_at: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          auto_generated?: boolean | null
           content_history_id?: string | null
           created_at?: string
           engagement_metrics?: Json | null
           id?: string
           media_urls?: string[] | null
+          parent_post_id?: string | null
           platform: string
           platform_post_id?: string | null
           post_content: string
           posted_at?: string | null
+          recurrence_pattern?: Json | null
           scheduled_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          auto_generated?: boolean | null
           content_history_id?: string | null
           created_at?: string
           engagement_metrics?: Json | null
           id?: string
           media_urls?: string[] | null
+          parent_post_id?: string | null
           platform?: string
           platform_post_id?: string | null
           post_content?: string
           posted_at?: string | null
+          recurrence_pattern?: Json | null
           scheduled_at?: string | null
           status?: string
           updated_at?: string
@@ -972,12 +1131,82 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          priority: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          priority?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          priority?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_lead_score: {
+        Args: {
+          engagement_data: Json
+          lead_medium: string
+          lead_source: string
+          user_scoring_config?: Json
+        }
+        Returns: number
+      }
+      cleanup_old_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_user_notification: {
+        Args: {
+          p_action_url?: string
+          p_message: string
+          p_metadata?: Json
+          p_priority?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      increment_report_view_count: {
+        Args: { report_token: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

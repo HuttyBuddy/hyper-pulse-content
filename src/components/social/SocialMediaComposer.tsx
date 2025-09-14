@@ -123,7 +123,10 @@ export const SocialMediaComposer = ({ onPostCreated }: SocialMediaComposerProps)
           scheduled_at: postScheduledAt,
           status: action === 'publish' ? 'posted' : action === 'schedule' ? 'scheduled' : 'draft',
           posted_at: action === 'publish' ? new Date().toISOString() : null,
-          recurrence_pattern: isRecurring ? recurrencePattern : null,
+          recurrence_pattern: isRecurring ? {
+            ...recurrencePattern,
+            endDate: recurrencePattern.endDate?.toISOString()
+          } : null,
           auto_generated: false
         };
 

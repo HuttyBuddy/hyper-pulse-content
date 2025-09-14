@@ -3,8 +3,8 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-// Development mode bypass - set to true to skip authentication
-const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
+// Development mode bypass - SECURITY: Disabled to prevent unauthorized access
+const DEV_MODE = false;
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
