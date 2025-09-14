@@ -15,6 +15,10 @@ import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  
+  // Debug logging
+  console.log('Dashboard render - onboardingCompleted:', onboardingCompleted, 'showQuickSetup:', showQuickSetup);
+  
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
@@ -202,7 +206,10 @@ const Dashboard = () => {
                     <Button 
                       variant="default" 
                       className="w-full"
-                      onClick={() => navigate('/profile')}
+                      onClick={() => {
+                        console.log('Complete Profile Setup button clicked!');
+                        navigate('/profile');
+                      }}
                     >
                       Complete Profile Setup
                     </Button>
