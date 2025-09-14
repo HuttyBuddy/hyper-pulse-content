@@ -225,18 +225,9 @@ const Dashboard = () => {
                     <Button 
                       variant="default" 
                       className="w-full"
-                      onClick={async () => {
-                        try {
-                          // Check auth before navigation
-                          const { data: { user }, error } = await supabase.auth.getUser();
-                          if (error || !user) {
-                            throw new Error('Authentication required');
-                          }
-                          navigate('/profile');
-                        } catch (error) {
-                          console.error('Navigation error:', error);
-                          await handleCriticalAuthError(error);
-                        }
+                      onClick={() => {
+                        console.log("Complete Profile Setup button clicked!");
+                        navigate('/profile');
                       }}
                     >
                       Complete Profile Setup

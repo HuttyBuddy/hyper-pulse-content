@@ -126,17 +126,9 @@ const AppHeader = () => {
                 <Button 
                   variant="ghost" 
                   className="justify-start hover:bg-accent/80 transition-colors"
-                  onClick={async () => {
-                    try {
-                      const { data: { user }, error } = await supabase.auth.getUser();
-                      if (error || !user) {
-                        throw new Error('Authentication required');
-                      }
-                      window.location.href = '/profile';
-                    } catch (error) {
-                      console.error('Profile navigation error:', error);
-                      await handleCriticalAuthError(error);
-                    }
+                  onClick={() => {
+                    console.log("Mobile Profile button clicked!");
+                    window.location.href = '/profile';
                   }}
                 >
                   <User className="h-4 w-4 mr-2" />
