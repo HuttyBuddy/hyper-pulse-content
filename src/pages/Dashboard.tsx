@@ -14,6 +14,9 @@ import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loadin
 import { useToast } from "@/components/ui/use-toast";
 import { handleCriticalAuthError } from "@/lib/auth";
 
+// Development mode bypass - redirect to dashboard
+const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH !== 'false';
+
 const Dashboard = () => {
   const navigate = useNavigate();
   
@@ -35,6 +38,34 @@ const Dashboard = () => {
     const loadDashboard = async () => {
       try {
         setIsLoading(true);
+        
+        // In development mode, bypass auth checks and use mock data
+        if (DEV_MODE) {
+          console.log('[DEV] Bypassing auth checks in development mode');
+          if (!isMounted) return;
+          
+          setDisplayName("Development User");
+          setOnboardingCompleted(true);
+          
+          // Set mock neighborhoods
+          const mockNeighborhoods = [{
+            neighborhood: 'Carmichael',
+            county: 'Sacramento County',
+            state: 'CA',
+            neighborhood_slug: 'carmichael',
+            report_date: format(new Date(), 'yyyy-MM-dd')
+          }];
+          
+          setUserNeighborhoods(mockNeighborhoods);
+          setStats({
+            contentCount: 5,
+            neighborhoodCount: 1,
+            creditsRemaining: 45
+          });
+          
+          setIsLoading(false);
+          return;
+        }
         
         // Check authentication with error handling
         let user;
