@@ -3,7 +3,7 @@ import AppHeader from "@/components/layout/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Home, CreditCard, ImagePlus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import { LoadingSpinner, LoadingCard, LoadingText } from "@/components/ui/loadin
 import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userNeighborhoods, setUserNeighborhoods] = useState<any[]>([]);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
@@ -198,11 +199,13 @@ const Dashboard = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Link to="/profile">
-                      <Button variant="default" className="w-full">
-                        Complete Profile Setup
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="default" 
+                      className="w-full"
+                      onClick={() => navigate('/profile')}
+                    >
+                      Complete Profile Setup
+                    </Button>
                   </CardContent>
                 </Card>
               )}
