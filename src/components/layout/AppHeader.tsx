@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, BarChart3, User, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { cleanupAuthState } from "@/lib/auth";
+import { cleanupAuthState, handleCriticalAuthError } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
 
@@ -157,12 +157,12 @@ const AppHeader = () => {
                 try {
                   const { data: { user }, error } = await supabase.auth.getUser();
                   if (error || !user) {
-                    throw new Error('Authentication required');
+                    await handleCriticalAuthError(error || new Error('Authentication required'));
+                    return;
                   }
                   window.location.href = '/profile';
                 } catch (error) {
                   console.error('Profile navigation error:', error);
-                  await handleCriticalAuthError(error);
                 }
               }}
             >
