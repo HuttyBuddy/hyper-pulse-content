@@ -24,7 +24,10 @@ export const cleanupAuthState = () => {
 };
 
 export const handleCriticalAuthError = async (error: any) => {
+  console.log('[AUTH] handleCriticalAuthError called with:', error);
+  
   const errorMessage = error?.message || String(error);
+  console.log('[AUTH] Error message:', errorMessage);
   
   // Check for authentication-related error messages
   const authErrorPatterns = [
@@ -36,31 +39,44 @@ export const handleCriticalAuthError = async (error: any) => {
     'token expired',
     'invalid token',
     'AuthSessionMissingError',
-    'No authenticated user'
+    'No authenticated user',
+    'AuthSessionMissing'
   ];
   
   const isAuthError = authErrorPatterns.some(pattern => 
     errorMessage.toLowerCase().includes(pattern.toLowerCase())
   );
   
+  console.log('[AUTH] Is auth error?', isAuthError);
+  
   if (isAuthError) {
-    console.log('Critical auth error detected, forcing logout:', errorMessage);
+    console.log('[AUTH] Critical auth error detected, starting cleanup process');
+    
     try {
+      console.log('[AUTH] Step 1: Clearing local storage');
       // Import supabase client dynamically to avoid circular dependencies
       const { supabase } = await import('@/integrations/supabase/client');
       
       // Clear authentication state
       cleanupAuthState();
+      console.log('[AUTH] Step 2: Local storage cleared');
       
       // Sign out from Supabase
+      console.log('[AUTH] Step 3: Signing out from Supabase');
       await supabase.auth.signOut();
+      console.log('[AUTH] Step 4: Supabase signout complete');
       
       // Redirect to login page
+      console.log('[AUTH] Step 5: Redirecting to login page');
       window.location.href = '/';
+      console.log('[AUTH] Step 6: Redirect initiated');
     } catch (e) {
-      console.error('Error during auth cleanup:', e);
+      console.error('[AUTH] Error during auth cleanup:', e);
       // If all else fails, just redirect
+      console.log('[AUTH] Fallback: Direct redirect to login');
       window.location.href = '/';
     }
+  } else {
+    console.log('[AUTH] Not an auth error, ignoring');
   }
 };
