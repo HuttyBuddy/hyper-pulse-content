@@ -73,6 +73,9 @@ export const { isDevelopment, isProduction } = appConfig;
 export const { features } = appConfig;
 export const devMode = appConfig.development.bypassAuth;
 
+// Re-export env from env.ts for convenience
+export { env } from './env';
+
 // Validation function
 export const validateConfig = (): string[] => {
   const errors: string[] = [];
