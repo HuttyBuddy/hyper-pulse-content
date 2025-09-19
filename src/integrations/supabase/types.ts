@@ -857,6 +857,11 @@ export type Database = {
           crm_settings: Json | null
           crm_type: string | null
           email: string | null
+          gmb_access_token: string | null
+          gmb_account_id: string | null
+          gmb_location_id: string | null
+          gmb_refresh_token: string | null
+          gmb_token_expiry: string | null
           google_api_key: string | null
           headshot_url: string | null
           lead_scoring_config: Json | null
@@ -865,9 +870,12 @@ export type Database = {
           neighborhood: string | null
           neighborhood_slug: string | null
           onboarding_completed: boolean
+          pulse_zone: string | null
+          pulse_zone_updated_at: string | null
           state: string | null
           updated_at: string
           user_id: string
+          zone_type: string | null
         }
         Insert: {
           brokerage_logo_url?: string | null
@@ -878,6 +886,11 @@ export type Database = {
           crm_settings?: Json | null
           crm_type?: string | null
           email?: string | null
+          gmb_access_token?: string | null
+          gmb_account_id?: string | null
+          gmb_location_id?: string | null
+          gmb_refresh_token?: string | null
+          gmb_token_expiry?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
           lead_scoring_config?: Json | null
@@ -886,9 +899,12 @@ export type Database = {
           neighborhood?: string | null
           neighborhood_slug?: string | null
           onboarding_completed?: boolean
+          pulse_zone?: string | null
+          pulse_zone_updated_at?: string | null
           state?: string | null
           updated_at?: string
           user_id: string
+          zone_type?: string | null
         }
         Update: {
           brokerage_logo_url?: string | null
@@ -899,6 +915,11 @@ export type Database = {
           crm_settings?: Json | null
           crm_type?: string | null
           email?: string | null
+          gmb_access_token?: string | null
+          gmb_account_id?: string | null
+          gmb_location_id?: string | null
+          gmb_refresh_token?: string | null
+          gmb_token_expiry?: string | null
           google_api_key?: string | null
           headshot_url?: string | null
           lead_scoring_config?: Json | null
@@ -907,9 +928,12 @@ export type Database = {
           neighborhood?: string | null
           neighborhood_slug?: string | null
           onboarding_completed?: boolean
+          pulse_zone?: string | null
+          pulse_zone_updated_at?: string | null
           state?: string | null
           updated_at?: string
           user_id?: string
+          zone_type?: string | null
         }
         Relationships: []
       }
