@@ -742,6 +742,36 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_access_log: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          table_name: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          table_name?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          table_name?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       newsletter_drafts: {
         Row: {
           branding_preferences: Json | null
