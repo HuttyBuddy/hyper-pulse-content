@@ -937,6 +937,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_zones: {
+        Row: {
+          created_at: string
+          geo_id: string
+          id: string
+          label: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          geo_id: string
+          id?: string
+          label: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          geo_id?: string
+          id?: string
+          label?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_reports: {
         Row: {
           access_token: string | null
